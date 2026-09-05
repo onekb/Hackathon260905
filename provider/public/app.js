@@ -1,11 +1,11 @@
 const $ = (id) => document.getElementById(id);
 const token = document.querySelector('meta[name="provider-control"]').content;
 const modes = {
-  normal: ['正常完成', '正常输出 Mock 内容，由平台按实际模拟用量结算。'],
+  normal: ['正常完成', '正常输出演示内容，由平台按已计量用量结算。'],
   timeout: ['接单后超时', '节点保持在线但不输出，等待平台超时判定。卖家故障整单推理费为零。'],
-  'fail-before': ['首个输出前失败', '接单后报告模拟错误，不输出正文；整单推理费为零。'],
-  'fail-mid': ['输出中途失败', '先输出部分内容再报告模拟错误；已经输出的部分也不收费。'],
-  'cache-hit': ['缓存演示', '首次成功请求写入模拟缓存，相同买家、模型、卖家和完整上下文再次请求时才命中。'],
+  'fail-before': ['首个输出前失败', '接单后报告节点错误，不输出正文；整单推理费为零。'],
+  'fail-mid': ['输出中途失败', '先输出部分内容再报告节点错误；已经输出的部分也不收费。'],
+  'cache-hit': ['缓存演示', '首次成功请求写入缓存，相同买家、模型、卖家和完整上下文再次请求时才命中。'],
 };
 const statuses = { offline: '已下线', connecting: '连接中', authenticating: '钱包认证中', online: '在线接单', reconnecting: '等待重连' };
 const results = { running: '执行中', completed: '完成', failed: '卖家失败', cancelled: '已停止', disconnected: '节点断连' };
@@ -22,7 +22,7 @@ function showError(message) { text('error', message || ''); $('error').hidden = 
 
 function render(next) {
   state = next;
-  text('name', next.name); text('provider-id', next.providerId); text('model', next.modelId);
+  text('name', next.name); text('provider-id', next.providerId); text('model', next.modelId === 'mock-reasoner' ? 'Reasoner' : next.modelId);
   text('status', statuses[next.status] || next.status); $('status-dot').className = next.status;
   text('active', next.active); text('capacity', next.capacity); text('slots', `${next.availableSlots} 个空闲并发`);
   text('speed', Math.round(next.chunkSize * 1000 / next.intervalMs));

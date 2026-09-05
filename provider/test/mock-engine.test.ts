@@ -86,9 +86,9 @@ test('disconnect aborts every active run without replay or terminal network even
 test('cache explanation follows router request classification instead of claiming first-hit cache', () => {
   const write = { ...request(), cache: 'write' as const };
   const read = { ...request(), cache: 'read' as const };
-  assert.match(mockAnswer(write), /模拟写入缓存/);
+  assert.match(mockAnswer(write), /写入缓存/);
   assert.match(mockAnswer(read), /平台确认命中/);
-  assert.match(mockAnswer(request()), /未使用模拟缓存/);
+  assert.match(mockAnswer(request()), /未使用缓存/);
 });
 
 test('mode is captured per request; recent snapshots do not expose prompt text', async () => {

@@ -8,5 +8,6 @@ export async function api<T>(path: string, token?: string, init: RequestInit = {
   return response.status === 204 ? undefined as T : response.json();
 }
 export const post = (body: unknown): RequestInit => ({ method: 'POST', body: JSON.stringify(body) });
+export function modelLabel(model: string) { return model === 'mock-reasoner' ? 'Reasoner' : model; }
 export function short(value?: string) { return value ? `${value.slice(0, 6)}…${value.slice(-4)}` : '未连接'; }
 export function txUrl(hash: string, chainId: number) { return chainId === 10143 ? `https://testnet.monadscan.com/tx/${hash}` : undefined; }

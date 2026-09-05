@@ -6,6 +6,8 @@
 
 ## 当前结论
 
+**D20 展示文案已完成本地修改，待上线。** 用户确认清理整个网页及 AI 回答中人可见的“模拟 / Mock”字样；Web 13/13、Provider 34/34、根/Web 类型检查、Web lint 与公网静态构建通过，当前远端仍为 0a82030，等待发布。构建存在与前序相同的 Para 可选 AA 包缺失警告；未改变依赖。模型展示可用 Reasoner，协议 `mock` 字段、实际 ID `mock-reasoner`、固定演示引擎与 Unicode 计量不变；API 示例保留可调用 ID，历史账单/证据和本地演示文件不改。技术范围详见 [D20](requirements-and-decisions.md#d20--网页与-ai-回答使用简洁展示文案)。
+
 **已按用户要求取消线上演示请求限制。** [D19](requirements-and-decisions.md#d19--取消演示次数与额外并发限制) 取代每日/累计次数及额外 Demo 并发门槛；保留单笔预算、余额、钱包授权和卖家容量，已有订单/凭证/history 不清空。代码提交与线上 release 均为 **0a82030**，实际运行源码及环境已确认不再读取或执行旧 Demo 门槛；代码已通过 SSH 正常快进推送（0871c64 → 0a82030），没有改写历史。此前“本场剩 4 次、B 当日剩 1 次”是旧策略快照，不再作为后续产品或演示目标。
 
 **Git 仓库与历史清理已完成。** 最终版本 `794139cd5d90a36c2e7c61e362c0afd433fbcf99` 已通过 SSH lease 推送；独立 GitHub 新克隆及本地仓库均检查 23 个提交、643 个对象，目标域名与 PPT/PDF 路径/对象零命中，无不可达对象，本地 `git fsck --full` 通过。两版 PPTX/PDF 已从全部历史移除，仅保留为 ignored 本地文件；4 文件去跟踪前后 SHA256 完全一致。线上服务及 MOJO 等未变，当前用户演示编辑未重新审阅。完整证据见 [D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名) 与[清理盘点](domain-reference-audit.md)。

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPublicClient, formatUnits, http, keccak256, stringToHex, type Hex } from 'viem';
 import { parseAmount } from '../lib/assets';
-import { short, txUrl } from '../lib/api';
+import { modelLabel, short, txUrl } from '../lib/api';
 import { chainFor, marketAbi, rpcFor } from '../lib/contracts';
 import type { MarketConfig, PriceKey, WalletAccess } from '../lib/types';
 
@@ -15,9 +15,9 @@ const MODEL_ID = keccak256(stringToHex(MODEL));
 const DEFAULT_FORM: QuoteForm = { input: '0.3', cacheRead: '0.03', cacheWrite: '0.375', output: '0.8', minReserve: '0.000001' };
 const PRICE_FIELDS: { key: PriceKey; label: string; description: string }[] = [
   { key: 'input', label: '普通输入', description: '未计入缓存读取或写入的输入。' },
-  { key: 'cacheRead', label: '缓存读取', description: '本次命中的模拟缓存输入。' },
-  { key: 'cacheWrite', label: '缓存写入', description: '本次新写入模拟缓存的输入。' },
-  { key: 'output', label: '生成输出', description: '节点交付的模拟输出 Token。' },
+  { key: 'cacheRead', label: '缓存读取', description: '本次命中的缓存输入。' },
+  { key: 'cacheWrite', label: '缓存写入', description: '本次新写入缓存的输入。' },
+  { key: 'output', label: '生成输出', description: '节点交付的输出 Token。' },
 ];
 
 const rate = (value: string, label: string) => parseAmount(value, 18, label, true);
@@ -88,7 +88,7 @@ export function SellerPanel({ wallet, config, onRefresh }: SellerPanelProps) {
         <div><p className="eyebrow">PROVIDER QUOTE</p><h2 id="seller-title">发布卖家报价</h2></div>
         <span className={displayedQuote?.active ? 'success' : 'muted'}>{displayedQuote ? displayedQuote.version === 0n ? '尚未挂牌' : displayedQuote.active ? `已启用 · v${displayedQuote.version}` : `已停用 · v${displayedQuote.version}` : '等待读取'}</span>
       </div>
-      <p className="muted">模型 <strong>{MODEL}</strong> · 全部推理及缓存效果均为 Mock。四项单价使用 MON / 百万模拟 Token，最多 18 位小数。</p>
+      <p className="muted">模型 <strong>{modelLabel(MODEL)}</strong> · 四项单价使用 MON / 百万 Token，最多 18 位小数。</p>
       {!wallet.address && <button className="button" type="button" onClick={wallet.connect}>连接卖家钱包</button>}
       <p className="muted">报价所有者与收款钱包：<code>{short(wallet.address)}</code></p>
       {displayedQuote && displayedQuote.version > 0n && <div className="form-grid quote-summary">{PRICE_FIELDS.map(({ key, label }) => <div className="field" key={key}><span className="muted">当前链上 · {label}</span><strong>{formatUnits(displayedQuote.prices[key], 18)}</strong></div>)}<div className="field"><span className="muted">当前最低预留</span><strong>{formatUnits(displayedQuote.minReserve, 18)} MON</strong></div></div>}

@@ -54,11 +54,11 @@ export function mockAnswer(request: MockRequest): string {
   const last = request.messages.findLast((message) => message.role === 'user')?.content ?? '';
   const preview = Array.from(last).slice(0, 80).join('');
   const cache = request.cache === 'read'
-    ? '本次由平台确认命中相同买家、卖家、模型和上下文的模拟缓存。'
+    ? '本次由平台确认命中相同买家、卖家、模型和上下文的缓存。'
     : request.cache === 'write'
-      ? '本次模拟写入缓存，成功完成后可用相同上下文再次请求。'
-      : '本次未使用模拟缓存。';
-  return `【模拟推理 / Mock】\n已收到：${preview || '空白演示请求'}\n\n这是独立卖家节点生成的固定演示响应，没有调用真实 AI 模型。\n${cache}\n\n平台将按 Unicode 字符单位模拟用量、执行预算控制，并记录本次账单。卖家故障整单推理费为零；买家主动取消按已计量用量结算。\n\n你可以在卖家本地控制台切换故障模式，再发起新请求观察不同结算结果。`;
+      ? '本次写入缓存，成功完成后可用相同上下文再次请求。'
+      : '本次未使用缓存。';
+  return `【AI 推理演示】\n已收到：${preview || '空白演示请求'}\n\n这是独立卖家节点生成的固定演示响应，没有调用真实 AI 模型。\n${cache}\n\n平台将按 Unicode 字符单位记录用量、执行预算控制，并记录本次账单。卖家故障整单推理费为零；买家主动取消按已计量用量结算。\n\n你可以在卖家本地控制台切换故障模式，再发起新请求观察不同结算结果。`;
 }
 
 export class MockEngine {
@@ -139,7 +139,7 @@ export class MockEngine {
         await delay(this.options.intervalMs, run.abort.signal);
         if (run.stopped) return;
         this.finish(run, 'failed');
-        this.options.emit({ type: 'failed', requestId, seq: run.seq, message: '模拟卖家故障：首个输出前失败' });
+        this.options.emit({ type: 'failed', requestId, seq: run.seq, message: '卖家故障：首个输出前失败' });
         return;
       }
       const units = Array.from(mockAnswer(request)).slice(0, Math.max(0, Math.min(10000, request.maxTokens)));
@@ -156,7 +156,7 @@ export class MockEngine {
         if (run.stopped) return;
         if (run.summary.mode === 'fail-mid' && run.summary.outputTokens >= failAfter) {
           this.finish(run, 'failed');
-          this.options.emit({ type: 'failed', requestId, seq: run.seq, message: '模拟卖家故障：输出过程中断' });
+          this.options.emit({ type: 'failed', requestId, seq: run.seq, message: '卖家故障：输出过程中断' });
           return;
         }
       }
@@ -166,7 +166,7 @@ export class MockEngine {
     } catch {
       if (run.stopped) return;
       this.finish(run, 'failed');
-      this.options.emit({ type: 'failed', requestId, seq: run.seq, message: 'Mock 节点执行错误' });
+      this.options.emit({ type: 'failed', requestId, seq: run.seq, message: '节点执行错误' });
     }
   }
 }

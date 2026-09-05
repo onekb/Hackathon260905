@@ -149,7 +149,7 @@ function ConnectionSession({ wallet }: { wallet: WalletAccess }) {
     <section className="panel">
       <p className="eyebrow">INFERPOOL / SELLER CONNECTION</p>
       <h1>连接卖家节点</h1>
-      <p className="muted">用网页钱包确认这个本地节点的身份。节点独立运行并接收模拟推理请求。</p>
+      <p className="muted">用网页钱包确认这个本地节点的身份。节点独立运行并接收 AI 推理请求。</p>
       <dl>
         <div><dt>本地客户端</dt><dd>{endpoint.origin || '未连接'}</dd></div>
         <div><dt>接入平台</dt><dd>{routerOrigin}</dd></div>
@@ -165,7 +165,7 @@ function ConnectionSession({ wallet }: { wallet: WalletAccess }) {
       {phase === 'online' && <p role="status" className="success">卖家节点已在线。请保持客户端和此窗口打开；关闭任一窗口会让节点下线。</p>}
       {error && <p role="alert" className="error">{error}</p>}
       {phase === 'error' && <p className="muted">请回到本地客户端，重新点击“连接网页钱包”打开新的连接窗口。</p>}
-      <p className="fine-print">Monad 测试网 · 模拟推理 · 私钥保留在网页钱包中</p>
+      <p className="fine-print">Monad 测试网 · AI 推理 · 私钥保留在网页钱包中</p>
     </section>
   </main>;
 }
