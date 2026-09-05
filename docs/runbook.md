@@ -108,6 +108,27 @@ npm run test:api:monad
 
 这是实际测试网操作，首次请求消耗测试 MON 和按用量计算的 dUSD。脚本使用固定幂等 Key，重跑查询同一订单，不自动新建收费请求；若公开证据还在但 Router 状态丢失，会拒绝替代请求。保留状态和证据文件。买家、卖家和 Router 使用同一现有 session 钱包，不能替代浏览器或多钱包验收。结果只记录公开证据到 [inferpool-smoke-api-monad.json](../contracts/deployments/inferpool-smoke-api-monad.json)，不保存认证值。
 
+### 只读复核浏览器测试网证据
+
+[verify-browser-monad.ts](../scripts/verify-browser-monad.ts) 用公开 RPC 复核本次独立 Para 买家的订单、回执、分项用量、双方余额和消费授权变化；不使用钱包会话、私钥或平台/API Key，不签名或广播交易，但会更新本地 [浏览器证据 JSON](../contracts/deployments/inferpool-smoke-browser-monad.json)。需要已安装根依赖、现有部署记录及 `contracts/out/` 中的 ABI；缺少 ABI 时先 `forge build --root contracts`。
+
+例如重新核对已经完成的主动取消订单：
+
+```bash
+node --import tsx scripts/verify-browser-monad.ts \
+  --case buyer_cancelled \
+  --request-id 4cf2c58f-99ec-41f4-a86c-5df785ab90ca \
+  --budget 0.1 --usage 54,0,0,48 \
+  --tx reserve=0xc7569f463a0eae3f52a72b2992287596d5da6c54b42f51b1a0085406f7f8e1ef \
+  --tx settle=0x898e0408ee9a8cc8b975bd159a967df9c799958e2ef0b6dca061d062a9139c0f
+```
+
+`--usage` 顺序是普通输入、缓存读取、缓存写入、输出；预算按 dUSD。其他场景用公开 JSON 中对应的 UUID、`case`、用量、预算与两笔交易，不创建新订单。支持正常、卖家失败、预算截断、缓存写入/读取和主动取消，并单独保留 `extra_normal` / `extra_timeout` 两次没有成功取消的实际结果。
+
+`--router-funding <交易哈希>` 另行复核已经发生的 Router 测试 MON 补给并保存到 `routerFunding`，不会触发领取或转账，也不计入推理订单。当前公开记录含官方水龙头补给 1 MON 的成功回执；`routerGasReadiness` 仅按观察到的 Gas 价与用量估计余量，演示前要读取最新值。
+
+无参数执行只刷新当前账户/RPC 快照及已有证据汇总，不会重新查询全部历史订单，也不替代网页操作验证。`currentAccount` 是读取当时的状态，`verifiedCasesAggregate` 汇总的是归档场景的历史区块；两者在有新请求进行时可能不同。脚本固定本次买家、卖家/Router、Monad 10143、报价 v1 和资金准备基线，不是通用钱包测试器；更换这些条件需要同时调整复核逻辑与证据范围。它核对 Mock 计费分类与链上结算，不能证明真实模型或缓存存在。
+
 ## 买家 Web 与 Para
 
 Web 默认连接 `http://127.0.0.1:8788`。本机 `web/.env.local` 已配置前端所需的公开 Para Key 并被 Git 忽略；新机器需由自己的 Para 项目配置以下变量，不复制登录凭证：
@@ -125,7 +146,7 @@ npm run dev:web
 
 预览 `http://127.0.0.1:3000`。运行本地 Anvil 网页时要把 Router URL 改为 `8787` 并重启 Next；先确认 Router `/config` 返回目标链和正确合约地址。Para 使用邮箱内嵌 EVM 钱包，SDK 当前配置为 `Environment.BETA`，公开 Key 应匹配该环境；当前无外部钱包/WC 接入要求。前端配置、界面已编写不等于完成登录、资金操作或钱包签名验收。
 
-五个页面见 [Web README](../web/README.md)。Mac 解锁后的冷刷新、市场报价和邮箱弹窗已实测正常。本次用户未看到应用内浏览器的弹窗，已改在 **Chrome 的 InferPool 专用标签** 继续，并将其置前确认；邮箱/验证码应在该 Chrome 页面完成。完整资金与请求流程仍待验证，网络较慢提示不等于登录成功；不要在聊天中发送验证码。
+五个页面见 [Web README](../web/README.md)。本次用户在 **Chrome 的 InferPool 专用标签** 完成登录，主 agent 已实际确认独立新买家地址和平台会话；资金和请求的逐项验收见 [开发进度](progress.md)，不要将首次零余额快照当作当前余额。完整地址、官方水龙头入口及地址复制成功反馈均已在浏览器核对。邮箱和验证码仍只在网页处理，不进入聊天或文档。
 
 本次用户已完成 Para CLI 登录，且授权 agent 代建 InferPool FREE 组织与项目；不需要重复开户。未来首次配置可以从 `para whoami`、`para keys list` 检查上下文，只有需要用户登录时才交由用户操作。Key 的“公开/私密”依据 SDK 与 CLI 字段定义，不能从名字猜测；不要输出私密 Key。
 
@@ -134,7 +155,7 @@ npm run dev:web
 Para CLI 的开发者登录、浏览器邮箱钱包、Router 平台会话和链上消费授权是不同状态。新的邮箱钱包不会继承既有 Alchemy session 的测试 MON、dUSD、存款或授权。`setup:monad` 与 `test:api:monad` 仅针对已有 session 钱包，不会替新邮箱钱包开户或充值；普通买家不需要安装 Alchemy/Para CLI。
 
 1. **确认环境。** 页面显示 `Monad Testnet`，Router 使用 `8788` 且有可接单节点。点击“连接钱包”，按 Para 弹窗完成邮箱验证并等待钱包地址出现；重新使用时选择原来的钱包身份。
-2. **准备 Gas。** 从钱包账户信息取得完整 EVM 地址（`0x` 加 40 个十六进制字符）；顶部缩写含 `…`，不能直接填入水龙头。向 [Monad 官方水龙头](https://faucet.monad.xyz/) 提供这个新买家地址，领取测试 MON。该官网入口在 2026-09-05 已核对，输入的是收款地址，不是私钥。也可以由已有测试 MON 的钱包在 Monad 测试网向该地址转入 Gas；本步骤不要求购买主网资产。
+2. **准备 Gas。** “钱包与授权”提供完整 EVM 地址和复制反馈（`0x` 加 40 个十六进制字符）；顶部含 `…` 的缩写不能填入水龙头。在 Monad 测试网下，该页面显示 [官方测试 MON 水龙头](https://faucet.monad.xyz/) 入口，向水龙头提供这个新买家地址。官网在 2026-09-05 已核对，输入的是收款地址，不是私钥。也可由已有测试 MON 的钱包在同一测试网向该地址转入 Gas，本步骤不要求购买主网资产。
 3. **平台登录。** 钱包就绪后点击“签名登录”。这是链外身份签名，不是代币转账，也不消耗链上 Gas。只连接邮箱钱包不会自动获得 Router 的 API 权限；刷新网页或切换钱包后可能需重新签名。
 4. **领取 dUSD。** 到“钱包与授权”点“刷新余额”，确认“测试 MON”足以支付预计 Gas，再点“领取 1,000 测试 dUSD”。每钱包仅可领取一次；此领取本身也是链上交易，零 MON 时不能靠 dUSD 支付 Gas。
 5. **存款与授权。** “批准并存款”先执行精确金额的 `approve`，再执行 `deposit`，等待两笔交易各自确认。默认存款 `10 dUSD`；随后设置独立消费授权，界面默认 `5 dUSD`、`24` 小时（可填 1–24 小时）。存款不会自动授予消费权，授权也不会把钱包代币自动存入合约。
@@ -217,6 +238,6 @@ npm run test:evm
 | 锁款结果不明或结算失败 | 查询同一订单，不换 Key 重发推理；等待 Router 重试或到期直接回收 |
 | Router 失联但资金锁定 | 使用订单 UUID 对应的 bytes32 ID，在链上截止时间后由买家 `reclaimExpired`，再提款 |
 | Para doctor 报缺少完整 Provider/外部钱包 | 当前 Lite 内嵌方案存在静态规则误报；结合源码、类型和实际流程判断，不能宣称 doctor 全部通过 |
-| Lite 首次加载仍出现 Solana connector 错误 | 必须在首次渲染和 SDK 构造阶段同步约束空外部钱包配置；延迟设置可能保留默认全部钱包。当前源码已修并通过解析器断言，仍需冷刷新验证 |
+| Lite 首次加载仍出现 Solana connector 错误 | 必须在首次渲染和 SDK 构造阶段同步约束空外部钱包配置；延迟设置可能保留默认全部钱包。当前源码已修并通过解析器断言和冷刷新；若复现，检查构建是否包含该修复 |
 | 移除旧 SDK 时 npm 回滚报 `from undefined` | 本次通过只含 manifests 的干净临时目录重建 lock 后再正式 `npm ci` 恢复；保护现有配置和未提交工作，不盲目删改项目文件 |
 | 刚建立会话却不能签名 | 核对钱包是否正确、EVM 会话是否有效、权限和 CLI 版本；不静默切到另一个身份 |

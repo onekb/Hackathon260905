@@ -1,0 +1,1350 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+  "seller": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "router": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "market": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+  "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+  "scope": "Read-only RPC evidence for a browser-created Para buyer wallet distinct from the existing Alchemy session seller/router. Inference and token metering remain MOCK. Initial state alone is not a completed browser acceptance test.",
+  "walletAddressValidated": true,
+  "buyerDiffersFromSeller": true,
+  "initial": {
+    "observedAt": "2026-09-05T04:39:37.713Z",
+    "blockNumber": "59813393",
+    "blockTimestamp": "1788583075",
+    "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+    "nativeBalanceWei": "0",
+    "nativeBalanceMON": "0",
+    "walletDemoUSD": "0",
+    "escrowAvailableDemoUSD": "0",
+    "tokenAllowanceDemoUSD": "0",
+    "faucetClaimed": false,
+    "grantId": "0",
+    "grant": {
+      "totalLimit": "0",
+      "spent": "0",
+      "locked": "0",
+      "expiresAt": "0",
+      "revoked": false
+    },
+    "authorizationAvailableDemoUSD": "0",
+    "sellerQuote": {
+      "prices": {
+        "input": "30000000",
+        "cacheRead": "3000000",
+        "cacheWrite": "37500000",
+        "output": "80000000"
+      },
+      "minReserve": "100",
+      "version": "1",
+      "active": true
+    }
+  },
+  "transactions": {
+    "faucet_native": {
+      "transactionHash": "0xcf22a8d37ee49370785409e224dfc22d93afc0d82ca8f236bb6749507a42546d",
+      "from": "0x67CC2A06773963e7D862084b3242DBE3CfbcFB13",
+      "to": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "status": "success",
+      "valueWei": "1000000000000000000",
+      "blockNumber": "59813394",
+      "gasLimit": "21165",
+      "gasUsed": "21165",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "2158830000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xcf22a8d37ee49370785409e224dfc22d93afc0d82ca8f236bb6749507a42546d"
+    },
+    "faucet_dusd": {
+      "transactionHash": "0x04356bf705125f90a9517b0e041483afacf7b5c679532103133e2ecc1594bef7",
+      "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "to": "0x62701D69bD213e8F63c28465528931de208cE06E",
+      "status": "success",
+      "functionName": "faucet",
+      "valueWei": "0",
+      "blockNumber": "59813516",
+      "gasLimit": "102790",
+      "gasUsed": "102790",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "10484580000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x04356bf705125f90a9517b0e041483afacf7b5c679532103133e2ecc1594bef7"
+    },
+    "approve": {
+      "transactionHash": "0x69cf8b4524c1b0e83e7fe08ebe1bb2ae5aa7044fe6147dfb37b22a42c1b05ec3",
+      "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "to": "0x62701D69bD213e8F63c28465528931de208cE06E",
+      "status": "success",
+      "functionName": "approve",
+      "args": [
+        "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+        "10000000"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59813605",
+      "gasLimit": "58223",
+      "gasUsed": "58223",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "5938746000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x69cf8b4524c1b0e83e7fe08ebe1bb2ae5aa7044fe6147dfb37b22a42c1b05ec3"
+    },
+    "deposit": {
+      "transactionHash": "0xd711e8078f88e1a03fc322e5c5358e3cd610ff75aec43bb4050a3e46feef818a",
+      "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "deposit",
+      "args": [
+        "10000000"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59813620",
+      "gasLimit": "126284",
+      "gasUsed": "126284",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "12880968000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xd711e8078f88e1a03fc322e5c5358e3cd610ff75aec43bb4050a3e46feef818a"
+    },
+    "authorize": {
+      "transactionHash": "0x2acc0b3dbdbd58215f063052d19e3dec30252e1e17c4074c8edeef06946074f9",
+      "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "authorizeRouter",
+      "args": [
+        "5000000",
+        "1788669610"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59813844",
+      "gasLimit": "108831",
+      "gasUsed": "108831",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "11100762000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x2acc0b3dbdbd58215f063052d19e3dec30252e1e17c4074c8edeef06946074f9"
+    },
+    "normal_reserve": {
+      "transactionHash": "0xa0431e169f199b00a152b25f9a5184f04fbf390c16fcb18e1c4d845b31dc88c7",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0x4416d73ae2b1e94043bb56a50a9b1d15ebc13d9856afe91670675768c56d7dbb",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583554",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59813987",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xa0431e169f199b00a152b25f9a5184f04fbf390c16fcb18e1c4d845b31dc88c7"
+    },
+    "normal_settle": {
+      "transactionHash": "0x0aec57135f5ab7ac4d6e575b0fdaf3233e4ce644c96020632cab816e4091788e",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0x4416d73ae2b1e94043bb56a50a9b1d15ebc13d9856afe91670675768c56d7dbb",
+        {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "187"
+        },
+        0
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814018",
+      "gasLimit": "140439",
+      "gasUsed": "140439",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "14324778000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x0aec57135f5ab7ac4d6e575b0fdaf3233e4ce644c96020632cab816e4091788e"
+    },
+    "seller_failed_reserve": {
+      "transactionHash": "0xd97570ab709af1b248c7e5e0a365414a375493b76fa98cfa810b52a41952f835",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0x25de1a7e8661c7ae028a9499830d72e551e9b7d3696d91456a96db4693363647",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583616",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814193",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xd97570ab709af1b248c7e5e0a365414a375493b76fa98cfa810b52a41952f835"
+    },
+    "seller_failed_settle": {
+      "transactionHash": "0x25d1deabf6908099a7b7e22c785b8c1fbd7ac2cb0c66523981667b6714dcd0e2",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0x25de1a7e8661c7ae028a9499830d72e551e9b7d3696d91456a96db4693363647",
+        {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "48"
+        },
+        3
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814220",
+      "gasLimit": "117664",
+      "gasUsed": "117664",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "12001728000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x25d1deabf6908099a7b7e22c785b8c1fbd7ac2cb0c66523981667b6714dcd0e2"
+    },
+    "budget_cap_reserve": {
+      "transactionHash": "0x9dbc5759c594f7cdbe487734a5ff4607321aac9b225c23f03a39c12e8e36fd15",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0x7a6eaae6ccb3b8a5386ab3dbf1b3d56e5fb52b970c375e4af62094b9f7bdbfd4",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "5000",
+        "1788583645",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814286",
+      "gasLimit": "300249",
+      "gasUsed": "300249",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30625398000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x9dbc5759c594f7cdbe487734a5ff4607321aac9b225c23f03a39c12e8e36fd15"
+    },
+    "budget_cap_settle": {
+      "transactionHash": "0x793f4e2a59d4663194ae7a1761381841b929503bda70c795572078e857dac00d",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0x7a6eaae6ccb3b8a5386ab3dbf1b3d56e5fb52b970c375e4af62094b9f7bdbfd4",
+        {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "42"
+        },
+        2
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814307",
+      "gasLimit": "140451",
+      "gasUsed": "140451",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "14326002000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x793f4e2a59d4663194ae7a1761381841b929503bda70c795572078e857dac00d"
+    },
+    "cache_write_reserve": {
+      "transactionHash": "0xb6bda89b97b8d758bbd42edd8b9283a1eb630af15030cc5db736b849b6bde7cb",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0xdea2861b82757709a766066c3844a899734dc287c30fe18bad655a3bed46f468",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583696",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814447",
+      "gasLimit": "311147",
+      "gasUsed": "311147",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "31736994000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xb6bda89b97b8d758bbd42edd8b9283a1eb630af15030cc5db736b849b6bde7cb"
+    },
+    "cache_write_settle": {
+      "transactionHash": "0xdb1d5226019a72a335b8bb4f656e43cb651b66d0c6c45da6081d8f0b41ae5b60",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0xdea2861b82757709a766066c3844a899734dc287c30fe18bad655a3bed46f468",
+        {
+          "input": "0",
+          "cacheRead": "0",
+          "cacheWrite": "54",
+          "output": "203"
+        },
+        0
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814480",
+      "gasLimit": "151282",
+      "gasUsed": "151282",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "15430764000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xdb1d5226019a72a335b8bb4f656e43cb651b66d0c6c45da6081d8f0b41ae5b60"
+    },
+    "cache_read_reserve": {
+      "transactionHash": "0x51571bdd67101724ea58e4b07257fa2b61aa5352e2b8dcdaa9c2626f46a72137",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0xd6fc6b7a527e81318c69437aa64dc95080622c2913c08ae02359fa94f8fa40bb",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583723",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814534",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x51571bdd67101724ea58e4b07257fa2b61aa5352e2b8dcdaa9c2626f46a72137"
+    },
+    "cache_read_settle": {
+      "transactionHash": "0xdab0639120741abb2bc425eb492d46e0fadeaaa15a94c33dd409183661ddc169",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0xd6fc6b7a527e81318c69437aa64dc95080622c2913c08ae02359fa94f8fa40bb",
+        {
+          "input": "0",
+          "cacheRead": "54",
+          "cacheWrite": "0",
+          "output": "206"
+        },
+        0
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814566",
+      "gasLimit": "140439",
+      "gasUsed": "140439",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "14324778000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xdab0639120741abb2bc425eb492d46e0fadeaaa15a94c33dd409183661ddc169"
+    },
+    "extra_normal_reserve": {
+      "transactionHash": "0xf7a37c0518cbd8f3d9d432104142ae042ca2bef8a94c46477d1f8db840016492",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0x552566a8c619938e8766ccec713cd069a94a46e8949b13053b259bc9545d3e43",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583767",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814680",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xf7a37c0518cbd8f3d9d432104142ae042ca2bef8a94c46477d1f8db840016492"
+    },
+    "extra_normal_settle": {
+      "transactionHash": "0x6ac6fbbf5c9056f9375ad0f97cd8d9950c69d695f1375e9b6e08ecbd33873fac",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0x552566a8c619938e8766ccec713cd069a94a46e8949b13053b259bc9545d3e43",
+        {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "187"
+        },
+        0
+      ],
+      "valueWei": "0",
+      "blockNumber": "59814701",
+      "gasLimit": "140439",
+      "gasUsed": "140439",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "14324778000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x6ac6fbbf5c9056f9375ad0f97cd8d9950c69d695f1375e9b6e08ecbd33873fac"
+    },
+    "extra_timeout_reserve": {
+      "transactionHash": "0x168746f6c1e3e0fc7d46946883292574c772f63d03ae637d66f81ba83a3de9b0",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0xff997ff73a994970eb504626524459bbdaa1c806df7d2d755294df655aac4060",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583883",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59815041",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x168746f6c1e3e0fc7d46946883292574c772f63d03ae637d66f81ba83a3de9b0"
+    },
+    "extra_timeout_settle": {
+      "transactionHash": "0xbeefe3b573e68ae43d5fdc1de74994bd4e05facce1438180b9519799d1e1b186",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0xff997ff73a994970eb504626524459bbdaa1c806df7d2d755294df655aac4060",
+        {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "59"
+        },
+        3
+      ],
+      "valueWei": "0",
+      "blockNumber": "59815160",
+      "gasLimit": "117664",
+      "gasUsed": "117664",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "12001728000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xbeefe3b573e68ae43d5fdc1de74994bd4e05facce1438180b9519799d1e1b186"
+    },
+    "buyer_cancelled_reserve": {
+      "transactionHash": "0xc7569f463a0eae3f52a72b2992287596d5da6c54b42f51b1a0085406f7f8e1ef",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "reserve",
+      "args": [
+        "0xae2c2bb6a9caf28731047a3b2ebd3a1963cad19ba0cbcac98f8e5e38885645c3",
+        "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "100000",
+        "1788583965",
+        "1"
+      ],
+      "valueWei": "0",
+      "blockNumber": "59815313",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xc7569f463a0eae3f52a72b2992287596d5da6c54b42f51b1a0085406f7f8e1ef"
+    },
+    "buyer_cancelled_settle": {
+      "transactionHash": "0x898e0408ee9a8cc8b975bd159a967df9c799958e2ef0b6dca061d062a9139c0f",
+      "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "status": "success",
+      "functionName": "settle",
+      "args": [
+        "0xae2c2bb6a9caf28731047a3b2ebd3a1963cad19ba0cbcac98f8e5e38885645c3",
+        {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "48"
+        },
+        1
+      ],
+      "valueWei": "0",
+      "blockNumber": "59815413",
+      "gasLimit": "140451",
+      "gasUsed": "140451",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "14326002000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x898e0408ee9a8cc8b975bd159a967df9c799958e2ef0b6dca061d062a9139c0f"
+    }
+  },
+  "latest": {
+    "observedAt": "2026-09-05T04:50:41.581Z",
+    "blockNumber": "59815852",
+    "blockTimestamp": "1788583839",
+    "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+    "nativeBalanceWei": "959594944000000000",
+    "nativeBalanceMON": "0.959594944",
+    "walletDemoUSD": "990",
+    "escrowAvailableDemoUSD": "9.921493",
+    "tokenAllowanceDemoUSD": "0",
+    "faucetClaimed": true,
+    "grantId": "1",
+    "grant": {
+      "totalLimit": "5000000",
+      "spent": "78507",
+      "locked": "0",
+      "expiresAt": "1788669610",
+      "revoked": false
+    },
+    "authorizationAvailableDemoUSD": "4.921493",
+    "sellerQuote": {
+      "prices": {
+        "input": "30000000",
+        "cacheRead": "3000000",
+        "cacheWrite": "37500000",
+        "output": "80000000"
+      },
+      "minReserve": "100",
+      "version": "1",
+      "active": true
+    }
+  },
+  "updatedAt": "2026-09-05T04:50:42.101Z",
+  "currentAccount": {
+    "observedAt": "2026-09-05T04:50:42.101Z",
+    "blockNumber": "59815861",
+    "nativeBalanceWei": "959594944000000000",
+    "nativeBalanceMON": "0.959594944",
+    "walletDemoUSD": "990",
+    "escrowAvailableDemoUSD": "9.921493",
+    "grantId": "1",
+    "grant": {
+      "totalLimit": "5000000",
+      "spent": "78507",
+      "locked": "0",
+      "expiresAt": "1788669610",
+      "revoked": false
+    }
+  },
+  "preRequest": {
+    "snapshotSource": "Historical state at the confirmed buyer authorization block, before the browser request",
+    "blockNumber": "59813844",
+    "blockTimestamp": "1788583215",
+    "authorizationTransactionHash": "0x2acc0b3dbdbd58215f063052d19e3dec30252e1e17c4074c8edeef06946074f9",
+    "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+    "seller": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "buyerEscrowBaseUnits": "10000000",
+    "buyerEscrowDemoUSD": "10",
+    "sellerEscrowBaseUnits": "10000000",
+    "sellerEscrowDemoUSD": "10",
+    "grantId": "1",
+    "grant": {
+      "totalLimit": "5000000",
+      "spent": "0",
+      "locked": "0",
+      "expiresAt": "1788669610",
+      "revoked": false
+    }
+  },
+  "cases": {
+    "normal": {
+      "requestId": "5b0516e7-705c-4dd2-8e17-7ff2822dadfb",
+      "onchainRequestId": "0x4416d73ae2b1e94043bb56a50a9b1d15ebc13d9856afe91670675768c56d7dbb",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "16580",
+        "grantId": "1",
+        "deadline": "1788583554",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "187"
+        }
+      },
+      "chargeDemoUSD": "0.01658",
+      "releasedDemoUSD": "0.08342",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        54,
+        0,
+        0,
+        187
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0xa0431e169f199b00a152b25f9a5184f04fbf390c16fcb18e1c4d845b31dc88c7",
+      "settleTransactionHash": "0x0aec57135f5ab7ac4d6e575b0fdaf3233e4ce644c96020632cab816e4091788e",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59813986",
+          "buyerEscrowBaseUnits": "10000000",
+          "sellerEscrowBaseUnits": "10000000",
+          "buyerEscrowDemoUSD": "10",
+          "sellerEscrowDemoUSD": "10",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "0",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59813987",
+          "buyerEscrowBaseUnits": "9900000",
+          "sellerEscrowBaseUnits": "10000000",
+          "buyerEscrowDemoUSD": "9.9",
+          "sellerEscrowDemoUSD": "10",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "0",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59814018",
+          "buyerEscrowBaseUnits": "9983420",
+          "sellerEscrowBaseUnits": "10016580",
+          "buyerEscrowDemoUSD": "9.98342",
+          "sellerEscrowDemoUSD": "10.01658",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "16580",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:42:27.938Z"
+    },
+    "seller_failed": {
+      "requestId": "52245cb7-09de-42d5-9e6e-fbc505409843",
+      "onchainRequestId": "0x25de1a7e8661c7ae028a9499830d72e551e9b7d3696d91456a96db4693363647",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "0",
+        "grantId": "1",
+        "deadline": "1788583616",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 3,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "48"
+        }
+      },
+      "chargeDemoUSD": "0",
+      "releasedDemoUSD": "0.1",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        54,
+        0,
+        0,
+        48
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0xd97570ab709af1b248c7e5e0a365414a375493b76fa98cfa810b52a41952f835",
+      "settleTransactionHash": "0x25d1deabf6908099a7b7e22c785b8c1fbd7ac2cb0c66523981667b6714dcd0e2",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59814192",
+          "buyerEscrowBaseUnits": "9983420",
+          "sellerEscrowBaseUnits": "10016580",
+          "buyerEscrowDemoUSD": "9.98342",
+          "sellerEscrowDemoUSD": "10.01658",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "16580",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59814193",
+          "buyerEscrowBaseUnits": "9883420",
+          "sellerEscrowBaseUnits": "10016580",
+          "buyerEscrowDemoUSD": "9.88342",
+          "sellerEscrowDemoUSD": "10.01658",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "16580",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59814220",
+          "buyerEscrowBaseUnits": "9983420",
+          "sellerEscrowBaseUnits": "10016580",
+          "buyerEscrowDemoUSD": "9.98342",
+          "sellerEscrowDemoUSD": "10.01658",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "16580",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:43:04.367Z"
+    },
+    "budget_cap": {
+      "requestId": "3b9fdfd2-05f2-4def-802b-ec63fbba2ee4",
+      "onchainRequestId": "0x7a6eaae6ccb3b8a5386ab3dbf1b3d56e5fb52b970c375e4af62094b9f7bdbfd4",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "5000",
+        "charged": "4980",
+        "grantId": "1",
+        "deadline": "1788583645",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 2,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "42"
+        }
+      },
+      "chargeDemoUSD": "0.00498",
+      "releasedDemoUSD": "0.00002",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        54,
+        0,
+        0,
+        42
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0x9dbc5759c594f7cdbe487734a5ff4607321aac9b225c23f03a39c12e8e36fd15",
+      "settleTransactionHash": "0x793f4e2a59d4663194ae7a1761381841b929503bda70c795572078e857dac00d",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59814285",
+          "buyerEscrowBaseUnits": "9983420",
+          "sellerEscrowBaseUnits": "10016580",
+          "buyerEscrowDemoUSD": "9.98342",
+          "sellerEscrowDemoUSD": "10.01658",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "16580",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59814286",
+          "buyerEscrowBaseUnits": "9978420",
+          "sellerEscrowBaseUnits": "10016580",
+          "buyerEscrowDemoUSD": "9.97842",
+          "sellerEscrowDemoUSD": "10.01658",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "16580",
+            "locked": "5000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59814307",
+          "buyerEscrowBaseUnits": "9978440",
+          "sellerEscrowBaseUnits": "10021560",
+          "buyerEscrowDemoUSD": "9.97844",
+          "sellerEscrowDemoUSD": "10.02156",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "21560",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:43:40.862Z"
+    },
+    "cache_write": {
+      "requestId": "5a267f98-b7a9-4964-a481-8865ac5d2395",
+      "onchainRequestId": "0xdea2861b82757709a766066c3844a899734dc287c30fe18bad655a3bed46f468",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "18265",
+        "grantId": "1",
+        "deadline": "1788583696",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "0",
+          "cacheRead": "0",
+          "cacheWrite": "54",
+          "output": "203"
+        }
+      },
+      "chargeDemoUSD": "0.018265",
+      "releasedDemoUSD": "0.081735",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        0,
+        0,
+        54,
+        203
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0xb6bda89b97b8d758bbd42edd8b9283a1eb630af15030cc5db736b849b6bde7cb",
+      "settleTransactionHash": "0xdb1d5226019a72a335b8bb4f656e43cb651b66d0c6c45da6081d8f0b41ae5b60",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59814446",
+          "buyerEscrowBaseUnits": "9978440",
+          "sellerEscrowBaseUnits": "10021560",
+          "buyerEscrowDemoUSD": "9.97844",
+          "sellerEscrowDemoUSD": "10.02156",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "21560",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59814447",
+          "buyerEscrowBaseUnits": "9878440",
+          "sellerEscrowBaseUnits": "10021560",
+          "buyerEscrowDemoUSD": "9.87844",
+          "sellerEscrowDemoUSD": "10.02156",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "21560",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59814480",
+          "buyerEscrowBaseUnits": "9960175",
+          "sellerEscrowBaseUnits": "10039825",
+          "buyerEscrowDemoUSD": "9.960175",
+          "sellerEscrowDemoUSD": "10.039825",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "39825",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:44:10.095Z"
+    },
+    "cache_read": {
+      "requestId": "e275f7f8-63ab-4150-a9ab-c2d6b0d49788",
+      "onchainRequestId": "0xd6fc6b7a527e81318c69437aa64dc95080622c2913c08ae02359fa94f8fa40bb",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "16642",
+        "grantId": "1",
+        "deadline": "1788583723",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "0",
+          "cacheRead": "54",
+          "cacheWrite": "0",
+          "output": "206"
+        }
+      },
+      "chargeDemoUSD": "0.016642",
+      "releasedDemoUSD": "0.083358",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        0,
+        54,
+        0,
+        206
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0x51571bdd67101724ea58e4b07257fa2b61aa5352e2b8dcdaa9c2626f46a72137",
+      "settleTransactionHash": "0xdab0639120741abb2bc425eb492d46e0fadeaaa15a94c33dd409183661ddc169",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59814533",
+          "buyerEscrowBaseUnits": "9960175",
+          "sellerEscrowBaseUnits": "10039825",
+          "buyerEscrowDemoUSD": "9.960175",
+          "sellerEscrowDemoUSD": "10.039825",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "39825",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59814534",
+          "buyerEscrowBaseUnits": "9860175",
+          "sellerEscrowBaseUnits": "10039825",
+          "buyerEscrowDemoUSD": "9.860175",
+          "sellerEscrowDemoUSD": "10.039825",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "39825",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59814566",
+          "buyerEscrowBaseUnits": "9943533",
+          "sellerEscrowBaseUnits": "10056467",
+          "buyerEscrowDemoUSD": "9.943533",
+          "sellerEscrowDemoUSD": "10.056467",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "56467",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:44:51.330Z"
+    },
+    "extra_normal": {
+      "requestId": "936bec52-14c0-4600-b662-349e0c17481d",
+      "onchainRequestId": "0x552566a8c619938e8766ccec713cd069a94a46e8949b13053b259bc9545d3e43",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "16580",
+        "grantId": "1",
+        "deadline": "1788583767",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "187"
+        }
+      },
+      "chargeDemoUSD": "0.01658",
+      "releasedDemoUSD": "0.08342",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        54,
+        0,
+        0,
+        187
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0xf7a37c0518cbd8f3d9d432104142ae042ca2bef8a94c46477d1f8db840016492",
+      "settleTransactionHash": "0x6ac6fbbf5c9056f9375ad0f97cd8d9950c69d695f1375e9b6e08ecbd33873fac",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59814679",
+          "buyerEscrowBaseUnits": "9943533",
+          "sellerEscrowBaseUnits": "10056467",
+          "buyerEscrowDemoUSD": "9.943533",
+          "sellerEscrowDemoUSD": "10.056467",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "56467",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59814680",
+          "buyerEscrowBaseUnits": "9843533",
+          "sellerEscrowBaseUnits": "10056467",
+          "buyerEscrowDemoUSD": "9.843533",
+          "sellerEscrowDemoUSD": "10.056467",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "56467",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59814701",
+          "buyerEscrowBaseUnits": "9926953",
+          "sellerEscrowBaseUnits": "10073047",
+          "buyerEscrowDemoUSD": "9.926953",
+          "sellerEscrowDemoUSD": "10.073047",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "73047",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:45:55.328Z",
+      "browserObservation": "The first cancellation attempt arrived after mock inference had already completed. This is an additional successful paid request and does not demonstrate buyer cancellation."
+    },
+    "extra_timeout": {
+      "requestId": "69f22b8a-2986-4137-b484-851525b805b5",
+      "onchainRequestId": "0xff997ff73a994970eb504626524459bbdaa1c806df7d2d755294df655aac4060",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "0",
+        "grantId": "1",
+        "deadline": "1788583883",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 3,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "59"
+        }
+      },
+      "chargeDemoUSD": "0",
+      "releasedDemoUSD": "0.1",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        54,
+        0,
+        0,
+        59
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0x168746f6c1e3e0fc7d46946883292574c772f63d03ae637d66f81ba83a3de9b0",
+      "settleTransactionHash": "0xbeefe3b573e68ae43d5fdc1de74994bd4e05facce1438180b9519799d1e1b186",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59815040",
+          "buyerEscrowBaseUnits": "9926953",
+          "sellerEscrowBaseUnits": "10073047",
+          "buyerEscrowDemoUSD": "9.926953",
+          "sellerEscrowDemoUSD": "10.073047",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "73047",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59815041",
+          "buyerEscrowBaseUnits": "9826953",
+          "sellerEscrowBaseUnits": "10073047",
+          "buyerEscrowDemoUSD": "9.826953",
+          "sellerEscrowDemoUSD": "10.073047",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "73047",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59815160",
+          "buyerEscrowBaseUnits": "9926953",
+          "sellerEscrowBaseUnits": "10073047",
+          "buyerEscrowDemoUSD": "9.926953",
+          "sellerEscrowDemoUSD": "10.073047",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "73047",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:48:07.041Z",
+      "browserObservation": "The second browser cancellation attempt hit a CDP automation timeout and did not cancel the request. The slow Provider reached the Router seller timeout instead. This is SellerFailed with zero fee, not proof of successful buyer cancellation."
+    },
+    "buyer_cancelled": {
+      "requestId": "4cf2c58f-99ec-41f4-a86c-5df785ab90ca",
+      "onchainRequestId": "0xae2c2bb6a9caf28731047a3b2ebd3a1963cad19ba0cbcac98f8e5e38885645c3",
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "5460",
+        "grantId": "1",
+        "deadline": "1788583965",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 1,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "48"
+        }
+      },
+      "chargeDemoUSD": "0.00546",
+      "releasedDemoUSD": "0.09454",
+      "settledOnchain": true,
+      "expectedUiUsage": [
+        54,
+        0,
+        0,
+        48
+      ],
+      "quoteAndUsageChecked": true,
+      "buyerSellerBalancesChecked": true,
+      "grantSpentAndLockedChecked": true,
+      "reserveTransactionHash": "0xc7569f463a0eae3f52a72b2992287596d5da6c54b42f51b1a0085406f7f8e1ef",
+      "settleTransactionHash": "0x898e0408ee9a8cc8b975bd159a967df9c799958e2ef0b6dca061d062a9139c0f",
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59815312",
+          "buyerEscrowBaseUnits": "9926953",
+          "sellerEscrowBaseUnits": "10073047",
+          "buyerEscrowDemoUSD": "9.926953",
+          "sellerEscrowDemoUSD": "10.073047",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "73047",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59815313",
+          "buyerEscrowBaseUnits": "9826953",
+          "sellerEscrowBaseUnits": "10073047",
+          "buyerEscrowDemoUSD": "9.826953",
+          "sellerEscrowDemoUSD": "10.073047",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "73047",
+            "locked": "100000",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59815413",
+          "buyerEscrowBaseUnits": "9921493",
+          "sellerEscrowBaseUnits": "10078507",
+          "buyerEscrowDemoUSD": "9.921493",
+          "sellerEscrowDemoUSD": "10.078507",
+          "grant": {
+            "totalLimit": "5000000",
+            "spent": "78507",
+            "locked": "0",
+            "expiresAt": "1788669610",
+            "revoked": false
+          }
+        }
+      },
+      "verifiedAt": "2026-09-05T04:49:26.302Z"
+    }
+  },
+  "routerGasReadiness": {
+    "observedAt": "2026-09-05T04:50:42.101Z",
+    "blockNumber": "59815861",
+    "router": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "nativeBalanceWei": "1171218074000000000",
+    "nativeBalanceMON": "1.171218074",
+    "currentGasPriceWei": "102000000000",
+    "largestObservedReserveAndSettleGasLimit": "462429",
+    "estimatedFourOrdersWith20PercentMarginWei": "226405238400000000",
+    "estimatedFourOrdersWith20PercentMarginMON": "0.2264052384",
+    "sufficientAtObservedGasPrice": true,
+    "estimateBasis": "Largest gas-limit sum among verified browser cases, multiplied by current gas price and four requests, plus 20%. This estimate does not guarantee future gas prices."
+  },
+  "cachePair": {
+    "writeRequestId": "5a267f98-b7a9-4964-a481-8865ac5d2395",
+    "readRequestId": "e275f7f8-63ab-4150-a9ab-c2d6b0d49788",
+    "sameBuyerSellerModelAndQuoteVersion": true,
+    "mutuallyExclusiveInputBucketsVerified": true,
+    "simulatedInputUnits": 54,
+    "cacheWritePricePerMillion": "37.5",
+    "cacheReadPricePerMillion": "3",
+    "limitation": "These are Router-classified MOCK cache units, not proof of a real model cache. Identical browser prompt/context was observed by the browser operator; the contract proves bucket accounting and settlement."
+  },
+  "verifiedCasesAggregate": {
+    "requestCount": 8,
+    "totalChargedBaseUnits": "78507",
+    "totalChargedDemoUSD": "0.078507",
+    "buyerBalanceBeforeDemoUSD": "10",
+    "buyerBalanceAfterDemoUSD": "9.921493",
+    "sellerBalanceBeforeDemoUSD": "10",
+    "sellerBalanceAfterDemoUSD": "10.078507",
+    "grantSpentBaseUnitsAfter": "78507",
+    "grantLockedBaseUnitsAfter": "0",
+    "startBlock": "59813986",
+    "endBlock": "59815413",
+    "buyerDebitEqualsSellerCreditAndGrantSpent": true
+  },
+  "verificationStatus": {
+    "requiredCases": [
+      "normal",
+      "seller_failed",
+      "budget_cap",
+      "cache_write",
+      "cache_read",
+      "buyer_cancelled"
+    ],
+    "verifiedCases": [
+      "normal",
+      "seller_failed",
+      "budget_cap",
+      "cache_write",
+      "cache_read",
+      "extra_normal",
+      "extra_timeout",
+      "buyer_cancelled"
+    ],
+    "allRequiredCasesSettledAndVerified": true,
+    "independentBuyerAndSellerWallets": true,
+    "twoIndependentSellersVerified": false,
+    "mockInferenceAndMetering": true,
+    "browserInteractionsSource": "Observed and executed by the parent browser operator; this script independently verifies public on-chain results only."
+  },
+  "routerFunding": {
+    "purpose": "Restore demonstration Router test MON gas balance after the eight business requests; not buyer funding or an inference payment",
+    "transactionHash": "0x44d637cfc215ef77892410ed64e4b232de3b3144afb7100711452123eb87d035",
+    "from": "0x67CC2A06773963e7D862084b3242DBE3CfbcFB13",
+    "to": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "receiptStatus": "success",
+    "valueWei": "1000000000000000000",
+    "valueMON": "1",
+    "blockNumber": "59815722",
+    "balanceBeforeWei": "171218074000000000",
+    "balanceBeforeMON": "0.171218074",
+    "balanceAfterWei": "1171218074000000000",
+    "balanceAfterMON": "1.171218074",
+    "balanceIncreaseVerifiedMON": "1",
+    "explorerUrl": "https://testnet.monadscan.com/tx/0x44d637cfc215ef77892410ed64e4b232de3b3144afb7100711452123eb87d035",
+    "verifiedAt": "2026-09-05T04:50:42.101Z"
+  }
+}

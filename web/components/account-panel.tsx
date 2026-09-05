@@ -52,6 +52,7 @@ export function AccountPanel({ wallet, config, account, onRefresh }: AccountPane
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [readError, setReadError] = useState('');
+  const [copyFeedback, setCopyFeedback] = useState<{ owner: string; message: string } | null>(null);
   const [transactions, setTransactions] = useState<ConfirmedTransaction[]>([]);
   const busy = useRef(false);
   const ownerKey = `${config.chain_id}:${config.market_address}:${config.token_address}:${wallet.address ?? ''}`;
@@ -85,6 +86,18 @@ export function AccountPanel({ wallet, config, account, onRefresh }: AccountPane
   const displayedAccount = account?.wallet.toLowerCase() === wallet.address?.toLowerCase() ? account : null;
   const displayedRecovery = recoveryOrder?.owner === ownerKey ? recoveryOrder : null;
   const disabled = !wallet.address || Boolean(pending);
+
+  async function copyAddress() {
+    const address = wallet.address;
+    if (!address) return;
+    setCopyFeedback(null);
+    try {
+      await navigator.clipboard.writeText(address);
+      if (currentOwner.current === ownerKey) setCopyFeedback({ owner: ownerKey, message: '钱包地址已复制。' });
+    } catch {
+      if (currentOwner.current === ownerKey) setCopyFeedback({ owner: ownerKey, message: '复制失败，请手动选择并复制上方完整地址。' });
+    }
+  }
 
   async function confirm(target: 'market' | 'token', functionName: string, args: readonly unknown[], label: string) {
     const hash = await wallet.sendContract(target, functionName, args);
@@ -122,8 +135,18 @@ export function AccountPanel({ wallet, config, account, onRefresh }: AccountPane
         <div><p className="eyebrow">TEST ASSET ACCOUNT</p><h2 id="account-title">账户与消费授权</h2></div>
         <button className="button secondary" type="button" disabled={disabled} onClick={() => void run('正在刷新余额…', async () => '账户数据已刷新。')}>刷新余额</button>
       </div>
-      <p className="muted">dUSD 是没有现实价值的演示资产。领取、存款、授权和提款需支付少量测试 MON Gas；平台承担请求锁款与结算的 Gas。</p>
+      <p className="muted">dUSD 用于支付模拟推理费，是没有现实价值的演示资产。领取、存款、授权和提款需支付少量 Gas；平台承担请求锁款与结算的 Gas。</p>
       {!wallet.address && <button className="button" type="button" onClick={wallet.connect}>连接钱包管理账户</button>}
+      {wallet.address && <div className="field">
+        <span>当前钱包地址</span>
+        <code style={{ overflowWrap: 'anywhere' }}>{wallet.address}</code>
+        <div><button className="button secondary small" type="button" onClick={() => void copyAddress()}>复制钱包地址</button></div>
+        {copyFeedback?.owner === ownerKey && <p className="muted" role="status">{copyFeedback.message}</p>}
+      </div>}
+      {config.chain_id === 10143 && <div className="faucet-row">
+        <a className="button secondary" href="https://faucet.monad.xyz/" target="_blank" rel="noopener noreferrer">领取测试 MON ↗</a>
+        <p className="muted">连接钱包后，将完整地址复制到 Monad 官方水龙头。测试 MON 用来支付 Gas；下方领取的 dUSD 用来支付推理费。</p>
+      </div>}
       <div className="form-grid account-summary">
         <div className="field"><span className="muted">钱包 dUSD</span><strong>{displayedFunds ? formatUnits(displayedFunds.balance, 6) : '—'}</strong></div>
         <div className="field"><span className="muted">可用托管余额</span><strong>{displayedFunds ? formatUnits(displayedFunds.escrowBalance, 6) : displayedAccount?.available ?? '—'} dUSD</strong></div>
