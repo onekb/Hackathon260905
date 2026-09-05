@@ -5,9 +5,8 @@ export type Quote = Record<PriceKey, string> & { minReserve: string; version?: s
 export interface MarketConfig {
   chain_id: number; chain_mode: string; market_address: Address; mock_inference: boolean;
   asset_symbol: 'MON'; asset_decimals: 18;
-  legacy_market_address?: Address; legacy_token_address?: Address; legacy_asset_symbol?: 'dUSD';
 }
-export type ContractTarget = 'market' | 'legacy-market' | 'legacy-token';
+export type ContractTarget = 'market';
 export interface WalletAccess {
   address?: Address;
   connect: () => void;
@@ -15,9 +14,10 @@ export interface WalletAccess {
   sendContract: (target: ContractTarget, functionName: string, args?: readonly unknown[], options?: { value?: bigint }) => Promise<Hex>;
 }
 export interface AccountInfo { wallet: string; available: string; authorized: string; authorizationExpiresAt: number; chain_mode: string }
+export interface ApiKeyInfo { id: string; name: string; preview: string; expiresAt: number; revokedAt?: number; market_address?: Address }
 export interface Seller { id: string; provider_id: string; provider_name: string; seller: string; quote: Quote; online: boolean; available_slots: number; mode: string }
 export interface Order {
-  asset_symbol: 'MON' | 'dUSD'; asset_decimals: 18 | 6; market_address: Address;
+  asset_symbol: 'MON'; asset_decimals: 18; market_address: Address;
   id: string; buyer: string; providerId: string; seller: string; model: string; budget: string; quote: Quote;
   usage: Record<PriceKey, number>; maxTokens: number; output: string; status: string;
   settlement: string; billConfirmed: boolean; reason?: string; charge: string; released: string;

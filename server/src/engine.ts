@@ -29,8 +29,7 @@ export class Engine extends EventEmitter {
   constructor(readonly chain: ChainAdapter, readonly store: Store, readonly requestTimeoutMs = 30000, readonly admission?: DemoAdmission) {
     super(); this.setMaxListeners(0);
     this.marketIdentity = {market_address:chain.market ?? 'memory:mon',asset_symbol:'MON',asset_decimals:18};
-    if (!store.state.market) store.bindMarket(this.marketIdentity);
-    else if (!sameMarket(store.state.market, this.marketIdentity)) throw new Error('Engine market does not match the bound ledger');
+    store.bindMarket(this.marketIdentity);
   }
   private current(o: Order): boolean { return sameMarket(o, this.marketIdentity); }
   private serial<T>(key: string, fn: () => Promise<T>): Promise<T> {
@@ -71,7 +70,7 @@ export class Engine extends EventEmitter {
     const active=orders.filter(o=>['locking','running','reservation_unknown'].includes(o.status)||o.settlement==='pending'||(o.settlement==='failed'&&o.status!=='lock_failed'));
     if(active.filter(o=>o.buyer.toLowerCase()===buyer).length>=DEMO_LIMITS.walletConcurrent)throw new HttpError(429,'Demo allows one unsettled request per wallet');
     if(active.length>=DEMO_LIMITS.globalConcurrent)throw new HttpError(429,'Demo allows two unsettled requests at a time');
-    const attempts=orders.filter(o=>o.createdAt>=this.admission!.startMs);
+    const attempts=[...orders,...(this.store.state.admissionHistory ?? [])].filter(o=>o.createdAt>=this.admission!.startMs);
     if(attempts.length>=DEMO_LIMITS.globalAttempts)throw new HttpError(429,'Demo has reached its total limit of ten new request attempts');
     const utcDay=Math.floor(now/86400000);
     if(attempts.filter(o=>o.buyer.toLowerCase()===buyer&&Math.floor(o.createdAt/86400000)===utcDay).length>=DEMO_LIMITS.walletPerUtcDay)throw new HttpError(429,'Demo allows six new request attempts per wallet per UTC day');
@@ -81,14 +80,6 @@ export class Engine extends EventEmitter {
       buyer = buyer.toLowerCase();
       const fingerprint = hash(JSON.stringify({...input,stream:undefined}));
       const idem = idempotency ? `${this.marketIdentity.market_address.toLowerCase()}:${buyer}:${idempotency}` : undefined;
-      if (idempotency) {
-        const suffix = `${buyer}:${idempotency}`;
-        const legacy = Object.entries(this.store.state.idempotency).find(([key, entry]) => {
-          const order = this.store.state.orders[entry.id] as Order | undefined;
-          return order && order.buyer === buyer && !this.current(order) && (key === suffix || key === `${order.market_address.toLowerCase()}:${suffix}`);
-        });
-        if (legacy) throw new HttpError(409, `Idempotency-Key belongs to legacy request ${legacy[1].id}; query that request. A new MON request must use a new key.`);
-      }
       const prior = idem && this.store.state.idempotency[idem];
       if (prior) { if (prior.fingerprint !== fingerprint) throw new HttpError(409,'Idempotency-Key was already used with different request parameters'); return this.get(prior.id,buyer); }
       this.admitNewOrder(buyer,Date.now());
@@ -165,7 +156,7 @@ export class Engine extends EventEmitter {
       } else if (event.type==='failed' || event.type==='cancelled') await this.finish(o,3,typeof event.message==='string'?event.message.slice(0,500):'Seller failed');
     });
   }
-  cancel(id: string,buyer: string): Promise<Order> { return this.serial(id,async () => { const o=this.get(id,buyer); if (!this.current(o)) throw new HttpError(409,'This is a legacy dUSD order; use its original market recovery or withdrawal controls'); if (o.status==='locking') throw new HttpError(409,'Reservation is confirming; retry cancellation after confirmation'); if (!terminal(o)) await this.finish(o,1,'Buyer cancelled'); return o; }); }
+  cancel(id: string,buyer: string): Promise<Order> { return this.serial(id,async () => { const o=this.get(id,buyer); if (!this.current(o)) throw new HttpError(409,'Order belongs to a different market'); if (o.status==='locking') throw new HttpError(409,'Reservation is confirming; retry cancellation after confirmation'); if (!terminal(o)) await this.finish(o,1,'Buyer cancelled'); return o; }); }
   private async finish(o: Order,outcome: Outcome,reason: string): Promise<void> {
     if (!this.current(o) || terminal(o)) return;
     if (o.status==='locking') return;

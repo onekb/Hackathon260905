@@ -2,7 +2,6 @@
 pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {DemoUSD} from "../src/DemoUSD.sol";
 import {InferenceMarket} from "../src/InferenceMarket.sol";
 
 /// @dev Created and destroyed in one transaction to model unsolicited native balance.
@@ -709,27 +708,5 @@ contract InferenceMarketInvariantTest is Test {
         }
         assertEq(locks, market.totalLocked());
         assertEq(fees, market.balances(provider) + provider.balance);
-    }
-}
-
-/// @dev Keep coverage of the old demonstration token without using it in the native market.
-contract LegacyDemoUSDTest is Test {
-    function testLegacyDemoTokenRemainsClearlyLabeledAndCapped() public {
-        DemoUSD usd = new DemoUSD();
-        usd.faucet();
-        assertEq(usd.decimals(), 6);
-        assertEq(usd.name(), "Demo USD - Test Asset Only");
-        assertEq(usd.symbol(), "dUSD");
-        assertTrue(usd.IS_DEMO_ASSET());
-        assertEq(usd.cap(), usd.MAX_SUPPLY());
-        assertEq(usd.totalSupply(), 1_000 * 1e6);
-    }
-
-    function testLegacyFaucetCannotRepeatAfterTransferringTokens() public {
-        DemoUSD usd = new DemoUSD();
-        usd.faucet();
-        usd.transfer(address(0xD001), usd.balanceOf(address(this)));
-        vm.expectRevert(DemoUSD.AlreadyClaimed.selector);
-        usd.faucet();
     }
 }

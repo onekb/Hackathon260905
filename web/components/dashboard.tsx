@@ -3,9 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowDownLeft, ArrowUpRight, ArrowRight, Box, Braces, Check, CircleStop, Copy, Layers3, LoaderCircle, Play, Radio, RefreshCw, ShieldCheck, Terminal, Wallet } from 'lucide-react';
 import { keccak256, stringToHex } from 'viem';
-import { api, post, ROUTER_URL, short, txUrl } from '@/lib/api';
+import { api, ApiError, post, ROUTER_URL, short, txUrl } from '@/lib/api';
 import { formatAmount, orderAsset, parseAmount } from '@/lib/assets';
-import type { AccountInfo, MarketConfig, Order, PriceKey, Seller, WalletAccess } from '@/lib/types';
+import type { AccountInfo, ApiKeyInfo, MarketConfig, Order, PriceKey, Seller, WalletAccess } from '@/lib/types';
 import AccountPanel from './account-panel';
 import SellerPanel from './seller-panel';
 const priceLabels: Record<PriceKey, string> = { input: '普通输入', cacheRead: '缓存读取', cacheWrite: '缓存写入', output: '输出' };
@@ -57,6 +57,17 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
   const refreshSequence = useRef(0);
   const address = wallet.address?.toLowerCase();
   const token = session && address && session.wallet === address ? session.token : undefined;
+  const latestToken = useRef(token);
+  useEffect(() => { latestToken.current = token; }, [token]);
+  const expireSession = useCallback((failedToken: string) => {
+    if (!alive.current || latestToken.current !== failedToken) return;
+    latestToken.current = undefined;
+    setSession(null);
+    setAccount(null);
+    // Reconnect the same request after login; closing SSE never cancels the order.
+    streamRef.current?.abort();
+    setError('平台登录已失效，请重新签名登录。原订单不会自动取消，登录后可恢复同一请求或取消。');
+  }, []);
   useEffect(() => {
     alive.current = true;
     return () => { alive.current = false; streamRef.current?.abort(); };
@@ -87,12 +98,16 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
     return refreshPublic().then(async () => {
       if (!token || !alive.current) return;
       const [a, list] = await Promise.all([api<AccountInfo>('/account', token), api<{data:Order[]}>('/v1/requests', token)]);
-      if (!alive.current || sequence !== refreshSequence.current) return;
+      if (!alive.current || sequence !== refreshSequence.current || latestToken.current !== token) return;
       if (a.wallet.toLowerCase() !== address) throw new Error('返回的账户与当前钱包不匹配。');
       setAccount(a);
       for (const incoming of list.data) acceptOrder(incoming);
-    }).catch(e => { if (alive.current && sequence === refreshSequence.current) setError(messageOf(e)); });
-  }, [token, address, refreshPublic, acceptOrder]);
+    }).catch(e => {
+      if (!alive.current || sequence !== refreshSequence.current) return;
+      if (e instanceof ApiError && e.status === 401 && token) expireSession(token);
+      else setError(messageOf(e));
+    });
+  }, [token, address, refreshPublic, acceptOrder, expireSession]);
   useEffect(() => { void refreshPublic(); const id = setInterval(() => void refreshPublic(), 5000); return () => clearInterval(id); }, [refreshPublic]);
   useEffect(() => { if (token) void refresh(); }, [token, refresh]);
   const orderId = order?.id;
@@ -106,10 +121,13 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
       inFlight = true;
       void api<Order>(`/v1/requests/${orderId}`, token, { signal: abort.signal }).then(next => {
         if (!abort.signal.aborted) acceptOrder(next);
-      }).catch(() => { /* Keep the last known bill; a read failure is not settlement success. */ }).finally(() => { inFlight = false; });
+      }).catch(e => {
+        if (!abort.signal.aborted && e instanceof ApiError && e.status === 401) expireSession(token);
+        // Keep the last known bill; a read failure is not settlement success.
+      }).finally(() => { inFlight = false; });
     }, 4000);
     return () => { clearInterval(id); abort.abort(); };
-  }, [orderId, needsPolling, token, acceptOrder]);
+  }, [orderId, needsPolling, token, acceptOrder, expireSession]);
   async function authenticate() {
     if (busyRef.current) return;
     if (!wallet.address) return wallet.connect();
@@ -155,12 +173,12 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
     busyRef.current = 'request'; setBusy('request'); setError(''); setRetryRequest(false);
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
     try {
-      const response = await fetch(ROUTER_URL + '/v1/chat/completions', { method: 'POST', body: attemptBody, signal: controller.signal, headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`,'Idempotency-Key':attemptKey} });
+      const response = await fetch(ROUTER_URL + '/v1/chat/completions', { method: 'POST', body: attemptBody, signal: controller.signal, headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`,'Idempotency-Key':attemptKey,'X-InferPool-Market':config.market_address} });
       if (!alive.current) return;
       if (!response.ok) {
         // These statuses are rejected before order creation. A transport/5xx failure is ambiguous.
         if (response.status >= 400 && response.status < 500 && !currentAttempt()?.requestId) updateAttempt({ ended: true });
-        if (response.status === 401) { setSession(null); setAccount(null); }
+        if (response.status === 401) expireSession(token);
         const body = await response.json().catch(() => ({}));
         throw new Error(body.error?.message || `请求失败 (${response.status})`);
       }
@@ -199,7 +217,8 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
       if (!currentAttempt()?.ended) throw new Error('流式连接已结束，但请求最终状态尚未确认。');
       await refresh();
     } catch(e) {
-      if (alive.current && !controller.signal.aborted) setError(`${messageOf(e)} ${currentAttempt()?.ended ? '请查看账单中的结算状态。' : '断连不会取消订单；点击“恢复同一请求”将复用原订单，不会另开一次请求。'}`);
+      if (e instanceof ApiError && e.status === 401) expireSession(token);
+      else if (alive.current && !controller.signal.aborted) setError(`${messageOf(e)} ${currentAttempt()?.ended ? '请查看账单中的结算状态。' : '断连不会取消订单；点击“恢复同一请求”将复用原订单，不会另开一次请求。'}`);
     } finally {
       await reader?.cancel().catch(() => {});
       if (streamRef.current === controller) streamRef.current = null;
@@ -210,8 +229,11 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
   async function cancel() {
     if (!order || !token || !isRunning(order) || cancelRef.current) return;
     const id = order.id; cancelRef.current = id; setCancelling(id); setError('');
-    try { acceptOrder(await api<Order>(`/v1/requests/${id}/cancel`, token, post({}))); await refresh(); }
-    catch(e) { if (alive.current) setError(`取消尚未确认：${messageOf(e)} 请查询该订单后重试取消。`); }
+    try { acceptOrder(await api<Order>(`/v1/requests/${id}/cancel`, token, { ...post({}), headers: { 'X-InferPool-Market': config.market_address } })); await refresh(); }
+    catch(e) {
+      if (e instanceof ApiError && e.status === 401) expireSession(token);
+      else if (alive.current) setError(`取消尚未确认：${messageOf(e)} 请查询该订单后重试取消。`);
+    }
     finally { cancelRef.current = ''; if (alive.current) setCancelling(''); }
   }
   const nav = [{id:'play',label:'推理市场',icon:Layers3},{id:'bills',label:'请求账单',icon:Box},{id:'funds',label:'钱包与授权',icon:Wallet},{id:'api',label:'API 接入',icon:Braces},{id:'seller',label:'成为卖家',icon:Radio}];
@@ -236,7 +258,7 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
       {tab==='bills'&&<div className="billing-layout"><section className="panel"><div className="panel-title"><h2>最近请求</h2><button className="text-button" onClick={()=>void refresh()}><RefreshCw size={15}/>刷新</button></div>{!token?<div className="empty"><Wallet/><p>连接钱包并签名登录后查看你的请求。</p><button className="button" onClick={authenticate}>登录</button></div>:!orders.length?<div className="empty">还没有请求。去体验台开始第一次推理。</div>:<div className="table-wrap"><table><thead><tr><th>请求 / 节点</th><th>状态</th><th>费用 / 资产</th><th>结算</th></tr></thead><tbody>{orders.map(o=><tr key={o.id} onClick={()=>selectOrder(o)}><td><button className="text-button">{o.id.slice(0,8)}</button><small>{o.providerId}</small></td><td>{statuses[o.status]}</td><td>{o.billConfirmed?money(o.charge):'待确认'} <small>{orderAsset(o,config).symbol}</small></td><td><span className={o.billConfirmed?'tag-good':'muted'}>{settlementLabel(o)}</span></td></tr>)}</tbody></table></div>}</section><Bill key={order?.id??'empty'} order={order} config={config} wallet={wallet} onRefresh={refresh}/></div>}
       {tab==='funds'&&<AccountPanel wallet={wallet} config={config} account={account} onRefresh={refresh}/>}
       {tab==='seller'&&<SellerPanel wallet={wallet} config={config} onRefresh={refresh}/>}
-      {tab==='api'&&<ApiPanel key={session?.id??'logged-out'} token={token} onLogin={authenticate}/>}
+      {tab==='api'&&<ApiPanel key={session?.id??'logged-out'} token={token} onLogin={authenticate} config={config} onSessionExpired={expireSession}/>}
       <footer><span>InferPool · Monad Testnet Hackathon</span><span>测试资产无现金价值 · 计量与判责由平台负责</span></footer>
     </main></div>
   </div>;
@@ -266,9 +288,13 @@ function Bill({order:o,config,wallet,onRefresh}:{order:Order|null;config:MarketC
   }
   return <aside className="panel bill"><div className="panel-title"><h2>本次账单</h2><span className={`subtle-pill ${o?.billConfirmed?'good':''}`}>{o?.billConfirmed?'链上已确认':'预计 / 待确认'}</span></div><div className="bill-total"><span>{o?.billConfirmed?'实际费用':'结算后显示实际费用'}</span><strong>{o?.billConfirmed?money(o.charge):'—'}<small>{asset.symbol}</small></strong></div><div className="bill-line"><span>预算预留</span><b>{o?money(o.budget):'—'}</b></div><div className="bill-line"><span>{o?.billConfirmed?'已释放预算':'待释放预算'}</span><b className="green">{o?money(o.released):'—'}</b></div><div className="bill-breakdown"><div className="breakdown-heading"><span>计量明细</span><span>模拟 Token</span></div>{(Object.keys(priceLabels) as PriceKey[]).map(k=><div className="bill-line" key={k}><span>{k==='output'?<ArrowUpRight size={14}/>:<ArrowDownLeft size={14}/>} {priceLabels[k]}</span><b>{o?o.usage[k].toLocaleString():'—'}</b></div>)}</div><div className="bill-info"><ShieldCheck size={18}/><p>只收实际用量费用。<br/>卖家故障时，整单推理费为零。</p></div>{o&&<div className="bill-meta"><p>资产 {asset.symbol}</p><p>托管合约 <code>{asset.market ?? '待核对，已禁用直接回收'}</code></p><p>请求 <code>{o.id}</code></p><p>卖家 <code>{short(o.seller)}</code></p><p>报价版本 {o.quote.version||'—'} · 缓存 {o.cacheMode}</p><p>{statuses[o.status]}</p>{o.settlementError&&<p className="error">结算待处理：{o.settlementError}</p>}{link&&<a className="text-button green" target="_blank" rel="noreferrer" href={link}>查看结算交易 <ArrowUpRight size={15}/></a>}{o.lockTx&&txUrl(o.lockTx,config.chain_id)&&<a className="text-button" target="_blank" rel="noreferrer" href={txUrl(o.lockTx,config.chain_id)}>查看锁款交易 <ArrowUpRight size={15}/></a>}{asset.target&&!o.billConfirmed&&o.lockTx&&o.status!=='lock_failed'&&!reclaimed&&expired&&<button className="button secondary" disabled={working} onClick={reclaim}>直接取回超时锁款</button>}{status&&<p role="status">{status}</p>}</div>}</aside>;
 }
-function ApiPanel({token,onLogin}:{token?:string;onLogin:()=>Promise<void>}) {
-  const [keys,setKeys]=useState<{id:string;name:string;preview:string;expiresAt:number;revokedAt?:number}[]>([]);
+function ApiPanel({token,onLogin,config,onSessionExpired}:{token?:string;onLogin:()=>Promise<void>;config:MarketConfig;onSessionExpired:(token:string)=>void}) {
+  const [keys,setKeys]=useState<ApiKeyInfo[]>([]);
   const [newKey,setNewKey]=useState('');const [name,setName]=useState('我的应用');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
+  const reportError=useCallback((error:unknown)=>{
+    if(error instanceof ApiError&&error.status===401&&token)onSessionExpired(token);
+    else setMessage(messageOf(error));
+  },[token,onSessionExpired]);
   const alive=useRef(true); const inFlight=useRef(false); const loadSequence=useRef(0); const lifecycle=useRef<AbortController|null>(null);
   useEffect(()=>{
     alive.current=true;
@@ -282,10 +308,10 @@ function ApiPanel({token,onLogin}:{token?:string;onLogin:()=>Promise<void>}) {
     const scope=lifecycle.current;
     if(!token||!alive.current||!scope||scope.signal.aborted)return;
     const sequence=++loadSequence.current;
-    const list=await api<{data:{id:string;name:string;preview:string;expiresAt:number;revokedAt?:number}[]}>('/api-keys',token,{signal:scope.signal});
+    const list=await api<{data:ApiKeyInfo[]}>('/api-keys',token,{signal:scope.signal});
     if(alive.current&&!scope.signal.aborted&&scope===lifecycle.current&&sequence===loadSequence.current)setKeys(list.data);
   },[token]);
-  useEffect(()=>{const scope=lifecycle.current;void load().catch(e=>{if(alive.current&&scope&&!scope.signal.aborted&&scope===lifecycle.current)setMessage(messageOf(e));});},[load]);
+  useEffect(()=>{const scope=lifecycle.current;void load().catch(e=>{if(alive.current&&scope&&!scope.signal.aborted&&scope===lifecycle.current)reportError(e);});},[load,reportError]);
   async function create(){
     const scope=lifecycle.current;
     if(!token||inFlight.current||!name.trim()||!alive.current||!scope||scope.signal.aborted)return;
@@ -295,8 +321,8 @@ function ApiPanel({token,onLogin}:{token?:string;onLogin:()=>Promise<void>}) {
       const k=await api<{token:string}>('/api-keys',token,post({name:name.trim(),expires_in_days:7}));
       if(!current())return;
       setNewKey(k.token);
-      try{await load();}catch{if(current())setMessage('Key 已生成。列表暂时无法刷新，请先保存上方 Key。');}
-    }catch(e){if(current())setMessage(messageOf(e));}
+      try{await load();}catch(e){if(current()){if(e instanceof ApiError&&e.status===401)reportError(e);else setMessage('Key 已生成。列表暂时无法刷新，请先保存上方 Key。');}}
+    }catch(e){if(current())reportError(e);}
     finally{if(scope===lifecycle.current)inFlight.current=false;if(current())setBusy(false);}
   }
   async function revoke(id:string){
@@ -308,8 +334,8 @@ function ApiPanel({token,onLogin}:{token?:string;onLogin:()=>Promise<void>}) {
       await api(`/api-keys/${id}`,token,{method:'DELETE'});
       if(!current())return;
       setNewKey('');setMessage('API Key 已撤销。');
-      try{await load();}catch{if(current())setMessage('API Key 已撤销，列表刷新暂时失败。');}
-    }catch(e){if(current())setMessage(messageOf(e));}
+      try{await load();}catch(e){if(current()){if(e instanceof ApiError&&e.status===401)reportError(e);else setMessage('API Key 已撤销，列表刷新暂时失败。');}}
+    }catch(e){if(current())reportError(e);}
     finally{if(scope===lifecycle.current)inFlight.current=false;if(current())setBusy(false);}
   }
   async function copy(value:string,label:string){
@@ -319,6 +345,11 @@ function ApiPanel({token,onLogin}:{token?:string;onLogin:()=>Promise<void>}) {
     try{await navigator.clipboard.writeText(value);if(current())setMessage(`已复制${label}`);}
     catch{if(current())setMessage('复制失败，请手动选择并保存。');}
   }
+  function keyScope(key: ApiKeyInfo) {
+    const market = key.market_address?.toLowerCase();
+    if (market === config.market_address.toLowerCase()) return 'MON · 当前市场';
+    return '市场待核对 · 不可用';
+  }
   const example=`curl ${ROUTER_URL}/v1/chat/completions \\\n  -H "Authorization: Bearer $INFERPOOL_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Idempotency-Key: your-unique-request-id" \\\n  -d '{\n    "model": "mock-reasoner",\n    "messages": [{"role":"user","content":"你好"}],\n    "max_spend": "0.001",\n    "max_tokens": 512,\n    "stream": true,\n    "cache": false\n  }'`;
-  return <div className="api-grid"><section className="panel"><div className="panel-title"><h2>API Key</h2><span className="subtle-pill">只展示一次</span></div><p className="muted">先在「钱包与授权」设置消费额度。Key 只能发起请求，不能提款或扩大授权。</p>{!token?<button className="button" onClick={onLogin}>连接并签名登录</button>:<><label className="field">应用名称<input value={name} onChange={e=>setName(e.target.value)} maxLength={80}/></label><button className="button" onClick={create} disabled={busy||!name.trim()}>生成 API Key</button>{newKey&&<div className="secret-box"><p>请立即保存，离开此页面后无法再次查看。</p><code>{newKey}</code><button className="text-button" onClick={()=>void copy(newKey,' API Key')}><Copy size={15}/>复制</button></div>}<div className="key-list">{keys.map(k=><div className="key-item" key={k.id}><div><b>{k.name}</b><code>{k.preview}</code><small>{k.revokedAt?'已撤销':`有效至 ${new Date(k.expiresAt).toLocaleDateString('zh-CN')}`}</small></div>{!k.revokedAt&&<button className="text-button danger" disabled={busy} onClick={()=>void revoke(k.id)}>撤销</button>}</div>)}</div></>}{message&&<p role="status" className="muted">{message}</p>}</section><section className="panel api-code"><div className="panel-title"><h2><Braces size={18}/> 发起请求</h2><button className="text-button" onClick={()=>void copy(example,'示例')}><Copy size={15}/>复制</button></div><pre>{example}</pre><div className="api-notes"><p><b>基础聊天接口</b> 支持文本消息、流式输出、预算和指定卖家。</p><p><b>断线恢复</b> 用响应的 X-Request-Id 查询 /v1/requests/{'{id}'}。关闭连接不会取消请求。</p><p><b>显式取消</b> POST /v1/requests/{'{id}'}/cancel，按取消生效前的实际用量结算。</p><p><b>金额</b> 以 MON 为单位，使用最多 18 位小数的字符串；所有 Key 共用账户的链上消费限额。</p></div></section></div>;
+  return <div className="api-grid"><section className="panel"><div className="panel-title"><h2>API Key</h2><span className="subtle-pill">只展示一次</span></div><p className="muted">先在「钱包与授权」设置 MON 消费额度，再通过钱包会话新建 MON API Key。Key 仅适用于当前市场，不能提款或扩大授权。</p>{!token?<button className="button" onClick={onLogin}>连接并签名登录</button>:<><label className="field">应用名称<input value={name} onChange={e=>setName(e.target.value)} maxLength={80}/></label><button className="button" onClick={create} disabled={busy||!name.trim()}>生成 MON API Key</button>{newKey&&<div className="secret-box"><p>请立即保存，离开此页面后无法再次查看。</p><code>{newKey}</code><button className="text-button" onClick={()=>void copy(newKey,' API Key')}><Copy size={15}/>复制</button></div>}<div className="key-list">{keys.map(k=><div className="key-item" key={k.id}><div><b>{k.name}</b><small>{keyScope(k)}</small><code>{k.preview}</code><small>{k.revokedAt?'已撤销':`有效至 ${new Date(k.expiresAt).toLocaleDateString('zh-CN')}`}</small></div>{!k.revokedAt&&<button className="text-button danger" disabled={busy} onClick={()=>void revoke(k.id)}>撤销</button>}</div>)}</div></>}{message&&<p role="status" className="muted">{message}</p>}</section><section className="panel api-code"><div className="panel-title"><h2><Braces size={18}/> 发起请求</h2><button className="text-button" onClick={()=>void copy(example,'示例')}><Copy size={15}/>复制</button></div><pre>{example}</pre><div className="api-notes"><p><b>基础聊天接口</b> 支持文本消息、流式输出、预算和指定卖家。</p><p><b>断线恢复</b> 用响应的 X-Request-Id 查询 /v1/requests/{'{id}'}。关闭连接不会取消请求。</p><p><b>显式取消</b> POST /v1/requests/{'{id}'}/cancel，按取消生效前的实际用量结算。</p><p><b>金额</b> 以 MON 为单位，使用最多 18 位小数的字符串；所有 Key 共用账户的链上消费限额。</p></div></section></div>;
 }

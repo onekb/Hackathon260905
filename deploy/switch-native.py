@@ -19,8 +19,8 @@ import urllib.request
 ROOT = Path('/srv/inferpool')
 STATE = ROOT / 'state'
 MARKET = '0x142a4904307244Bed0cECD72dE8329A253333182'
-OLD_MARKET = '0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568'
-OLD_TOKEN = '0x62701D69bD213e8F63c28465528931de208cE06E'
+NATIVE_LEDGER = STATE / 'router-mon-state.json'
+IDENTITY = {'market_address': MARKET, 'asset_symbol': 'MON', 'asset_decimals': 18}
 SERVICES = ['inferpool-router.service', 'inferpool-provider.service']
 
 def emit(**values):
@@ -36,20 +36,34 @@ def ledger():
     unresolved = [o['id'] for o in orders if o['status'] in ('locking', 'running', 'reservation_unknown') or o.get('reservationUncertain') or o['settlement'] == 'pending' or (o['settlement'] == 'failed' and o['status'] != 'lock_failed')]
     if unresolved:
         raise RuntimeError('Existing reservations must finish before switching; no ledger was discarded')
-    return {'count': len(orders), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+    # Only the information needed to preserve admission quotas enters the new ledger.
+    history = list(data.get('admissionHistory', [])) + [
+        {'buyer': o['buyer'].lower(), 'createdAt': o['createdAt']} for o in orders
+    ]
+    if any(set(h) != {'buyer', 'createdAt'} or not re.fullmatch(r'0x[0-9a-fA-F]{40}', h['buyer']) or type(h['createdAt']) is not int or not 0 < h['createdAt'] <= 9007199254740991 for h in history):
+        raise RuntimeError('Invalid original admission history')
+    return {'count': len(orders), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}, history
 
 def update_env(path, changes):
     lines = path.read_text().splitlines()
     result = []
+    written = set()
     for line in lines:
         name = line.split('=', 1)[0]
         if name in changes:
-            result.append(name + '=' + changes.pop(name))
-        elif name not in ('TOKEN_ADDRESS', 'DEMO_USD_ADDRESS'):
+            if name not in written:
+                result.append(name + '=' + changes[name])
+                written.add(name)
+        elif name not in ('TOKEN_ADDRESS', 'DEMO_USD_ADDRESS', 'LEGACY_MARKET_ADDRESS', 'LEGACY_TOKEN_ADDRESS'):
             result.append(line)
-    result.extend(name + '=' + value for name, value in changes.items())
+    result.extend(name + '=' + value for name, value in changes.items() if name not in written)
     temporary = path.with_suffix('.tmp')
-    temporary.write_text('\n'.join(result) + '\n')
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(descriptor, 'w') as output:
+        os.fchmod(output.fileno(), 0o600)
+        output.write('\n'.join(result) + '\n')
+        output.flush()
+        os.fsync(output.fileno())
     metadata = path.stat()
     os.chown(temporary, metadata.st_uid, metadata.st_gid)
     temporary.chmod(0o600)
@@ -87,7 +101,8 @@ for relative in ['server/src/index.ts', 'node_modules/tsx/package.json', 'web/ou
     if not (release / relative).is_file(): raise SystemExit('Release is incomplete: ' + relative)
 previous = (ROOT / 'current').resolve()
 if previous == release: raise SystemExit('Already using this release; refusing to repeat migration')
-before = ledger()
+if NATIVE_LEDGER.exists(): raise SystemExit('Native ledger already exists; inspect it before attempting a new switch')
+before, history = ledger()
 emit(stage='preflight', release=str(release), previous=str(previous), ledger=before, execute=args.execute)
 if not args.execute: raise SystemExit(0)
 backup = STATE / 'backups' / ('native-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ'))
@@ -97,33 +112,46 @@ opened = False
 backed_up = False
 try:
     run('systemctl', 'stop', *SERVICES)
-    before = ledger()
+    before, history = ledger()
     for name in ['router-state.json', 'router.env', 'provider.env']:
         shutil.copy2(STATE / name, backup / name)
         (backup / name).chmod(0o600)
     backed_up = True
-    update_env(STATE / 'router.env', {'MARKET_ADDRESS': MARKET, 'LEGACY_MARKET_ADDRESS': OLD_MARKET, 'LEGACY_TOKEN_ADDRESS': OLD_TOKEN, 'DEMO_NEW_ORDERS_ENABLED': 'false'})
+    native = {'version': 1, 'market': IDENTITY, 'orders': {}, 'idempotency': {}, 'credentials': {}, 'cache': {}, 'admissionHistory': history}
+    # Exclusive creation prevents a repeated switch from discarding any native requests.
+    descriptor = os.open(NATIVE_LEDGER, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, 'w') as output:
+        json.dump(native, output)
+        output.flush()
+        os.fsync(output.fileno())
+    shutil.chown(NATIVE_LEDGER, user='inferpool', group='inferpool')
+    update_env(STATE / 'router.env', {'MARKET_ADDRESS': MARKET, 'ROUTER_STATE_PATH': str(NATIVE_LEDGER), 'DEMO_NEW_ORDERS_ENABLED': 'false'})
     update_env(STATE / 'provider.env', {'PROVIDER_INPUT_PRICE': '0.3', 'PROVIDER_CACHE_READ_PRICE': '0.03', 'PROVIDER_CACHE_WRITE_PRICE': '0.375', 'PROVIDER_OUTPUT_PRICE': '0.8', 'PROVIDER_MIN_RESERVE': '0.000001'})
     point_to(release)
     run('systemctl', 'start', *SERVICES)
     config, models = ready()
-    data = json.loads((STATE / 'router-state.json').read_text())
-    if len(data['orders']) != before['count'] or any(o.get('asset_symbol') != 'dUSD' or o.get('asset_decimals') != 6 or o.get('market_address', '').lower() != OLD_MARKET.lower() for o in data['orders'].values()):
-        raise RuntimeError('Legacy order migration metadata does not match the original dUSD ledger')
-    emit(stage='native-ready-paused', legacyOrders=before['count'], providers=len(models['data']), backup=str(backup), ledgerBefore=before['sha256'])
+    data = json.loads(NATIVE_LEDGER.read_text())
+    # Visitors may legitimately create fresh sessions while inference is paused.
+    if data['market'] != IDENTITY or data['orders'] or data['admissionHistory'] != history:
+        raise RuntimeError('Native ledger must contain no orders and preserve original admission history')
+    archived, _ = ledger()
+    if archived['sha256'] != before['sha256']:
+        raise RuntimeError('Archived ledger changed during switch')
+    emit(stage='native-ready-paused', archivedOrders=before['count'], admissionHistory=len(history), providers=len(models['data']), backup=str(backup), ledgerBefore=before['sha256'])
     # After opening, never restore an old ledger: a real MON request may already have arrived.
     opened = True
     update_env(STATE / 'router.env', {'DEMO_NEW_ORDERS_ENABLED': 'true'})
     run('systemctl', 'restart', SERVICES[0])
     config, models = ready()
-    emit(stage='live', market=config['market_address'], asset=config['asset_symbol'], providers=len(models['data']), legacyOrders=before['count'], revision=args.revision)
+    emit(stage='live', market=config['market_address'], asset=config['asset_symbol'], providers=len(models['data']), archivedOrders=before['count'], admissionHistory=len(history), revision=args.revision)
 except Exception as error:
     if not opened:
         run('systemctl', 'stop', *SERVICES)
         if backed_up:
-            for name in ['router-state.json', 'router.env', 'provider.env']:
+            for name in ['router.env', 'provider.env']:
                 shutil.copy2(backup / name, STATE / name)
                 shutil.chown(STATE / name, user='inferpool', group='inferpool')
+        # Keep a failed native ledger for inspection; never overwrite or delete it automatically.
         point_to(previous)
         run('systemctl', 'start', *SERVICES)
     emit(stage='error', message=str(error), rolledBack=not opened, backup=str(backup))

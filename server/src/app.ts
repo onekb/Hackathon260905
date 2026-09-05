@@ -17,13 +17,14 @@ export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string
     const origin=req.headers.origin;
     if(origin&&!options.allowedOrigins.includes(origin))return res.status(403).json({error:{message:'Origin is not allowed'}});
     if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
-    res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type, Idempotency-Key');res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS');res.setHeader('Access-Control-Expose-Headers','X-Request-Id');
+    res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type, Idempotency-Key, X-InferPool-Market');res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS');res.setHeader('Access-Control-Expose-Headers','X-Request-Id');
     res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
     if(req.method==='OPTIONS')return res.sendStatus(204);next();
   });
   app.use(express.json({limit:'256kb'}));
   const asyncRoute=(fn:(req:Request,res:Response)=>Promise<any>)=>(req:Request,res:Response,next:NextFunction)=>{Promise.resolve(fn(req,res)).catch(next);};
   const identity=(req:Request)=>auth.authenticate(req.headers.authorization);
+  const mutationIdentity=(req:Request)=>{const c=identity(req);auth.requireCurrentMarket(c);if(c.type==='session'&&req.headers['x-inferpool-market']!==engine.marketIdentity.market_address)throw new HttpError(409,'Refresh the app to confirm the current MON market before sending a request');return c;};
   const session=(req:Request)=>{const c=identity(req);auth.requireSession(c);return c;};
   const limited=new Map<string,{start:number;count:number}>();
   app.use('/auth',(req,res,next)=>{const key=req.ip??req.socket.remoteAddress??'unknown';const now=Date.now();for(const [ip,item] of limited)if(now-item.start>60000)limited.delete(ip);let item=limited.get(key);if(!item){if(limited.size>=10000)return res.status(429).json({error:{message:'Too many authentication clients'}});item={start:now,count:0};limited.set(key,item);}if(++item.count>60)return res.status(429).json({error:{message:'Too many authentication attempts'}});next();});
@@ -44,9 +45,9 @@ export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string
   app.get('/v1/models',(_req,res)=>res.json({object:'list',data:engine.models(),mock:true}));
   app.get('/v1/requests',(req,res,next)=>{try{const c=identity(req);res.json({data:engine.list(c.wallet).map(publicOrder)});}catch(e){next(e);}});
   app.get('/v1/requests/:id',(req,res,next)=>{try{const c=identity(req);res.json(publicOrder(engine.get(String(req.params.id),c.wallet)));}catch(e){next(e);}});
-  app.post('/v1/requests/:id/cancel',asyncRoute(async(req,res)=>{const c=identity(req);res.json(publicOrder(await engine.cancel(String(req.params.id),c.wallet)));}));
+  app.post('/v1/requests/:id/cancel',asyncRoute(async(req,res)=>{const c=mutationIdentity(req);res.json(publicOrder(await engine.cancel(String(req.params.id),c.wallet)));}));
   app.post('/v1/chat/completions',asyncRoute(async(req,res)=>{
-    const c:StoredCredential=identity(req);const input=requestSchema.parse(req.body);
+    const c:StoredCredential=mutationIdentity(req);const input=requestSchema.parse(req.body);
     const idem=req.headers['idempotency-key'];if(idem&&(typeof idem!=='string'||idem.length>128||idem.length<1))throw new HttpError(400,'Invalid Idempotency-Key');
     const order=await engine.create(c.wallet,input,idem as string|undefined);res.setHeader('X-Request-Id',order.id);
     if(!input.stream){

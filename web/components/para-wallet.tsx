@@ -5,7 +5,7 @@ import { useParaViemClient } from '@getpara/react-core/evm/viem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPublicClient, formatEther, http, isAddress, zeroAddress, type Address, type Hex } from 'viem';
-import { chainFor, rpcFor, marketAbi, legacyMarketAbi, tokenAbi } from '@/lib/contracts';
+import { chainFor, rpcFor, marketAbi } from '@/lib/contracts';
 import type { MarketConfig, WalletAccess } from '@/lib/types';
 export default function ParaWallet({ config, children }: { config: MarketConfig; children: (wallet: WalletAccess) => ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -59,15 +59,14 @@ function WalletBridge({config,children}:{config:MarketConfig;children:(wallet:Wa
         if(await publicClient.getChainId()!==config.chain_id)throw new Error('RPC 网络与目标测试网不一致');
         if(viemClient.chain?.id!==config.chain_id||await viemClient.getChainId()!==config.chain_id)throw new Error('钱包正在切换目标网络，请稍后重试');
         // Preserve the actual Para signer; a plain address here would select an unlocked JSON-RPC account.
-        const targetAddress=target==='market'?config.market_address:target==='legacy-market'?config.legacy_market_address:config.legacy_token_address;
-        if(!targetAddress||!isAddress(targetAddress)||targetAddress===zeroAddress)throw new Error('目标合约尚未配置，请等待市场迁移完成。');
+        if(target!=='market')throw new Error('仅支持当前原生 MON 市场。');
+        const targetAddress=config.market_address;
+        if(!isAddress(targetAddress)||targetAddress===zeroAddress)throw new Error('目标市场合约配置无效。');
         const value=options.value??0n;
-        if(value<0n||(value>0n&&(target!=='market'||functionName!=='deposit'))||(target==='market'&&functionName==='deposit'&&(value===0n||args.length!==0)))throw new Error('原生 MON 只能通过无参数 deposit() 随交易存入。');
-        if(target==='market'){
-          const native=await publicClient.readContract({address:targetAddress,abi:marketAbi,functionName:'IS_NATIVE_ASSET'});
-          if(native!==true)throw new Error('目标不是原生 MON 市场，已停止交易。');
-        }
-        const request={account:signer,address:targetAddress,abi:target==='market'?marketAbi:target==='legacy-market'?legacyMarketAbi:tokenAbi,functionName,args,value};
+        if(value<0n||(value>0n&&functionName!=='deposit')||(functionName==='deposit'&&(value===0n||args.length!==0)))throw new Error('原生 MON 只能通过无参数 deposit() 随交易存入。');
+        const native=await publicClient.readContract({address:targetAddress,abi:marketAbi,functionName:'IS_NATIVE_ASSET'});
+        if(native!==true)throw new Error('目标不是原生 MON 市场，已停止交易。');
+        const request={account:signer,address:targetAddress,abi:marketAbi,functionName,args,value};
         const estimate=await publicClient.estimateContractGas(request);
         const gas=(estimate*110n+99n)/100n;
         const [fees,balance]=await Promise.all([publicClient.estimateFeesPerGas({type:'eip1559'}),publicClient.getBalance({address})]);

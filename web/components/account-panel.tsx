@@ -5,7 +5,6 @@ import { createPublicClient, formatEther, formatUnits, http, keccak256, stringTo
 import { short, txUrl } from '../lib/api';
 import { chainFor, marketAbi, rpcFor } from '../lib/contracts';
 import { parseAmount } from '../lib/assets';
-import LegacyAssetsPanel from './legacy-assets-panel';
 import type { AccountInfo, MarketConfig, WalletAccess } from '../lib/types';
 
 interface AccountPanelProps {
@@ -122,7 +121,7 @@ export function AccountPanel({ wallet, config, account, onRefresh }: AccountPane
 
   const expiry = displayedAccount?.authorizationExpiresAt
     ? new Date(displayedAccount.authorizationExpiresAt * 1000).toLocaleString('zh-CN', { hour12: false })
-    : '尚未授权';
+    : displayedAccount ? '尚未授权' : '尚未读取平台授权信息；撤销操作会直接核对链上状态';
 
   return (
     <section className="panel account-panel" aria-labelledby="account-title" aria-busy={Boolean(pending)}>
@@ -197,7 +196,15 @@ export function AccountPanel({ wallet, config, account, onRefresh }: AccountPane
         </form>
       </div>
       <div className="revoke-row">
-        <button className="button secondary" type="button" disabled={disabled || !displayedAccount?.authorizationExpiresAt} onClick={() => void run('等待撤销消费授权…', async () => {
+        <button className="button secondary" type="button" disabled={disabled} onClick={() => void run('正在核对链上消费授权…', async () => {
+          const address = wallet.address;
+          if (!address) throw new Error('请先连接钱包。');
+          const grantId = await client.readContract({ address: config.market_address, abi: marketAbi, functionName: 'activeGrantId', args: [address] }) as bigint;
+          if (grantId === 0n) throw new Error('当前钱包没有可撤销的消费授权。');
+          const grant = await client.readContract({ address: config.market_address, abi: marketAbi, functionName: 'getGrant', args: [address, grantId] }) as { revoked: boolean };
+          if (currentOwner.current !== ownerKey) throw new Error('钱包或网络已切换，请重新核对授权。');
+          if (grant.revoked) throw new Error('当前消费授权已撤销，无需再次发送交易。');
+          setPending('等待撤销消费授权确认…');
           await confirm('revokeRouter', [], '撤销当前消费授权');
           return '已撤销消费授权，新请求无法继续锁款；现有订单仍在原预算内结算。';
         })}>撤销消费授权</button>
@@ -235,7 +242,6 @@ export function AccountPanel({ wallet, config, account, onRefresh }: AccountPane
         </fieldset>
         {displayedRecovery && <p className="muted">已核对订单 <code>{short(displayedRecovery.requestId)}</code> · 原锁款 {formatUnits(displayedRecovery.reserved, 18)} MON · {displayedRecovery.state === 3 ? '已取回' : displayedRecovery.state === 2 ? '已结算' : '等待到期回收'}</p>}
       </form>
-      <LegacyAssetsPanel wallet={wallet} config={config} />
       {pending && <p className="muted" role="status">{pending}</p>}
       {success && <p className="success" role="status">{success}</p>}
       {error && <p className="error" role="alert">{error}</p>}

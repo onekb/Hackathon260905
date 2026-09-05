@@ -26,7 +26,7 @@ export class Auth {
   }
   issue(wallet:string,type:'session'|'api-key',name:string,expiresAt:number) {
     const token=`${type==='api-key'?'ipk':'ips'}_${randomBytes(32).toString('base64url')}`;const hash=digest(token);
-    this.store.state.credentials[hash]={hash,wallet:wallet.toLowerCase(),type,name,preview:`${token.slice(0,8)}…${token.slice(-4)}`,createdAt:Date.now(),expiresAt};this.store.save();
+    this.store.state.credentials[hash]={hash,wallet:wallet.toLowerCase(),type,name,preview:`${token.slice(0,8)}…${token.slice(-4)}`,createdAt:Date.now(),expiresAt,...(type==='api-key'&&this.store.state.market?{market_address:this.store.state.market.market_address}:{})};this.store.save();
     return {token,id:hash,wallet:wallet.toLowerCase(),expiresAt};
   }
   authenticate(header:string|undefined):StoredCredential {
@@ -35,6 +35,7 @@ export class Auth {
     if(!c||c.revokedAt||c.expiresAt<=Date.now())throw new HttpError(401,'Invalid or expired credential');return c;
   }
   requireSession(c:StoredCredential):void {if(c.type!=='session')throw new HttpError(403,'Wallet session required; API keys cannot manage permissions or credentials');}
+  requireCurrentMarket(c:StoredCredential):void {if(c.type==='api-key'&&(!this.store.state.market||!c.market_address||c.market_address.toLowerCase()!==this.store.state.market.market_address.toLowerCase()))throw new HttpError(403,'API key does not belong to this MON market. Create a new key with the wallet session.');}
   list(wallet:string) {return Object.values(this.store.state.credentials).filter(c=>c.wallet===wallet&&c.type==='api-key').map(({hash,...rest})=>({...rest,id:hash}));}
   revoke(wallet:string,id:string) {const c=this.store.state.credentials[id];if(!c||c.wallet!==wallet||c.type!=='api-key')throw new HttpError(404,'API key not found');c.revokedAt=Date.now();this.store.save();}
 }

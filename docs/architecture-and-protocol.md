@@ -1,6 +1,6 @@
 # 架构、计费与协议
 
-本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网尚未切换，旧 dUSD 历史单按原资产保留。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
+本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网尚未切换，D17 要求旧 dUSD 只留私有整账本备份和公开回执存档，退出活跃产品。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
 
 ## 请求如何连接
 
@@ -29,7 +29,6 @@ sequenceDiagram
 | Web | 模型选择、流式体验、账单、钱包资金操作、卖家报价和 API 管理界面 | [web/components](../web/components/) |
 | Router | 买家和卖家认证、报价读取、匹配、计量、预算、责任、持久化与重试 | [server/src](../server/src/) |
 | Provider | 独立身份、主动长连接、Mock 响应、故障模式、本地控制台 | [provider/src](../provider/src/) |
-| DemoUSD（旧版） | 六位精度历史测试代币，不兑换 MON；仅旧资产操作 | [DemoUSD.sol](../contracts/src/DemoUSD.sol) |
 | InferenceMarket（原生 MON） | 18 位 wei，payable 存款、报价、授权、锁款、结算、回收及原生提款 | [InferenceMarket.sol](../contracts/src/InferenceMarket.sol) |
 
 ## 资金与权限
@@ -69,11 +68,11 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 关闭网页或 SSE 不等于取消。终态事件逐单串行：卖家失败先成立则全免；取消先成立则按当时用量计费，后续断连不改判。推理费减免不退还已经消耗的链上 Gas。
 
-## 新旧市场隔离
+## MON 单资产与历史归档
 
-当前原生市场为 `0x142a4904307244Bed0cECD72dE8329A253333182`；旧 dUSD 市场和代币见 [部署记录](../contracts/deployments/inferpool-mon-native-testnet.json)。旧市场没有升级入口，旧余额、报价和授权不能自动迁移或兑换。所有订单保留 `market_address`、`asset_symbol`、`asset_decimals`；旧单固定 dUSD/6，新单 MON/18，未知身份拒绝恢复和改标。
+当前唯一市场为 `0x142a4904307244Bed0cECD72dE8329A253333182`、MON/18。D17 删除旧 dUSD UI、ABI、代码与兼容读取；旧公开回执是历史证据，旧订单/凭证整账本保留服务器私有备份，不在新产品中展示或恢复。
 
-启动在恢复签名前先绑定市场。带旧订单的账本必须显式配置旧 market/token，并解决所有旧未结/不明订单；保留原订单、idempotency 和 createdAt，新市场清缓存但不清历史次数。新市场的取消、恢复、结算重试和 Provider 事件不能驱动旧订单。Web 按订单身份选择旧 ABI/合约回收，并提供旧 dUSD 独立余额、提款和撤销授权；配置加载失败仍可访问明确固定的旧资产入口。
+新活跃账本只接受当前原生 MON 市场身份，旧订单、API Key、平台 session、缓存和幂等映射不迁入。钱包身份不变，但需重新取得平台 session，并在有效 MON grant 下创建新 Key。仅导入旧 buyer + createdAt 的最小配额历史，继续统计本场/当 UTC 日尝试，固定 epoch 与限额不变。完成旧在途单对账并停旧后再启新，不能凭建立新文件跳过配额历史。原链上资产/历史不可删除，本轮不兑换、销毁或代提款。
 
 ## 状态和恢复
 
@@ -87,7 +86,7 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 ### 可选演示接单保护
 
-[D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 已实现显式启用的新单限制，未配置时默认关闭；旧公网服务已启用固定 epoch，新版迁移保留计数。开启后，每钱包未结并发 1、每 UTC 日最多 6 次，全局未结并发 2、固定演示起点后共 10 次。次数从全部持久订单派生，锁款失败也计入尝试；参数/余额/准入拒绝不计。锁款不明、pending/failed 结算仍占并发，起点之前的未结单也计入。
+[D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 已实现显式启用的新单限制，未配置时默认关闭；旧公网服务已启用固定 epoch，新版迁移保留计数。开启后，每钱包未结并发 1、每 UTC 日最多 6 次，全局未结并发 2、固定演示起点后共 10 次。次数从当前持久订单及最小历史 buyer/createdAt 配额记录派生，锁款失败也计入尝试；参数/余额/准入拒绝不计。锁款不明、pending/failed 结算仍占并发，起点之前的未结单也计入。
 
 创建队列先识别同参数幂等命中，再做新单检查；读账、准确重放、取消和结算/恢复不因配额耗尽停用。暂停新单返回 `503`，超限返回 `429`，请求状态自身的限制保持原样。固定起点和原账本跨重启保留，不能靠换 API Key 或常规重启刷新次数。配置与启动检查见 [运行手册](runbook.md#可选公网请求限额)，这些链外限额不修改合约金额规则，其公网运行与具体拒单验收分开记录。
 
@@ -95,7 +94,7 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 | 接口 | 权限 | 用途 |
 | --- | --- | --- |
-| `GET /health`、`GET /config` | 公开 | 链模式、市场/资产身份、旧市场配置、Mock 标记与在线节点数 |
+| `GET /health`、`GET /config` | 公开 | 链模式、当前 MON 市场/资产身份、Mock 标记与在线节点数 |
 | `GET /v1/models` | 公开 | 在线卖家、容量与报价 |
 | `POST /auth/challenge` | 公开 | 获取五分钟、单次钱包签名挑战 |
 | `POST /auth/verify` | 有效签名 | 换取一天的 bearer 钱包会话 |
@@ -106,7 +105,7 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 | `GET /v1/requests`、`GET /v1/requests/{id}` | 会话或 Key | 自己的最近订单及账单 |
 | `POST /v1/requests/{id}/cancel` | 会话或 Key | 显式取消自己的请求 |
 
-认证使用 `Authorization: Bearer ...`。挑战绑定 Router host、钱包、随机 nonce 和有效期。服务端保存会话和 API Key 哈希。API Key 默认七天，可设置一至三十天，但不超过当前链上授权到期时间。多个 Key 共用钱包的链上消费限额。
+认证使用 `Authorization: Bearer ...`。挑战绑定 Router host、钱包、随机 nonce 和有效期。服务端保存会话和 API Key 哈希。API Key 默认七天，可设置一至三十天，但不超过当前链上授权到期时间。多个 Key 共用钱包的链上消费限额。 新 MON API Key 由钱包 session 与有效 MON grant 创建，并绑定当前 market_address。D17 不迁移旧平台凭证，因此旧 API Key/session 不能访问新服务；此凭证限制与下文 Idempotency-Key 的防重复规则独立。钱包 session 发起下单/取消时还需 `X-InferPool-Market` 精确匹配当前市场地址；缺失或不匹配返回 409，要求刷新确认，避免旧网页误向新市场消费。
 
 请求主体示例：
 
@@ -124,7 +123,7 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 `messages` 支持 `system/user/assistant` 的文本消息，一至六十四条；每条最多 32,000 字符。`max_tokens` 一至 8,192，默认 256。`max_spend` 必须是正十进制字符串。`provider_id` 可省略自动匹配。顶层未知字段被拒绝，不承诺完整 OpenAI API 兼容。
 
-使用 `Idempotency-Key`（一至 128 字符）避免重复创建。同钱包、同市场、同 Key、同参数返回原订单，换参数返回 `409`；旧 dUSD Key 在新市场 POST 返回 `409` 和旧请求 ID，只能查询旧单，不能产生新的 MON 扣款。`stream` 不改变订单指纹。新的独立请求要用新 Key。
+使用 `Idempotency-Key`（一至 128 字符）避免重复创建。同钱包、同市场、同 Key、同参数返回原订单，换参数返回 `409`；D17 不迁移旧凭证和旧幂等映射，旧客户端不能用旧认证自动向新市场扣费。`stream` 不改变订单指纹。新的独立请求要用新 Key。
 
 SSE 有标准形状的文本 `data` 增量和 `event: request` 订单快照，末尾 `[DONE]`。快照的 `output` 已是完整文本；消费者选择替换快照或追加增量，不能两者同时叠加。响应头 `X-Request-Id` 和快照中的 ID 可供断线后查询。最终快照可能仍是待重试的结算失败，不能只凭 `[DONE]` 宣称链上结算完成。
 

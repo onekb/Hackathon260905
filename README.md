@@ -4,9 +4,9 @@
 
 用于黑客松演示的 AI 推理市场：独立卖家主动连接平台，买家通过网页或统一 API 发起请求，由 Monad 测试网合约托管预算、按用量结算并释放余额。
 
-所有 AI 输出、Token 和缓存效果都是 **Mock**。当前源码以原生测试 MON 托管和计费，旧 DemoUSD（dUSD）只保留历史资产与提款；二者不自动兑换，测试资产不代表美元或真实收入。平台负责链外计量与判责，合约约束资金权限和预算，不证明模型真实性。
+所有 AI 输出、Token 和缓存效果都是 **Mock**。当前源码以原生测试 MON 托管和计费，正式产品只提供 MON；旧 dUSD 整账本私有备份、链上回执仅历史存档，不兑换或代提款，测试资产不代表美元或真实收入。平台负责链外计量与判责，合约约束资金权限和预算，不证明模型真实性。
 
-新 [原生 MON 市场](https://testnet.monadscan.com/address/0x142a4904307244Bed0cECD72dE8329A253333182) 已部署并完成双浏览器源码验证，根 91 项测试通过，同钱包小额实链验收 8 笔交易通过。[公网应用](https://demo.example.com) 此时仍运行旧 dUSD 版，尚未切换新源码。此前浏览器、双卖家和结算证据全部保留为旧版记录；当前范围见 [开发进度](docs/progress.md)。
+新 [原生 MON 市场](https://testnet.monadscan.com/address/0x142a4904307244Bed0cECD72dE8329A253333182) 已部署并完成双浏览器源码验证，D17 MON-only 根 91 项测试及类型检查通过，前端最后修复待构建，同钱包小额实链验收 8 笔交易通过。[公网应用](https://demo.example.com) 此时仍运行旧 dUSD 版，尚未切换新源码。此前浏览器、双卖家和结算证据全部保留为旧版记录；当前范围见 [开发进度](docs/progress.md)。
 
 ## 本地快速开始
 
@@ -62,7 +62,7 @@ npm run dev:web
 
 | 目录 | 内容 |
 | --- | --- |
-| [contracts/](contracts/README.md) | 原生 MON 市场、旧 DemoUSD、Solidity 测试与部署回执 |
+| [contracts/](contracts/README.md) | 原生 MON 市场、Solidity 测试与部署回执 |
 | [server/](server/README.md) | Router、认证、API、计量、持久化和链适配 |
 | [provider/](provider/README.md) | 独立 Mock 卖家、本地控制台、身份及连接协议 |
 | [web/](web/README.md) | 市场、账单、钱包、API 接入和卖家页面 |

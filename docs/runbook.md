@@ -64,64 +64,14 @@ node --import tsx scripts/native-monad.ts --execute --smoke
 | `npm run setup:monad` | native-monad.ts --execute；会发受限初始化交易 |
 | `npm run test:monad` | native-monad.ts --execute --smoke；上述同钱包两场景与提款，已通过 |
 | `npm run test:api:monad` | smoke-native-api.ts --execute；会发新原生 HTTP/API 验收请求，**当前尚未执行** |
-| `npm run test:market:monad` | 仍是旧 dUSD 两卖家历史脚本，不用于新 MON |
 
-Router 使用新 `MARKET_ADDRESS`，并保持原固定 `ROUTER_ADDRESS`；迁移旧记录时同时设置 `LEGACY_MARKET_ADDRESS=0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568` 和 `LEGACY_TOKEN_ADDRESS=0x62701D69bD213e8F63c28465528931de208cE06E`。不要把原 TOKEN_ADDRESS 当作原生资产配置。新版账本路径须独立，先备份旧账本并保留原订单/幂等 Key/createdAt，再由明确市场绑定补齐旧 dUSD/6 身份；不得用空账本重置配额。旧未结或不明订单未处理完时拒绝迁移。
+Router 只配置新 `MARKET_ADDRESS` 和固定 `ROUTER_ADDRESS`，不配置 TOKEN_ADDRESS 或 LEGACY_*。D17 要求先核对并结束旧在途单、停旧进程，将旧订单/凭证整账本私有备份，再准备仅 MON 的活跃账本。旧凭证、订单、缓存、幂等映射不迁入；只导入 buyer + createdAt 配额历史，固定 epoch 和限制保持不变，不能借切换清空次数。旧链上资产不兑换、销毁或代提款。
 
-上线前将前端 /config 与部署记录核对为 MON/18、新 market，以及旧 market/token；卖家必须在新合约重新发布报价并认证。旧 Key 的 POST 返回 409 和原请求 ID，不会自动变成 MON 新单。旧订单只能查询或通过其原合约回收/提款，不由新 MON Router 结算重试。完整部署切换按 [deploy/README](../deploy/README.md) 执行。
+上线后 /config 只展示 MON/18 与新 market；卖家须在该合约发布报价并认证。买家 Para 钱包不变，但旧平台 session/Key 不迁移，需重新签名平台登录，在有效 MON grant 下创建新 Key。产品不再提供旧资产查看、提款或恢复入口；公开历史回执仅为存档。完整切换按 [deploy/README](../deploy/README.md) 执行。
 
-## 旧 dUSD 测试网脚本与验收记录（历史）
+## 旧 dUSD 验收归档
 
-**以下至买家网页章节之前的 setup/smoke/双卖家验证均为旧 dUSD 记录，不用于新 MON 市场。** 需要复核旧记录时使用匹配的旧版本与旧 ABI；当前 forge 构建生成原生 ABI，不能据此重跑旧资金脚本。以下命令保留用于理解历史，不是新版启动步骤。
-
-
-手动运行的全部变量见根 [.env.example](../.env.example) 和 [Router README](../server/README.md)。程序不自动读取这个模板；使用本机环境文件显式导出配置，实际 `.env`、`.local/` 和含凭证的 RPC 地址不提交。
-
-旧 dUSD 业务合约已部署，历史复核不重新部署 Counter 或把 Counter 地址当市场。公开 RPC 为 `https://testnet-rpc.monad.xyz`，chain ID 必须是 `10143`；地址与回执以 [inferpool-monad-testnet.json](../contracts/deployments/inferpool-monad-testnet.json) 为准。
-
-Router 使用现有 Alchemy session 签名，session 地址必须与市场 `router()` 一致。本次已完成授权；仅首次或过期时由用户完成：
-
-```bash
-alchemy auth
-alchemy wallet connect --mode session
-```
-
-不向 Router 注入私钥，也不把会话文件或终端认证输出复制进文档。卖家 Alchemy session 适配目前明确支持 CLI `0.24.0`，升级后需重新验证兼容性。
-
-已存在的部署配套脚本：
-
-```bash
-# 仅旧 dUSD 版本的历史脚本，勿在当前原生版本执行
-node --import tsx scripts/setup-monad.ts
-node --import tsx scripts/smoke-monad.ts
-```
-
-这两个脚本可能发送真实测试网交易并消耗测试 MON，作用范围不是通用账户部署器。`setup-monad.ts` 固定核对已授权 Router 地址、已部署 token/market：一次水龙头、最高补足首次 `10 dUSD` 存款、`10 dUSD`/一天消费授权和 `mock-reasoner` 报价。已经做过首次存款后不会默默补充后续消耗。`smoke-monad.ts` 用固定订单 ID 检查正常收费与卖家失败，重复执行优先读取已有状态；到期未结算订单需要回收，不会绕过截止时间。
-
-脚本的测试买家、卖家和 Router 是同一 session 钱包，**不是独立多卖家场景**。五笔设置交易与四笔锁款/结算交易的证据分别在 [setup](../contracts/deployments/inferpool-setup-monad.json) 与 [smoke](../contracts/deployments/inferpool-smoke-monad.json)。
-
-启动测试网 Router 时，可加载设置脚本生成的本地环境文件，然后显式覆盖本次运行端口与 Origin：
-
-```bash
-set -a
-source .local/monad-router.env
-set +a
-export HOST=127.0.0.1
-export PORT=8788
-export ROUTER_PUBLIC_URL=http://127.0.0.1:8788
-export ALLOWED_ORIGINS=http://127.0.0.1:3000,http://localhost:3000
-npm run dev:router
-```
-
-环境文件生成时默认 URL 为 `8787`；使用 `8788` 是为了与本地双卖家演示并存，必须同时覆盖 `PORT` 与 `ROUTER_PUBLIC_URL`。`ROUTER_STATE_PATH` 应保持一个固定绝对路径、由一个进程独占。不同链/不同市场不能混用订单状态文件。
-
-在另一终端启动已报价的 session 卖家：
-
-```bash
-npm run dev:provider -- --alchemy-session --router ws://127.0.0.1:8788/provider --id seller-monad --name "Monad 卖家" --port 8793 --min-reserve 0.0001
-```
-
-Alchemy session、`PROVIDER_PRIVATE_KEY`、临时钱包和浏览器钱包四种身份互斥；浏览器身份的源码、自动检查及首次实际认证/主动下线已通过，持续状态见进度。A 控制台地址为 `http://127.0.0.1:8793`，B 的配置和启动步骤见 [Provider README](../provider/README.md#使用-para-网页钱包)。只连接到平台还不代表有订单成交；需要检查 `/health`、`/v1/models` 和后续链上账单。
+D17 已要求移除旧资产 UI、ABI、源码/测试和资金脚本，当前产品不提供旧市场操作。旧合约回执及讨论保留 [进度](progress.md) 和 [对话日志](conversation-log.md)；旧实现与完整历史命令见 [切换前 Git 版本](https://github.com/onekb/Hackathon260905/tree/2b4de54536645a0a020e1071a06c909b285611c2)。不要在当前版本执行旧 setup/smoke 或向新市场导入旧凭证。
 
 ### 增加第二卖家时保留 Router 会话
 
@@ -137,86 +87,19 @@ Alchemy session、`PROVIDER_PRIVATE_KEY`、临时钱包和浏览器钱包四种�
 
 本轮采用 [D13](requirements-and-decisions.md#d13--浏览器钱包为独立-provider-签署认证挑战) 的浏览器钱包模式，已完成真实首次认证和主动下线检查：`--browser-wallet <address>` 与 `--wallet-ui <origin>` 绑定钱包和前端来源，本地控制台与 `/provider-connect` 以严格 origin/source 的 `postMessage` 传递 Provider 认证挑战，由 Para 签一次受限消息。此过程不导出私钥、不新增 Alchemy 会话或交易权限，本地 HTTP 继续要求 CSRF 与同源，不增加 CORS。节点初始离线，用户在弹窗准备好签名后才连接；每次只允许一次握手，最长 12 秒。控制台/弹窗需保留，断开后重新从控制台准备，不自动重连。
 
-现有 Para 钱包兼任 B，现有 Alchemy A 作为测试买家；B 已在 Chrome 独立发布 `60 / 6 / 75 / 40` 报价，A 保持 `30 / 3 / 37.5 / 80` dUSD / 百万模拟单位。报价发布与节点认证分开；B 报价和主动下线→新弹窗重签→双在线已通过，逐笔交易结果见进度。短输入/大输出上限预期选 B，长输入/小输出上限预期选 A，另指定 B 验证跨钱包结算；A 买 A 时角色重合，不能记成第三个独立钱包。
+新 MON 市场的不同钱包报价/成交须重新验证；旧 dUSD 双卖家证据不等于新市场当前双在线。
 
 ### 两卖家 smoke 的准备与执行边界
 
-[smoke-market-monad.ts](../scripts/smoke-market-monad.ts) 默认或 `--plan` 只做离线估价；B 报价可单独通过 RPC 复核。当前真实执行状态以进度页为准：
-
-```bash
-npm run test:market:monad -- --plan
-npm run test:market:monad -- --verify-quote-b 0x8519952dd0ca072e121e76969e85207f67fbc2a4814127bc555fc4862689d612
-```
-
-后一个命令只读链上并更新本地 [公开证据](../contracts/deployments/inferpool-smoke-market-monad.json)，不会发布报价。真实执行会逐项追加 `cases` 和聚合结果；仅有报价记录、执行中的条目或文件存在均不表示三单已通过。
-
-只有 `--execute` 会真实使用 Alchemy A 认证、创建临时 API Key 并提交三单，每单预算 `0.1 dUSD`。前提是 `seller-monad`（A，8793）和 `seller-para`（B，8794）分别在线、normal、无在途请求、链价匹配；Router 默认 `8788`。可通过 `SMOKE_ROUTER_URL`、`SMOKE_PROVIDER_A_URL`、`SMOKE_PROVIDER_B_URL` 覆盖本机地址，不接受外部控制台地址。
-
-| 计划场景 | 输入 / 输出上限 | 预期选择与估价 dUSD |
-| --- | --- | --- |
-| `explicit_b` | `71 / 512` | 指定 B，估价 `0.024740` |
-| `auto_short_b` | `56 / 512` | B `0.023840` 低于 A `0.042640` |
-| `auto_long_a` | `550 / 16` | A `0.017780` 低于 B `0.033640` |
-
-两家都必须满足预算准入，不能把排除了另一家的结果当作价格匹配。前两单为 A → B 跨钱包结算；第三单为 A 买 A，输出到 `max_tokens=16` 时记录 `BudgetCapped`，这里是输出上限，不是 `0.1 dUSD` 花完。表中估价按输出上限用于选择，不等于最终实际收费；执行结果见进度。
-
-脚本固定幂等 Key 并保存 SSE 返回的请求 ID，重跑只查询已知订单；提交结果不明时停止，不换 Key 重新扣费。只有核实既有请求后才用 `--recover CASE=KNOWN_REQUEST_ID` 关联。`.local/smoke-market-monad.lock` 排他锁避免并发执行；进程被强杀留下锁时，先确认没有运行中的脚本再清理。临时 Key 值不保存，正常清理流程在 `finally` 撤销。
-
-本轮曾遇到 CLI invocation 没有返回交易引用，Router 保持 `reservation_unknown` 且不派单；截止前 `getOrder=0` 或 nonce 未变化不足以排除延迟交易。不要因轮询超时就更换幂等 Key，或把无交易引用直接归因于 session 失效。
-
-脚本新增显式 `--execute --retry-lock-failed auto_long_a`，仅允许原截止时间已过、链上订单 state 0、Router 已确定 `lock_failed/unsubmitted`、用量/费用零等检查全部通过后使用一次固定 `-retry-1`。原 ID、请求和最终证明先保存到 `failedAttempts`；不能生成 retry-2，也不修改已通过两单。本次已由主 agent 放行并成功完成，详情见进度；此参数是特定验收脚本恢复路径，不是生产 API 自动重试。若链上出现迟到的已锁订单，应核对其结算或过期回收路径，不能按“未锁款”重发。
-
-已经归档的三单结果可只读检查本地证据，不连接钱包或重新提交请求：
-
-```bash
-npm run test:market:monad -- --summary
-```
-
-该命令检查三单状态、费用汇总、Key 撤销及原失败零费用，并输出可序列化的汇总；不重新请求 RPC 或证明服务仍在线。
-
-第四笔浏览器 B 手动选 A 的复核单独执行：
-
-```bash
-node --import tsx scripts/verify-market-web-monad.ts --request-id 69a28714-618a-4d8b-99c5-620cba33e728
-```
-
-[该脚本](../scripts/verify-market-web-monad.ts) 固定本次买卖地址、报价、用量与余额基线，不签名、不发推理或链上交易，但会更新市场 JSON 的 `webManualOverride`。需要项目依赖、合约产物、RPC、现有市场证据、Router 本地账本（默认 `.local/monad-router-state.json`，可用 `ROUTER_STATE_PATH` 指定）和 A 的 `http://127.0.0.1:8793/api/state`。若该进程的执行历史已清除，可复用证据中已有的同单 `providerExecution`，但控制台状态接口仍需可读；不是任意新机器无需运行环境即可全验。
-
-脚本只从账本选择该公开订单，不复制认证或 API Key 记录；保持 API 三单 `cases` / `aggregate` 原样。网页手动选择与双节点在线来自实际浏览器观察，链上仅能独立验证报价、实际成交卖家及资金结果，不保存 manual/auto 标记。
+此标题保留给历史证据链接。旧脚本已退出产品；参数、异常恢复与三单/独立网页单仅见 [历史运行手册](https://github.com/onekb/Hackathon260905/blob/2b4de54536645a0a020e1071a06c909b285611c2/docs/runbook.md)，不作为新 MON 验收步骤。
 
 ### 实际 API 到测试网结算验收
 
-既有设置完成、Alchemy 0.24 EVM session 有效、测试网 Router 正常、`seller-monad` 独立进程处于 `normal` 在线状态时运行：
-
-```bash
-# 旧 dUSD 历史版本；当前同名 npm 命令已指向原生脚本
-node --import tsx scripts/smoke-api-monad.ts
-```
-
-默认 `SMOKE_ROUTER_URL=http://127.0.0.1:8788`、`SMOKE_PROVIDER_URL=http://127.0.0.1:8793`；仅接受回环 HTTP 地址。脚本以受限买家挑战签名登录，创建临时 API Key，发起 `0.10 dUSD` 预算的正常请求，再核对独立 Provider 历史、账单、链上订单与回执，验证幂等重试，最后撤销 Key 并检查 `401`。
-
-这是实际测试网操作，首次请求消耗测试 MON 和按用量计算的 dUSD。脚本使用固定幂等 Key，重跑查询同一订单，不自动新建收费请求；若公开证据还在但 Router 状态丢失，会拒绝替代请求。保留状态和证据文件。买家、卖家和 Router 使用同一现有 session 钱包，不能替代浏览器或多钱包验收。结果只记录公开证据到 [inferpool-smoke-api-monad.json](../contracts/deployments/inferpool-smoke-api-monad.json)，不保存认证值。
+旧 dUSD API 记录仅为存档。当前原生测试入口为 `npm run test:api:monad`（smoke-native-api.ts --execute），会发真实受限请求，是否已经执行以进度为准。
 
 ### 只读复核浏览器测试网证据
 
-[verify-browser-monad.ts](../scripts/verify-browser-monad.ts) 用公开 RPC 复核本次独立 Para 买家的订单、回执、分项用量、双方余额和消费授权变化；不使用钱包会话、私钥或平台/API Key，不签名或广播交易，但会更新本地 [浏览器证据 JSON](../contracts/deployments/inferpool-smoke-browser-monad.json)。需要已安装根依赖、现有部署记录及 `contracts/out/` 中的 ABI；缺少 ABI 时先 `forge build --root contracts`。
-
-例如重新核对已经完成的主动取消订单：
-
-```bash
-node --import tsx scripts/verify-browser-monad.ts \
-  --case buyer_cancelled \
-  --request-id 4cf2c58f-99ec-41f4-a86c-5df785ab90ca \
-  --budget 0.1 --usage 54,0,0,48 \
-  --tx reserve=0xc7569f463a0eae3f52a72b2992287596d5da6c54b42f51b1a0085406f7f8e1ef \
-  --tx settle=0x898e0408ee9a8cc8b975bd159a967df9c799958e2ef0b6dca061d062a9139c0f
-```
-
-`--usage` 顺序是普通输入、缓存读取、缓存写入、输出；预算按 dUSD。其他场景用公开 JSON 中对应的 UUID、`case`、用量、预算与两笔交易，不创建新订单。支持正常、卖家失败、预算截断、缓存写入/读取和主动取消，并单独保留 `extra_normal` / `extra_timeout` 两次没有成功取消的实际结果。
-
-`--router-funding <交易哈希>` 另行复核已经发生的 Router 测试 MON 补给并保存到 `routerFunding`，不会触发领取或转账，也不计入推理订单。当前公开记录含官方水龙头补给 1 MON 的成功回执；`routerGasReadiness` 仅按观察到的 Gas 价与用量估计余量，演示前要读取最新值。
-
-无参数执行只刷新当前账户/RPC 快照及已有证据汇总，不会重新查询全部历史订单，也不替代网页操作验证。`currentAccount` 是读取当时的状态，`verifiedCasesAggregate` 汇总的是归档场景的历史区块；两者在有新请求进行时可能不同。脚本固定本次买家、卖家/Router、Monad 10143、报价 v1 和资金准备基线，不是通用钱包测试器；更换这些条件需要同时调整复核逻辑与证据范围。它核对 Mock 计费分类与链上结算，不能证明真实模型或缓存存在。
+旧浏览器八单与市场记录仍可阅读公开 JSON；依赖旧 ABI/源码的复核工具只留 Git 历史，不在当前 MON 产品中继续提供。新增测试应生成自己的 MON 证据，不能重标旧账单。
 
 ## 买家 Web 与 Para
 

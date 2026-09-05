@@ -5,8 +5,6 @@
 | 版本 | 测试网地址与用途 |
 | --- | --- |
 | 新原生 MON 市场 | `0x142a4904307244Bed0cECD72dE8329A253333182`；[部署/双浏览器验证证据](deployments/inferpool-mon-native-testnet.json) |
-| 旧 dUSD 市场 | `0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568`；保留旧资金/授权/订单/提款，[旧部署证据](deployments/inferpool-monad-testnet.json) |
-| 旧 DemoUSD | `0x62701D69bD213e8F63c28465528931de208cE06E`；自建六位测试 ERC-20，无自动 MON 兑换 |
 
 新合约部署交易 [0xa6da3b…10ed0](https://testnet.monadscan.com/tx/0xa6da3bd7812867daddc53999b06263d76754f7ba3bcb718acdb7d3053aa10ed0) 成功；native/MON/18、router 和运行字节码回读通过，源码验证 2/2。公网服务尚未切换，同钱包小额实链验收已通过，状态见 [进度](../docs/progress.md)。旧 dUSD 交易证据不得改标 MON。
 
@@ -18,7 +16,7 @@ forge build --root contracts
 npm run test:contracts
 ```
 
-原生合约本地 43/43 通过，包括拒收回滚、重入保护、资金守恒；依赖版本见 [DEPENDENCIES.md](DEPENDENCIES.md)。当前源码已替换为原生版本，历史 dUSD 脚本需要对应旧版本/旧 ABI，不能拿新 ABI 调用旧市场。
+D17 删除 DemoUSD 源码及其两项测试后，本地 **41/41** 通过（原生市场 38、Counter 2、不变量 1 套）；原生合约源码及创建/运行字节码模板哈希未变，含拒收回滚、重入保护、资金守恒；依赖版本见 [DEPENDENCIES.md](DEPENDENCIES.md)。当前仅保留原生业务合约，不提供旧 ABI/兼容脚本。旧 [dUSD 回执](deployments/inferpool-monad-testnet.json) 是历史存档；链上记录不可删除，本轮不兑换、销毁或代提款。旧源码仅在 Git 历史。
 
 ```sh
 node scripts/deploy-mon-native.mjs

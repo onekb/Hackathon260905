@@ -118,7 +118,7 @@ test('SSE delivers output before completion while static routes share the port',
   const { token } = s.auth.issue(buyer, 'session', 'in-memory test', Date.now() + 60_000);
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
-    const response = await fetch(`${s.url}/v1/chat/completions`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: provider.model, messages: [{ role: 'user', content: 'hello' }], max_tokens: 20, max_spend: '0.1', stream: true }) });
+    const response = await fetch(`${s.url}/v1/chat/completions`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'X-InferPool-Market': s.engine.marketIdentity.market_address }, body: JSON.stringify({ model: provider.model, messages: [{ role: 'user', content: 'hello' }], max_tokens: 20, max_spend: '0.1', stream: true }) });
     assert.equal(response.status, 200); assert.match(response.headers.get('content-type')!, /text\/event-stream/); assert.equal(response.headers.get('x-accel-buffering'), 'no');
     const id = response.headers.get('x-request-id')!; reader = response.body!.getReader(); const decoder = new TextDecoder();
     assert.match(decoder.decode((await reader.read()).value), /event: request/);

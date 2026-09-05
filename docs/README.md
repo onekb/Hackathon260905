@@ -2,9 +2,9 @@
 
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
-InferPool 是黑客松中的 AI 推理市场：卖家独立运行 Mock 节点，买家通过网页或统一 API 使用服务，Monad 测试网合约负责报价、资金托管、预算锁定和结算。平台负责链外路由、模拟计量及故障判责。当前源码已改为原生测试 MON；旧 dUSD 资产和历史按原合约保留。
+InferPool 是黑客松中的 AI 推理市场：卖家独立运行 Mock 节点，买家通过网页或统一 API 使用服务，Monad 测试网合约负责报价、资金托管、预算锁定和结算。平台负责链外路由、模拟计量及故障判责。当前源码已改为原生测试 MON；正式产品仅 MON，旧 dUSD 整账本私有备份，公开回执只作历史存档。
 
-**当前：新原生 MON 合约已部署并验证 2/2，根 91/91 通过，前端静态产物已构建；同钱包小额实链验收已通过，公网尚未切换。** https://demo.example.com 仍为旧 dUSD 版，页面/常驻 A 的 WSS 已验收；前序浏览器六目标场景、双卖家 API 三场景及网页手动单均按旧资产归档。MOJO 队伍已建、项目未提交，100 测试 MON 活动补给已核对到账；持续最新证据见 [开发进度](progress.md)。
+**当前：新原生 MON 合约已部署并验证 2/2，D17 MON-only 根 91/91、类型检查与合约 41/41 通过，前端最后修复/构建待完成；同钱包小额实链验收已通过，公网尚未切换。** https://demo.example.com 仍为旧 dUSD 版，页面/常驻 A 的 WSS 已验收；前序浏览器六目标场景、双卖家 API 三场景及网页手动单均按旧资产归档。MOJO 队伍已建、项目未提交，100 测试 MON 活动补给已核对到账；持续最新证据见 [开发进度](progress.md)。
 
 | 想了解什么 | 阅读位置 |
 | --- | --- |
@@ -19,7 +19,7 @@ InferPool 是黑客松中的 AI 推理市场：卖家独立运行 Mock 节点，
 | 讨论如何演变、后续对话新增了什么 | [对话与里程碑日志](conversation-log.md) |
 | 后续 agent 如何持续维护这些资料 | [根 AGENTS.md](../AGENTS.md) |
 
-仓库入口见 [README](../README.md)。[MVP_SPEC.md](../MVP_SPEC.md) 是完整需求基线，当前实现完成度集中记录在本目录的进度页。组件细节见 [买家 Web](../web/README.md)、[Router](../server/README.md)、[卖家节点](../provider/README.md) 与 [合约](../contracts/README.md)；[部署记录](../contracts/deployments/inferpool-monad-testnet.json) 是链上地址和回执依据。
+仓库入口见 [README](../README.md)。[MVP_SPEC.md](../MVP_SPEC.md) 是完整需求基线，当前实现完成度集中记录在本目录的进度页。组件细节见 [买家 Web](../web/README.md)、[Router](../server/README.md)、[卖家节点](../provider/README.md) 与 [合约](../contracts/README.md)；[原生 MON 部署记录](../contracts/deployments/inferpool-mon-native-testnet.json) 是当前链上地址和回执依据；[旧 dUSD 部署记录](../contracts/deployments/inferpool-monad-testnet.json) 仅为历史存档。
 
 文档遵循三层区分：用户确认的目标、已采用的工程决定、通过证据验证的实现状态。需求不是完成声明，测试网交易不是独立多卖家验收，源码写完也不是浏览器流程已通过。
 

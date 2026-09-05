@@ -143,8 +143,6 @@ async function readBack(plan) {
   };
   record.market = plan.address;
   record.asset = {symbol:'MON',decimals:18,native:true};
-  record.legacyMarket = '0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568';
-  record.legacyToken = '0x62701D69bD213e8F63c28465528931de208cE06E';
   await save();
   emit({ stage: 'deployed-and-read-back', contract: plan.name, address: plan.address, transactionHash: record.contracts[plan.name].transactionHash, values });
 }

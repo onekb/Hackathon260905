@@ -1,6 +1,6 @@
 # InferPool Web
 
-InferPool 的买家与卖家操作界面，使用 Next.js 16.3.4、React、Para Lite 邮箱内嵌 EVM 钱包和 viem。当前源码使用 Monad 测试网原生 MON（18 位小数）托管与结算；所有推理输出、Token 和缓存仍是模拟。旧 DemoUSD（dUSD、6 位小数）历史账单与资产管理独立保留。原生 MON 改造的静态验证、部署和实际钱包交易是不同检查阶段；历史 dUSD 验收不能作为新合约验收，完整状态见 [开发进度](../docs/progress.md)。
+InferPool 的买家与卖家操作界面，使用 Next.js 16.3.4、React、Para Lite 邮箱内嵌 EVM 钱包和 viem。当前源码使用 Monad 测试网原生 MON（18 位小数）托管与结算；所有推理输出、Token 和缓存仍是模拟。静态验证、部署和实际钱包交易是不同检查阶段，完整状态见 [开发进度](../docs/progress.md)。
 
 ## 启动与配置
 
@@ -33,7 +33,7 @@ npm run dev:web
 | --- | --- |
 | 推理市场 | 查看在线卖家和四项报价，指定或自动选商，设置单次预算、输出上限和缓存，显示流式输出与取消操作 |
 | 请求账单 | 查看自己的请求、用量、责任结果、实际费用、释放金额及链上交易；区分预计和已确认账单 |
-| 钱包与授权 | 查看钱包 MON、直接存款、设置/撤销消费授权、提款及超时回收；独立保留旧 dUSD 余额和回收入口 |
+| 钱包与授权 | 查看钱包 MON、直接存款、设置/撤销消费授权、提款及超时回收 |
 | API 接入 | 钱包会话创建、查看和撤销 API Key，提供最小文本聊天调用示例 |
 | 成为卖家 | 发布链上模型报价、查看节点接入说明；卖家仍须独立运行 Provider 进程 |
 
@@ -48,7 +48,7 @@ Provider 使用 `--browser-wallet` 与 `--wallet-ui` 时，从其本地控制台
 1. 通过邮箱连接 Para 内嵌钱包，等待地址就绪，再点击“签名登录”取得平台会话。签名登录是链外认证，不消耗 Gas。普通买家不需要安装开发者 CLI。
 2. 为**这个新钱包地址**准备 Monad 测试网 MON。“钱包与授权”提供完整地址、复制反馈与仅测试网显示的 [官方水龙头](https://faucet.monad.xyz/) 入口；顶部含 `…` 的缩写不能用作收款地址。新钱包不继承已有 Alchemy 演示钱包的余额、Gas 或授权。
 3. 在“钱包与授权”刷新余额。MON 同时用于推理预算和 Gas，不要将钱包余额全部存入合约。每次交易会重新估算 Gas（最多增加 10% 限额余量），以相同的 EIP-1559 费率上限检查余额并发送交易；余额不足时停止，不自动补币。
-4. 点击“存入 MON”，通过无参数 `deposit()` 的交易 `value` 直接入金，只有一次存款确认，不再进行 ERC-20 `approve` 或领取 dUSD。默认存款 `0.1 MON`。随后设置消费总上限，默认 `0.05 MON` / `24` 小时。存款和消费授权缺一不可。
+4. 点击“存入 MON”，通过无参数 `deposit()` 的交易 `value` 直接入金，只有一次存款确认。默认存款 `0.1 MON`。随后设置消费总上限，默认 `0.05 MON` / `24` 小时。存款和消费授权缺一不可。
 5. 到推理市场发起默认预算 `0.001 MON` 的请求，或到 API 接入生成并立即保存 Key。整笔预算须同时被托管余额和剩余授权覆盖；锁款确认后才派单。Key 不能提款或增加额度。
 6. 等待账单显示“链上已确认”，保存完整请求 UUID 并核对交易。卖家失败整单推理费为零，显式取消只收已产生费用；剩余预算先释放到托管余额，提款后才回钱包。
 
@@ -56,13 +56,15 @@ Provider 使用 `--browser-wallet` 与 `--wallet-ui` 时，从其本地控制台
 
 “平台离线时取回锁款”接受完整请求 UUID 或 bytes32 订单 ID，直接通过 RPC 核对买家、金额和链上截止时间，到期后回收至托管余额，再提款，不依赖 Router 登录。仍需前端、RPC、Para 钱包可访问、原买家身份和测试 MON；回收及提款分别需要链上交易，不能理解为完全断网可操作。失败免除的是推理费，已消耗的 Gas 不会退回。
 
-旧资产入口固定区分原市场 `0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568` 与代币 `0x62701D69bD213e8F63c28465528931de208cE06E`，支持读余额、提款、撤销旧消费授权及过期锁款回收；不提供旧资产新存款、领取或自动兑换。当前 `/config` 不可用时仍展示独立旧资产入口。账单必须同时提供 `asset_symbol`、`asset_decimals` 和 `market_address`，缺失/不匹配时显示待核对并禁用直接回收，不能将旧 dUSD 金额重标成 MON。
+当前市场固定为 `0x142a4904307244Bed0cECD72dE8329A253333182`。当 `/config` 不可用时，仍可连接钱包直接管理该 MON 合约中的资金。账单必须同时提供 `asset_symbol: "MON"`、`asset_decimals: 18` 和与当前配置一致的 `market_address`；缺失或不匹配时显示“资产待核对”并禁用直接回收，不能将未知金额标为 MON。
 
-原生市场 `/config` 需要 `asset_symbol: "MON"`、`asset_decimals: 18`、已验证 `market_address` 及可选 `legacy_market_address` / `legacy_token_address`。卖家默认报价为输入 `0.3`、缓存读取 `0.03`、缓存写入 `0.375`、输出 `0.8 MON / 百万模拟 Token`，最低预留 `0.000001 MON`。最低预留不是最低消费。修改前端默认报价不会自动发布链上报价。
+原生市场 `/config` 需要 `asset_symbol: "MON"`、`asset_decimals: 18`、已验证 `market_address`。卖家默认报价为输入 `0.3`、缓存读取 `0.03`、缓存写入 `0.375`、输出 `0.8 MON / 百万模拟 Token`，最低预留 `0.000001 MON`。最低预留不是最低消费。修改前端默认报价不会自动发布链上报价。
+
+浏览器钱包会话下单和取消请求时，会发送 `X-InferPool-Market`，值为当前配置的完整市场地址，避免缓存的网页操作其他市场。API Key 由后端绑定当前市场，不需要此请求头；列表里缺少或不匹配 `market_address` 的 Key 显示为不可用。
 
 ## 开发验证与文档
 
-在根目录运行 `npm run build:web`、`npm run lint --workspace web`、`./node_modules/.bin/tsc --noEmit -p web/tsconfig.json` 和 `node --import tsx --test web/lib/assets.test.ts`。Web 使用独立 TypeScript 配置，根项目 `typecheck` 不能代替全部前端检查。新合约 ABI 导出至 `lib/abi/InferenceMarket.json`，历史 ABI `LegacyInferenceMarket.json` 必须保留。
+在根目录运行 `npm run build:web`、`npm run lint --workspace web`、`./node_modules/.bin/tsc --noEmit -p web/tsconfig.json` 和 `TSX_TSCONFIG_PATH=web/tsconfig.json node --import tsx --test web/lib/assets.test.ts web/lib/api.test.ts web/components/account-panel.test.tsx`。测试覆盖金额精度、HTTP 鉴权状态及无平台会话时的撤销入口。Web 使用独立 TypeScript 配置，根项目 `typecheck` 不能代替全部前端检查。新合约 ABI 导出至 `lib/abi/InferenceMarket.json`。
 
 页面 HTTP 200、生产构建和配置解析器断言不能代替浏览器钱包交互。已知问题、修复及待验事项集中在 [进度](../docs/progress.md)，避免在组件 README 复制过期测试数字。开始改前端前还应阅读 [本目录 AGENTS.md](AGENTS.md)。
 

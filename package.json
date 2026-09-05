@@ -29,7 +29,6 @@
     "setup:monad": "node --import tsx scripts/native-monad.ts --execute",
     "test:monad": "node --import tsx scripts/native-monad.ts --execute --smoke",
     "test:api:monad": "node --import tsx scripts/smoke-native-api.ts --execute",
-    "test:market:monad": "node --import tsx scripts/smoke-market-monad.ts",
     "export:abi": "node scripts/export-abi.mjs",
     "deploy:monad": "node scripts/deploy-mon-native.mjs"
   },
