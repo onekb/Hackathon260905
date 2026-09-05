@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-05T08:17:28.556Z",
+  "timezone": "Asia/Shanghai",
+  "projectId": 385,
+  "projectUrl": "https://mojo.devnads.com/projects/385",
+  "projectName": "InferPool｜MON 预算托管的 AI 推理市场",
+  "eventId": 16,
+  "eventUrl": "https://mojo.devnads.com/events/16",
+  "eventName": "Monad Blitz@惠州",
+  "teamName": "InferPool",
+  "statusObserved": "待审核",
+  "submissionConfirmed": true,
+  "reviewApproved": false,
+  "confirmationMethod": "Browser UI: event 16 submission panel confirmed this team created the project, followed by project 385 detail page showing pending review, matching links, three screenshots and the submitted description.",
+  "demoUrl": "https://demo.example.com",
+  "repositoryUrl": "https://github.com/onekb/Hackathon260905",
+  "screenshots": [
+    {
+      "label": "截图 1",
+      "url": "https://mojo-cn.b-cdn.net/mojo/uploads/1788595876985-b76dc2cde0d233b4.jpg"
+    },
+    {
+      "label": "截图 2",
+      "url": "https://mojo-cn.b-cdn.net/mojo/uploads/1788595953164-6f54af8ee68bebc6.jpg"
+    },
+    {
+      "label": "截图 3",
+      "url": "https://mojo-cn.b-cdn.net/mojo/uploads/1788595992450-9272d3e41958edb8.png"
+    }
+  ],
+  "sourceAssets": [
+    {
+      "path": "artifacts/submission/native-normal-bill.jpg",
+      "processing": "MOJO-required 16:9 crop; fee, response and bill retained; source file unchanged"
+    },
+    {
+      "path": "artifacts/submission/native-bills-comparison.jpg",
+      "processing": "MOJO-required 16:9 crop; both requests and failure bill retained; source file unchanged"
+    },
+    {
+      "path": "artifacts/submission/inferpool-project-overview.png",
+      "processing": "Existing 16:9 explanation artwork; identified as not a product screenshot"
+    }
+  ],
+  "logoHandling": "No separate logo field was present. PNG and SVG repository links are included in the description; the overview includes the logo. An inline upload attempt produced no inserted image, and its empty placeholder was removed before submission.",
+  "submittedDescriptionHtml": "<h2>项目概述</h2><p>InferPool 是部署在 Monad 测试网的 AI 推理交易原型。买家通过网页或统一 API 选择卖家，设置单次预算与消费授权；独立卖家运行客户端，主动连接 Router，无需配置公网地址。合约锁定原生 MON 预算，按普通输入、缓存读取、缓存写入和输出四项报价结算；卖家故障时整单推理费为零，剩余预算回到托管余额。</p><h2>主要亮点</h2><ul><li><p><strong>预算与权限分开管理：</strong>买家存入原生 MON，设定消费额度和期限。每单先锁款、再按用量结算；API Key 无权提款或扩大授权。</p></li><li><p><strong>独立节点容易接入：</strong>卖家以钱包签名认证，主动建立 WS/WSS 连接。买家统一调用 Router，可指定卖家或按估价匹配。</p></li><li><p><strong>账单可核对：</strong>保存报价版本、模拟用量、收费与释放金额，并提供链上交易链接。买家可撤销授权、提款和回收超时锁款。</p></li></ul><h2>已验证的真实交易</h2><p>公网网页已完成独立买家向不同钱包卖家的两笔请求：正常请求收费 0.0001658 MON；卖家中途故障收费 0 MON，完整释放 0.001 MON 预算。存款、授权及两单锁款/结算共六笔交易均经独立 RPC 核对。正常费用计入卖家的合约托管可用余额。统一 API 另已验证 SSE 流式响应及幂等重放。</p><h2>技术与边界</h2><p>Monad Testnet（10143）· Solidity / Foundry / OpenZeppelin · Next.js / React / TypeScript · Para Lite 邮箱钱包 / viem · Node.js / Express / WebSocket / SSE。</p><p>当前 AI 响应、Token 计量及缓存效果均为 Mock；钱包签名、原生 MON 托管与结算是真实测试网操作。Router 仍负责可信计量和故障判责，当前演示中卖家 A 与 Router 使用同一钱包。本版不证明模型真实性，未实现 TEE 或质押罚没。</p><p>合约：<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://testnet.monadscan.com/address/0x142a4904307244Bed0cECD72dE8329A253333182\">Monad 测试网 InferenceMarket</a>。安装运行、协议说明与公开交易证据见 <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://github.com/onekb/Hackathon260905\">GitHub 仓库</a>。原创 LOGO：<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://github.com/onekb/Hackathon260905/blob/main/artifacts/submission/inferpool-logo.png\">PNG</a> / <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://github.com/onekb/Hackathon260905/blob/main/artifacts/submission/inferpool-logo.svg\">SVG</a>。第三张配图为项目说明图，非运行截图。</p>",
+  "limitations": [
+    "Submitted and pending review is not organizer approval or eligibility confirmation.",
+    "Coding-window eligibility remains unconfirmed; no additional eligibility attestation was shown or made in this form.",
+    "No vote, new inference order, wallet transaction, or extension access grant was performed for this submission."
+  ],
+  "receiptScreenshot": {
+    "path": "artifacts/submission/mojo-submitted.jpg",
+    "source": "Direct browser screenshot of the project title, pending-review badge and three uploaded images; page header and member metadata excluded at capture time."
+  },
+  "visualReview": "Project detail body and three image thumbnails reviewed; pending-review badge and links match the submitted form.",
+  "publicDemoUrlRedacted": true,
+  "publicDemoUrlRedactionNote": "Demo URL is a public-repository placeholder; the external submission was not modified."
+}

@@ -10,7 +10,7 @@
 
 [D17](requirements-and-decisions.md#d17--正式产品仅-mon旧-dusd-完整剥离并私有归档) 已完成数据切换：旧 15 单与凭证整账本保留私有备份，新 `router-mon-state.json` 初始没有旧 orders/credentials，只有 15 条 buyer + createdAt 最小 admissionHistory；固定 epoch 和限额不变，不兑换、销毁或代提旧链上资金。Para 钱包不变，需新平台签名会话与 MON Key。
 
-本版根 **91/91**、类型检查、Foundry **41/41**、前端最终 **8/8**、Web 类型/lint/公网构建通过。原生合约已验证 2/2，同钱包直接合约小额 smoke 8 笔回执成功，正常费 .000110 MON、卖家失败 0、提款 .001 MON。此前多钱包、浏览器六场景、旧 API 与截图属于 **dUSD 历史归档**，不能改标成新版 MON 验收。最新 B 可用 .0998342、授权剩 .0498342 MON，A 可用 .0091658 MON，锁款均 0；MOJO 队伍已建，项目尚未提交。
+本版根 **91/91**、类型检查、Foundry **41/41**、前端最终 **8/8**、Web 类型/lint/公网构建通过。原生合约已验证 2/2，同钱包直接合约小额 smoke 8 笔回执成功，正常费 .000110 MON、卖家失败 0、提款 .001 MON。此前多钱包、浏览器六场景、旧 API 与截图属于 **dUSD 历史归档**，不能改标成新版 MON 验收。最新 B 可用 .0998342、授权剩 .0498342 MON，A 可用 .0091658 MON，锁款均 0；MOJO 项目 [#385](https://mojo.devnads.com/projects/385) 已提交，状态**待审核**；不代表资格或审核通过。
 
 首次切换仅重启 Router 时被 Provider 长连接拖住；根受控停止/启动 Provider 后恢复，没有强杀。未来切换脚本已改为同时重启两服务，该脚本更新尚不改变当前运行 a78470a 的业务代码。
 
@@ -40,7 +40,7 @@
 | 公网新单限额 / 代理信任 | 源码与专项通过，远端已启动固定 epoch 配置 | 新增 12 项已纳入根测试；Linux 配置解析检查通过。默认未配置时关闭，当前远端配置已随 Router 启动；公网实际拒单行为尚未验收 |
 | 单端口 Web / API | 当前根 91/91 通过，Router/Provider active | 公网原生请求收到 34 批 SSE 增量，锁款/结算回执 success，重放无重复收费；未知 API/页面及 /.env 的 404 检查保留。浏览器 B 两单与独立 RPC 通过，逐帧 SSE 未采证 |
 | 原账本迁移 | 已停旧、私有备份、复制和哈希核对 | 停止前后 14 条安全：13 confirmed、1 lock_failed/unsubmitted；旧本机 8788 不再监听。远端 ledger 的 SHA256 一致、inferpool 持有、mode 600；未复制 Mac 登录或 session |
-| 比赛要求 / MOJO | 已复核惠州活动 16、1/3 队长；资格窗口待确认，未提交 | 2026-09-05 活动进行中；项目仍可创建，未提交或投票。官方要求活动期编码/资源和 GitHub 提交，Git 的 12:29–14:40 不能证明起工合规，正等现场编码起点；见 [日期自查](hackathon-submission.md#2026-09-05-活动要求复核asiashanghai) |
+| 比赛要求 / MOJO | 项目 [#385](https://mojo.devnads.com/projects/385) 已提交，待审核 | 活动16 Monad Blitz@惠州、InferPool队伍与队长回读正确；Demo/GitHub、3图和正文完整。未投票，未新声明编码窗口合规；前序资格自查保留 |
 | 比赛演示材料 | 脚本/简介、LOGO、说明图、三张成交 MON 截图、两张前序 MON 与三张 dUSD 历史图已准备 | 当前优先 native-normal-bill.jpg 与 native-bills-comparison.jpg，故障详情可作第三张；三张原始 JPEG 已目视检查。前序零余额 MON 图片与旧 dUSD 图片仅历史，未录制视频，详情见 [素材说明](../artifacts/submission/README.md) |
 | MON 与 dUSD 说明 | 前轮澄清已记录 | MON 支付 Gas，dUSD 为同链演示服务计费代币；前轮说明后已获授权并领取 100 MON，未改变 dUSD 或应用额度，详见 [资产解释](hackathon-submission.md#mon-活动水龙头与-dusd-的区别) |
 | 原生 MON 收付方案 | D17 已批准，MON-only 根回归通过 | 旧 UI/兼容层/凭证不迁入，旧账本私有备份，仅带最小配额历史；本轮已执行存款 .1、授权 .05/24h、两单各预算 .001 MON，新授权与旧资产独立。新原生市场已部署并验证 2/2，D17 根 91/91 与类型检查通过，合约 41/41；Web 前次检查通过，离线撤销与 401 恢复补丁、最终 8/8/类型/lint/构建通过；小额同钱包实链 8 笔交易通过，公网 MON API/SSE 一单通过，独立买家网页存款/授权及正常/故障两单通过，见 [D16](requirements-and-decisions.md#d16--用户批准迁移原生测试-mon保留旧-dusd-资金与历史) |
@@ -59,7 +59,7 @@
 
 浏览器实际点击、观察处理中到完成并查看账单，**没有采集浏览器逐帧响应增长证据**；前序公共 API 34 批 SSE 另列，不借用作本次浏览器证明。故障由 fail-mid 实际注入，捕获首个目标订单后即恢复 normal；根于 15:58:23（Asia/Shanghai）只读确认卖家 online/normal、active 0、slots 2、lastError null。当前原生账本 3 单、admissionHistory 15；本场剩 **6** 次、B 当日剩 **3** 次，固定 epoch 不变。
 
-[正常账单](../artifacts/submission/native-normal-bill.jpg)、[失败账单](../artifacts/submission/native-failure-bill.jpg) 均为 1713×1591 原始 JPEG，[两单对照](../artifacts/submission/native-bills-comparison.jpg) 为 1713×1140；根已保存并目视审阅。当前提交材料优先正常与对照，前序零余额截图转为历史。只读 [verify-native-browser.ts](../scripts/verify-native-browser.ts) 默认/`--refresh` 仅刷新 current 和已有汇总，保留固定区块验收，**不重新完整核验六笔交易**。完整复核需要 --deposit/--grant 与两次 --case 的已知参数（见 JSON）；不会签名或发交易，不能把刷新理解为重跑浏览器。类型与差异检查通过，首次 grant 读取限流经重读解决，不是链上失败。本轮证据、截图、脚本与文档已在 fc9170f 通过 SSH 推送至 origin/main，未提交 MOJO。
+[正常账单](../artifacts/submission/native-normal-bill.jpg)、[失败账单](../artifacts/submission/native-failure-bill.jpg) 均为 1713×1591 原始 JPEG，[两单对照](../artifacts/submission/native-bills-comparison.jpg) 为 1713×1140；根已保存并目视审阅。当前提交材料优先正常与对照，前序零余额截图转为历史。只读 [verify-native-browser.ts](../scripts/verify-native-browser.ts) 默认/`--refresh` 仅刷新 current 和已有汇总，保留固定区块验收，**不重新完整核验六笔交易**。完整复核需要 --deposit/--grant 与两次 --case 的已知参数（见 JSON）；不会签名或发交易，不能把刷新理解为重跑浏览器。类型与差异检查通过，首次 grant 读取限流经重读解决，不是链上失败。该轮证据、截图、脚本与文档在 fc9170f 通过 SSH 推送时尚未提交 MOJO；后续项目 #385 已提交待审核。
 
 ### 前序原生 MON 公网 API 与浏览器登录分项验收
 
@@ -117,7 +117,7 @@ D16 阶段前端已固定新合约地址，原生存款一次确认、.1 MON 默
 
 ### 活动要求复查与新增远端订单
 
-2026-09-05（Asia/Shanghai）再次核对官方规则和 MOJO：惠州活动 16 进行中，InferPool 1/3、用户队长，项目仍未正式提交或投票。技术部署与素材已具备；正式允许编码开始时间仍待用户回复，Git/birthtime 不能单独证明起工或原创资格。五分钟实机演示与商业模式表达属于演示/评分准备，详情见 [活动自查](hackathon-submission.md#2026-09-05-活动要求复核asiashanghai)，不承诺全部符合或获奖。
+**前序规则复核快照（在项目 #385 提交前）：** 2026-09-05（Asia/Shanghai）再次核对官方规则和 MOJO：惠州活动 16 进行中，InferPool 1/3、用户队长，项目仍未正式提交或投票。技术部署与素材已具备；正式允许编码开始时间仍待用户回复，Git/birthtime 不能单独证明起工或原创资格。五分钟实机演示与商业模式表达属于演示/评分准备，详情见 [活动自查](hackathon-submission.md#2026-09-05-活动要求复核asiashanghai)，不承诺全部符合或获奖。
 
 迁移时的 14 条账本记录保持为历史检查点。后续只读复查发现新增第 15 条订单 `a7f4b430-5e73-415c-9624-50cc564c8b64`：14:47:56 创建、14:48:20 完成，B → A；预算 `0.100000`、费用 `0.014160`、释放 `0.085840 dUSD`。来源仍未知，root/agents 本轮没有创建该请求。
 
@@ -266,9 +266,17 @@ B 托管 `9.944833 → 9.928253`，A `10.055167 → 10.071747`，B 授权花费�
 
 移除旧 SDK 时 npm Arborist 回滚曾报 `from undefined`。已用只含 package manifests 的干净临时目录重新解析 lock，正式 `npm ci` 成功（770 installed / 774 audited）。服务已恢复，Mac 解锁后完成上述 Chrome 验收；历史失败及解决过程保留在对话日志。
 
+### MOJO 正式提交回读
+
+[公开提交回执](../artifacts/submission/mojo-submission.json) 记录 2026-09-05 16:17:28（Asia/Shanghai）的项目状态；根随后保存并检查 [待审核页面截图](../artifacts/submission/mojo-submitted.jpg)。截图为直接网页区域原图 1444×423，显示标题、待审核与三图；排除账户和成员资料，根已目视检查。回执包含公开项目字段、三个实际图片 URL 与提交正文，submissionConfirmed=true、reviewApproved=false。
+
+活动 16 页面明确显示团队已创建“InferPool｜MON 预算托管的 AI 推理市场”，[项目 #385](https://mojo.devnads.com/projects/385) 详情状态为 **待审核**，关联 Monad Blitz@惠州，团队/队长正确。Demo href 为 https://demo.example.com、GitHub 地址正确，三张图片及正文均回读完整。提交未要求新的协议或资格声明，没有因此认定编码窗口合规，也未投票。
+
+Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成功，没有新增扩展权限。MOJO 强制将正常账单与两单对照裁为 16:9，主端目视确认费用、响应和账单仍保留，仓库原图未改；第三图为原本 16:9 的说明图，含 LOGO 并注明非运行截图。正文独立 LOGO 上传没有得到图片结果，已撤销空占位，改用公开 GitHub PNG/SVG 链接；不存在独立 LOGO 字段，不声称 LOGO 单独上传成功。本轮没有新链上请求，当前回执/文档待归档。
+
 ## 下一步
 
-独立买家网页 MON 存款/授权及两单验收已完成。下一步是准备并完成 MOJO 实际项目提交，再按 [五分钟正式脚本](demo-guide.md) 排演，准备短录屏后备。当前项目仍未提交、没有成片；表单文案见提交素材目录，不能把材料准备当成已提交。
+独立买家 MON 网页验收与 MOJO 正式提交已完成，项目 [#385](https://mojo.devnads.com/projects/385) 正在等待主办方审核。下一步按 [五分钟正式脚本](demo-guide.md) 排演并准备短录屏后备；当前没有成片，不代主办方审核或投票。
 
 优先使用本轮正常账单与两单对照截图；演示前重读余额、授权有效期和限额，保持卖家 normal。最近只读快照全局剩 6 次、B 当日剩 3 次，保留现场演示次数，不重置 epoch 或扩大额度。浏览器逐帧 SSE 未采证，前序 API 的 34 批增量单独说明。
 
