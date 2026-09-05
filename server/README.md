@@ -4,7 +4,7 @@ The Router authenticates buyers and independent mock providers, reserves each re
 
 ## Asset and migration boundary
 
-Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; public 0a82030 uses this native market, with live config/models verified and one native API/SSE/settlement request and browser login/account reads verified; independent buyer B has subsequently completed MON deposit/grant and normal/failure browser requests with fixed-block RPC verification; browser frame-by-frame streaming was not captured. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
+Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; public 23cc7f8 uses this native market, with live config/models verified and one native API/SSE/settlement request and browser login/account reads verified; independent buyer B has subsequently completed MON deposit/grant and normal/failure browser requests with fixed-block RPC verification; browser frame-by-frame streaming was not captured. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
 
 Buyers call payable `deposit()` with MON value, then separately `authorizeRouter(limit, expiresAt)`; no ERC-20 approve is required. Withdrawal is a native transfer; settlement credits the seller's internal withdrawable balance. Existing dUSD and its spending grants do not become MON or authorize the new market.
 
@@ -41,7 +41,7 @@ Before exposing it, check the deployed port with `GET /`, `GET /provider-connect
 
 ## Demo limits removal and remaining safeguards
 
-The user explicitly requested removing daily and cumulative request limits and the additional per-wallet/global demo concurrency gates, then committing and updating the live service. This is [D19](../docs/requirements-and-decisions.md#d19--取消演示次数与额外并发限制), superseding D14's engineering defaults. Implementation, local regression and deployment are complete; 0a82030 is live. The staged Linux request-guards/native-ledger suites passed 18/18, and the running source hashes and absence of the retired settings were verified.
+The user explicitly requested removing daily and cumulative request limits and the additional per-wallet/global demo concurrency gates, then committing and updating the live service. This is [D19](../docs/requirements-and-decisions.md#d19--取消演示次数与额外并发限制), superseding D14's engineering defaults. Implementation, local regression and deployment were completed in 0a82030; the current release is 23cc7f8. The staged Linux request-guards/native-ledger suites passed 18/18, and the running source hashes and absence of the retired settings were verified.
 
 The new interface removes `DemoAdmission`, `DEMO_LIMITS`, the fourth `Engine` constructor argument and parsing of `DEMO_ADMISSION_ENABLED`, `DEMO_ADMISSION_START_UTC` and `DEMO_NEW_ORDERS_ENABLED`. No replacement pause switch is added. Old variables have no meaning in the new code; deployment has removed them from the live environment. The retired one-time `deploy/switch-native.py` migration refuses execution and must not be used for routine releases.
 

@@ -6,15 +6,15 @@
 
 ## 当前结论
 
-**D20 展示文案已完成本地修改，待上线。** 用户确认清理整个网页及 AI 回答中人可见的“模拟 / Mock”字样；Web 13/13、Provider 34/34、根/Web 类型检查、Web lint 与公网静态构建通过，当前远端仍为 0a82030，等待发布。构建存在与前序相同的 Para 可选 AA 包缺失警告；未改变依赖。模型展示可用 Reasoner，协议 `mock` 字段、实际 ID `mock-reasoner`、固定演示引擎与 Unicode 计量不变；API 示例保留可调用 ID，历史账单/证据和本地演示文件不改。技术范围详见 [D20](requirements-and-decisions.md#d20--网页与-ai-回答使用简洁展示文案)。
+**D20 展示文案已随 23cc7f8 上线并通过 SSH 推送。** 用户确认清理整个网页及 AI 回答中人可见的“模拟 / Mock”字样；Web 13/13、Provider 34/34、根/Web 类型检查、Web lint 与公网静态构建通过，当前远端为 23cc7f8，公网页面 DOM 已核对 Reasoner、Token 与上下文缓存文案。新回答模板经源码及 Linux 测试核对，本轮没有用公网新请求验收回答；旧账单输出保持原样。构建存在与前序相同的 Para 可选 AA 包缺失警告；未改变依赖。模型展示可用 Reasoner，协议 `mock` 字段、实际 ID `mock-reasoner`、固定演示引擎与 Unicode 计量不变；API 示例保留可调用 ID，历史账单/证据和本地演示文件不改。技术范围详见 [D20](requirements-and-decisions.md#d20--网页与-ai-回答使用简洁展示文案)。
 
-**已按用户要求取消线上演示请求限制。** [D19](requirements-and-decisions.md#d19--取消演示次数与额外并发限制) 取代每日/累计次数及额外 Demo 并发门槛；保留单笔预算、余额、钱包授权和卖家容量，已有订单/凭证/history 不清空。代码提交与线上 release 均为 **0a82030**，实际运行源码及环境已确认不再读取或执行旧 Demo 门槛；代码已通过 SSH 正常快进推送（0871c64 → 0a82030），没有改写历史。此前“本场剩 4 次、B 当日剩 1 次”是旧策略快照，不再作为后续产品或演示目标。
+**已按用户要求取消线上演示请求限制。** [D19](requirements-and-decisions.md#d19--取消演示次数与额外并发限制) 取代每日/累计次数及额外 Demo 并发门槛；保留单笔预算、余额、钱包授权和卖家容量，已有订单/凭证/history 不清空。该改动在 **0a82030** 上线，后续版本继续保留，实际运行源码及环境已确认不再读取或执行旧 Demo 门槛；代码已通过 SSH 正常快进推送（0871c64 → 0a82030），没有改写历史。此前“本场剩 4 次、B 当日剩 1 次”是旧策略快照，不再作为后续产品或演示目标。
 
 **Git 仓库与历史清理已完成。** 最终版本 `794139cd5d90a36c2e7c61e362c0afd433fbcf99` 已通过 SSH lease 推送；独立 GitHub 新克隆及本地仓库均检查 23 个提交、643 个对象，目标域名与 PPT/PDF 路径/对象零命中，无不可达对象，本地 `git fsck --full` 通过。两版 PPTX/PDF 已从全部历史移除，仅保留为 ignored 本地文件；4 文件去跟踪前后 SHA256 完全一致。线上服务及 MOJO 等未变，当前用户演示编辑未重新审阅。完整证据见 [D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名) 与[清理盘点](domain-reference-audit.md)。
 
 **脱敏与历史标签说明：** 仓库中的 `demo.example.com` 是地址脱敏占位，不是新网址或新验收结果。下文旧 Git SHA、服务器 release 名及当时产物摘要作为历史证据标签保留，不能当作重写后的提交 SHA；回执仅替换域名展示，不改链上地址、交易哈希、金额或验收结论。
 
-**当前原生 MON 服务已更新至 0a82030。** 远端 current 指向 `/srv/inferpool/releases/0a82030`，Linux npm ci 成功；公网 `/`、`/health`、`/config`、`/v1/models` 均 200，MON/18 与新市场一致，卖家 A 为 normal、在线 2 槽、报价 v1 未变。主页产物哈希在构建机、服务器和公网一致。前序 fc646d8 的 Chrome B 单笔完成与结算已验证，未捕捉部分文字；本轮复用未改的前端，没有新真实订单，公网逐帧展示仍未验证。
+**当前原生 MON 服务已更新至 23cc7f8。** 远端 current 指向 `/srv/inferpool/releases/23cc7f8`，Linux npm ci 成功；公网 `/`、`/health`、`/config`、`/v1/models` 均 200，MON/18 与新市场一致，卖家 A 为 normal、在线 2 槽、报价 v1 未变。主页产物哈希在构建机、服务器和公网一致。前序 fc646d8 的 Chrome B 单笔完成与结算已验证，未捕捉部分文字；本轮更新展示文案但没有新真实订单，公网逐帧展示仍未验证。
 
 **前序交易验收：** 原生公网 API 一单已验证 34 批 SSE 增量、链上锁款/结算、幂等重放及 Key 撤销，费用 .0001285 MON。Chrome Para B 已完成 .1 MON 存款、.05/24h 授权及正常/卖家故障两单，六笔交易经独立 RPC 核对；正常收费 .0001658 MON、故障零费，B 与卖家 A 不同钱包。当时浏览器观察到处理完成和账单，未采集逐帧增长证据；34 批 SSE 属于前序 API 的独立验收。
 
@@ -58,6 +58,14 @@
 
 18:01:40 远端 current 为 0a82030、双服务 active，engine/runtime-config/index 源码哈希与本地精确一致，已无 DemoAdmission/DEMO_/admitNewOrder；三项旧 env 均不存在。18:01:41 公网 `/`、`/health`、`/config`、`/v1/models` 全 200，原市场 MON/18、1 个卖家/2 槽正常，前端 index 在本地/远端/公网与前述哈希一致。本轮没有真实订单、链上交易或资金权限变化；超过旧次数和额外并发阈值由 MemoryChain/服务器测试证明，不冒称已在线上发送超过 6/10 单。运行回执仅在 ignored `.local/unrestricted-release/` 保留，代码 0a82030 已通过 SSH 正常快进推送；最终文档回执另行归档，不循环补写自身提交号。
 
+### D20 文案发布回执（2026-09-05，Asia/Shanghai）
+
+代码 **23cc7f8** 已通过 SSH 正常快进推送（32da0be → 23cc7f8，main → main）。18:12:19 开始受控发布，随后完成 Router/Provider 停启及版本切换；私有备份为 `/srv/inferpool/state/backups/copy-20260905T101219Z`。发布前账本已为 6 单、history 15、0 未决；原生 ledger 与备份逐字节相同，凭证、幂等记录保留、权限 0600，两份 env 哈希均不变。本轮未发真实请求或交易，也未扩大资金权限。
+
+Linux npm ci 成功，staged mock-engine **7/7** 通过；本地 Web **13/13**、Provider **34/34**、根/Web 类型、Web lint、Provider JS 语法及公开构建已通过。18:13:06 回读 current 23cc7f8、双服务 active，Provider/Web 源码与 index 哈希匹配本地；公网首页/health/config/models 全 200，MON/18、原市场、1 卖家/2 槽与实际 `mock-reasoner` ID 保持。index 本地/远端/公网 SHA256 均为 `dbff158455ad2a56af3933ab1349fcc8fdb4fb741f54a781b3439df0eed68eed`；沿用前序 Para 可选 AA 包警告，依赖未改。
+
+IAB 刷新公网页面并切到“成为卖家”，实际看到 Reasoner、单价 1M Token、上下文缓存、Unicode 计量说明、本次账单/输出 Token；这些页面的人可见文案没有“模拟 / Mock”。处于未登录状态，没有发单；新回答模板只核对运行源码与测试，不能写成公网回答已验收。新文案对后续回答生效，历史账单输出不重写。
+
 ## 分项状态
 
 **请求次数来源澄清（2026-09-05，Asia/Shanghai）：** 用户询问剩余次数，核对发现 D14 的每日 6 次/本场 10 次是部署时采用的工程保护值，未找到用户明确指定这些数值的记录。17:50 只读确认 B 当天 5 次含 1 条迁入历史、全场 6 次；并非余额仅够一次。本轮仅解释，尚未调整限制，详见[对话记录](conversation-log.md)。
@@ -65,7 +73,7 @@
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库版本 | 域名及演示文件历史清理版 794139c 已通过 SSH 推送 | GitHub 独立新克隆和本地均核对 23 提交/643 对象，域名及 PPT/PDF 路径/对象零命中；当前代码 0a82030 已提交、部署并通过 SSH 正常快进推送；清理统计属于当时检查点 |
+| 仓库版本 | 域名及演示文件历史清理版 794139c 已通过 SSH 推送 | GitHub 独立新克隆和本地均核对 23 提交/643 对象，域名及 PPT/PDF 路径/对象零命中；当前代码 23cc7f8 已提交、部署并通过 SSH 正常快进推送；清理统计属于当时检查点 |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
 | Router | 远端 systemd 已启用并运行，健康检查通过 | 原本机 Router 已停止；单个 Linux Router 监听回环 8788，公网 /health、/config、/v1/models 200；A 的 WSS 认证通过；原生公网 API/SSE 一单已核对，浏览器 B 正常/故障付款与独立对账通过，逐帧 SSE 未采证 |
 | 流式修复 | fc646d8 已上线，网页单笔完成及结算已验 | 根 97/97、Web 13/13、类型/lint/公开构建通过；317077c8 的预算等待提示、最终输出/账单及两笔回执已核对；未捕捉部分文字，公网逐帧展示未验 |
@@ -83,7 +91,7 @@
 | 旧 dUSD 买家资金及请求 | 浏览器操作与独立链上回读通过 | 领取 1,000、存入 10 dUSD，授权 5 dUSD / 24 小时；六种目标场景、两次额外尝试共八单完整对账；主动取消成功 |
 | 前序浏览器 API Key 生命周期 | 创建、离开后隐藏明文与撤销通过 | 临时 Key 未复制或保存，切页后只剩 preview，撤销后显示已撤销；没有用这把 Key 发出 API 请求 |
 | 演示 Router Gas | 前序官方免费补给 1 测试 MON，回执核对通过 | 补给时余额从 0.171218074 增至 1.171218074 MON；这是历史快照，之后市场交易 Gas 另计，演示前重读；不改变买家余额或授权 |
-| 公网 MON Demo | 0a82030 已上线，配置与模型接口通过 | /config、/v1/models 200，MON/18 与新地址正确，A .3/.03/.375/.8、最低 .000001、v1/2 槽在线；API/SSE 一单通过；Chrome B 存款/授权、正常收费与故障零费两单通过；逐帧 SSE 未采证 |
+| 公网 MON Demo | 23cc7f8 已上线，配置与模型接口通过 | /config、/v1/models 200，MON/18 与新地址正确，A .3/.03/.375/.8、最低 .000001、v1/2 槽在线；API/SSE 一单通过；Chrome B 存款/授权、正常收费与故障零费两单通过；逐帧 SSE 未采证 |
 | 演示请求限制 | D19 已在 0a82030 上线 | 每日/累计次数与额外 Demo 并发门槛已从当前运行代码移除，三项旧 env 已清除；资金授权、单笔预算、卖家容量和代理信任继续保留。旧计数与回归记录仅历史 |
 | 单端口 Web / API | 当前根 97/97 通过，Router/Provider active | 公网原生请求收到 34 批 SSE 增量，锁款/结算回执 success，重放无重复收费；未知 API/页面及 /.env 的 404 检查保留。浏览器 B 两单与独立 RPC 通过，逐帧 SSE 未采证 |
 | 原账本迁移 | 已停旧、私有备份、复制和哈希核对 | 停止前后 14 条安全：13 confirmed、1 lock_failed/unsubmitted；旧本机 8788 不再监听。远端 ledger 的 SHA256 一致、inferpool 持有、mode 600；未复制 Mac 登录或 session |
@@ -120,7 +128,7 @@ Chrome 公网 Para B 已实际重新签名平台登录；新市场/报价、账�
 
 ### 远端部署准备检查点
 
-**当前发布：** current → `/srv/inferpool/releases/0a82030`，npm ci exit 0。本轮 unrestricted 私有备份保留原生账本与权限；前序 `backups/native-20260905T073750Z` 仍保留旧 15 单。活跃文件仍为 `/srv/inferpool/state/router-mon-state.json`，15 条最小历史仍保留，但不再用于计数，旧起点配置已清除，本轮没有重做资产迁移。
+**当前发布：** current → `/srv/inferpool/releases/23cc7f8`，npm ci exit 0。本轮 copy 私有备份保留 6 条原生订单、凭证、幂等记录和权限；前序 `backups/native-20260905T073750Z` 仍保留旧 15 单。活跃文件仍为 `/srv/inferpool/state/router-mon-state.json`，15 条最小历史仍保留，但不再用于计数，旧起点配置已清除，本轮没有重做资产迁移。
 
 **以下为首次 dUSD 部署的归档检查点，非当前 release：** 当时选定 `/srv/inferpool/releases/319c6b9`，`/srv/inferpool/current` 指向该 release，源码与公开产物由 root 持有、服务用户只读；私有账本/Alchemy/env 目录按独立权限准备。原本机 Router 已停止且 8788 不再监听，14 条原账本完成私有备份、迁移和 SHA256 核对；远端 Router 已 enable --now 并运行，回环与公网 /health 均 200。固定接单起点为 `2026-09-05T06:22:02Z`，重启时保持不变。
 

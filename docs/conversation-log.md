@@ -667,6 +667,12 @@
 - **采用边界：** [D20](requirements-and-decisions.md#d20--网页与-ai-回答使用简洁展示文案) 允许 Reasoner 展示别名，但保留实际 `mock-reasoner` ID、API 示例与 `mock` 协议字段。固定演示引擎、Unicode 计量和首版范围不变，技术文档不改写事实；历史账单/交易证据与本地 PPT/PDF 不动。
 - **本地验证：** Web 13/13、Provider 34/34、根/Web 类型检查、Web lint、JS 语法和公网静态构建通过；构建保留前序 Para 可选 AA 包警告。远端仍 0a82030，待发布；实际域名不写回 Git。
 
+## 2026-09-05 · 23cc7f8 文案版本上线并推送（Asia/Shanghai）
+
+- **发布与保留：** SSH 正常快进推送 32da0be → 23cc7f8。18:12:19 开始受控发布，随后完成两服务停启；backup 为 copy-20260905T101219Z。账本较前次发布新增一单、已有 6 单，发布保留全部原字节、凭证/幂等、history 15，0 未决、0600；router.env/provider.env 哈希不变。
+- **核验：** Linux npm ci、staged mock-engine 7/7 通过；本地 Web 13/13、Provider 34/34 及类型/lint/语法/build 证据保留。18:13:06 回读 23cc7f8、两服务 active、相关源码及 index 与本地一致，公网页面/health/config/models 全 200，原 MON 市场与实际协议 ID 保持，index 三处哈希见[进度](progress.md)。
+- **界面与边界：** IAB 刷新市场及成为卖家页，DOM 已核对 Reasoner、Token、上下文缓存与 Unicode 计量说明，清理人可见“模拟 / Mock”文案；未登录、未发真实请求或交易。新回答由运行源码和 Linux 测试核对，不冒称公网新单回答验收；后续请求使用新模板，历史账单不重写。实际域名和本地 PPT/PDF 未写入 Git。
+
 ## 后续追加格式
 
 每个新条目写日期/时区、用户输入或工程背景、决定与变更、验证/证据、未决事项及关联文档。已解决的问题保留解决过程并标注结果；出现新决定时引用被替代的决策编号，不重写历史成“从一开始就这样”。
