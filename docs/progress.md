@@ -274,6 +274,10 @@ B 托管 `9.944833 → 9.928253`，A `10.055167 → 10.071747`，B 授权花费�
 
 Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成功，没有新增扩展权限。MOJO 强制将正常账单与两单对照裁为 16:9，主端目视确认费用、响应和账单仍保留，仓库原图未改；第三图为原本 16:9 的说明图，含 LOGO 并注明非运行截图。正文独立 LOGO 上传没有得到图片结果，已撤销空占位，改用公开 GitHub PNG/SVG 链接；不存在独立 LOGO 字段，不声称 LOGO 单独上传成功。本轮没有新链上请求，回执、截图与文档已在 50b2312 通过 SSH 推送至 origin/main。
 
+### 短 PPT 与现场操作流程准备
+
+用户紧急要求短 PPT 和演示操作流程；[三页 PPT](../artifacts/presentation/InferPool-pitch.pptx) 已实际生成，含每页讲稿备注，结构/版面检查通过；[同目录 PDF](../artifacts/presentation/InferPool-pitch.pdf) 已由 bundled LibreOffice 导出并逐页检查3页，中文清晰、无溢出；末页账单区域裁切正确，原始截图未改。已准备 [五分钟速查](demo-quickstart.md)：2 分钟讲解、3 分钟网页，现场只发一笔正常请求（预算 .001 MON、最多输出512、指定seller-monad、缓存关闭），故障用先前 c985df51 已确认订单，正常历史 d6f9abd0 备用。此文档准备未执行链上请求、未改业务代码，PPT/PDF 均已完成；[文件说明](../artifacts/presentation/README.md)集中记录来源与备用打开方式。
+
 ## 下一步
 
 独立买家 MON 网页验收与 MOJO 正式提交已完成，项目 [#385](https://mojo.devnads.com/projects/385) 正在等待主办方审核。下一步按 [五分钟正式脚本](demo-guide.md) 排演并准备短录屏后备；当前没有成片，不代主办方审核或投票。
