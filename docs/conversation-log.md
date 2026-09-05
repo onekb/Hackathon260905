@@ -1,5 +1,7 @@
 # 对话与里程碑日志
 
+> 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
+
 本日志记录会影响项目的讨论、决定、实现结果和待办。于 **2026-09-05（Asia/Shanghai）** 建立；此前事件仅按可见消息与文件证据补记，顺序不是精确时间。共享 ChatGPT 链接的完整原文没有保存在本目录，不推测其中缺失的问题。
 
 ## 2026-09-05 · 需求形成（补记）
@@ -357,6 +359,41 @@
 - **材料边界：** 两张真实截图用于表单截图，市场作第一张封面、账单第二张；overview 是说明辅图，不能冒充截图。录像尚未制作，截图不证明公网部署，资产说明已同步。
 - **部署方向：** 用户确认有现成服务器，主 agent 等待 SSH 别名/面板入口及域名；不再默认免费静态站点与临时通道方案，尚无真实公网结果。
 - **本轮收口：** 最终 Web lint / TypeScript 通过，服务端 76/76 保留已执行证据并已审阅；限额仍未启用到原服务。本阶段代码、部署模板、素材与文档待统一提交并通过 SSH 推送，当前不写已推送。文档检查后停笔，由主 agent 归档并继续服务器部署。
+
+## 2026-09-05 · 部署准备与材料已推送，服务器只读接入通过
+
+- **归档结果：** 提交 `10c40dac3355dc5fd6c06ed7e32d546a19d15cae`（`Prepare public demo deployment and hackathon submission assets`）已通过 SSH 推送，远端从 `301cbda` 更新到 `10c40da`，推送后工作树干净。此前待推送记录保留为历史，本条开始记录后续部署阶段。
+- **服务器接入：** 用户提供免密 SSH 入口后，主 agent 使用既有密钥登录成功；首次账户选择认证未通过，调整登录账户后成功，没有复制或记录私钥。只读确认 Ubuntu 22.04 x86_64、已有 1Panel OpenResty 和其他工作负载，Router 计划端口可用。
+- **当前状态：** 没有远端写入或新部署。等待用户域名选择，准备独立服务目录、持久账本与新远端 Alchemy 会话授权，不复制 Mac 凭证，不影响既有站点。
+- **记录边界：** 不公开服务器 IP、其他站点名、个人登录信息或认证材料；公开 URL 确定后再登记。SSH 登录与代码推送都不构成公网应用验收，MOJO 项目仍未填写、上传或提交。
+
+## 2026-09-05 · 域名明确，用户接管 HTTPS，独立 Node 环境已安装
+
+- **用户决定：** 指定 `demo.example.com` 并设置解析，随后明确“你部署上去，准备好端口就可以了，我会部署反向代理的 HTTPS 的”。按 [D15](requirements-and-decisions.md#d15--应用准备单个-http-端口用户负责-https-反向代理)，agent 准备应用与 HTTP 端口，用户负责 HTTPS；没有 nginx、证书或 1Panel 配置改动。
+- **DNS 与安装：** 远端已将域名解析到正确目标。本机代理 DNS 返回的地址不作为公网判据，也不写入服务器公开记录。主 agent 已独立安装官方 Node v22.23.2 并验证 SHA256，创建 `inferpool` 系统用户、`/srv/inferpool` 及权限 0700 的私有 state/Alchemy 目录，工具安装到 `/opt/inferpool`；保护原有服务。
+- **构建与实现：** 针对 `https://demo.example.com` 的 webpack 静态前端构建 exit 0。Router agent 正补充可选静态目录，以一个 HTTP 端口承载 Web、API/SSE 与 WebSocket，尚不写成已上线。
+- **尚未完成：** 源码未上传，远端钱包授权、原账本迁移、应用服务、HTTPS 代理和公网业务验收均待后续结果；不复制 Mac 凭证、不提前声明部署成功。最终交付端口和可用 URL 待实际验证。
+
+## 2026-09-05 · 公开 release 上传与依赖完成，单端口功能通过本地检查
+
+- **实际上传：** `10c40da` 公开源码、匹配的合约 ABI、目标 `https://demo.example.com` 的 `web/out` 已通过 SCP 上传并解压到独立 release；Linux `npm ci` exit 0，775 packages。官方 Alchemy CLI 安装仍在进行，未声明远端会话或服务就绪。
+- **应用入口：** 确定 `127.0.0.1:8788` 统一提供 Web、HTTP API、SSE 和 Provider WS；现有 OpenResty 的 host 网络已只读确认。用户负责全站 HTTPS 代理，Provider A 必须用 `wss://demo.example.com/provider` 以匹配签名域，HTTPS 好后才能远程上线。
+- **实现与测试：** 新增可选 `WEB_STATIC_DIR`，绝对路径/有效导出检查在链初始化前执行，API 优先、无首页兜底，限制隐藏文件/遍历/越界符号链接。Express 5 复用已有静态服务能力，未新增依赖；6 项专项、根 82/82、根及新测试类型检查和差异检查通过。测试仅临时本地端口与 MemoryChain，未触及原 8788 或真实链交易。
+- **账本边界：** 原账本只读核对 14 条，13 confirmed、1 lock_failed/unsubmitted，无在途或待结算。尚未停旧进程或迁移私有账本，不启动两个写同一身份/账本的 Router。实际服务、授权和公网验收继续等待下一里程碑。
+
+## 2026-09-05 · 单端口提交与 Linux 服务配置完成，等待新设备授权
+
+- **本地归档：** 单端口补丁通过 review、6 项新增/根 82/82 及类型检查后，提交为 `319c6b95b51309b43cd1b7e92a123be7e02da54c`。此刻尚未推送，GitHub 仍为先前基线，不把远端服务器 release 与 Git 推送混淆。
+- **远端安装：** `/srv/inferpool/releases/319c6b9` 与 current 链接已准备，release 由 root 持有且服务用户只读；Linux npm ci 完成 775 packages，官方 Alchemy CLI 0.24.0 安装 exit 0、178 packages。前端归档和 53 条 ABI entries 的上传 SHA256 一致，完整公开哈希写入进度检查点。
+- **服务配置：** 两份 unit 与私有 env 已安装，systemd-analyze verify exit 0，只出现宿主原有 unit 的兼容警告、无新 unit 错误；未改旧服务。daemon-reload 完成，尚未 start/enable，固定 epoch 为 `2026-09-05T06:22:02Z`。
+- **当前等待：** 用户正在批准新服务器 Alchemy 设备登录；完成登录后仍须新的 wallet session 授权。旧 Router 继续运行、账本尚未迁移，不复制 Mac 认证文件，不保存 device code 或凭证 URL，不宣称钱包签名/应用/HTTPS 已就绪。
+
+## 2026-09-05 · 单端口提交已推送，设备登录成功，钱包 session 待批准
+
+- **推送完成：** 主 agent 通过 SSH 将 `319c6b9` 推送到 origin/main。先前未推送条目保留为当时状态，本轮文档另行归档，不把代码推送当作公网就绪。
+- **两阶段授权：** Linux Alchemy `auth login` 实际 exit 0，登录令牌只保留在服务器私有配置。已发起 `inferpool-router-linux` 新钱包会话申请，正在等用户于官方 Review CLI session 批准；尚无有效 wallet session。设备登录不是钱包签名授权，不记录连接 request ID、设备码或凭证 URL。
+- **非签名核查：** Linux 实际服务账户只读检查 exit 0：导出绝对路径、固定 epoch、loopback 代理解析、Monad 10143、市场固定 Router 地址均正确，router.env 权限 600。区块 `59833890` Router MON 为 `0.992516012`，只是当时公开余额快照，无新签名或交易。
+- **服务边界：** 仍未 start/enable，旧 Router 未停止、原账本未迁移；等待钱包会话批准后继续，不借设备登录成功提前宣称服务或 HTTPS 已完成。
 
 ## 后续追加格式
 

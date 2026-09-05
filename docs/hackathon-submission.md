@@ -1,5 +1,7 @@
 # InferPool 比赛提交材料
 
+> 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
+
 版本：2026-09-05，Asia/Shanghai。**文案初稿；尚未提交比赛，公网 Demo 正在准备。** 已读取 Monad Blitz 官方参赛、演示与提交要求。正式演示为每队 5 分钟，3 分钟仅作压缩备用；LOGO、预览图、简介、可用预览链接和 GitHub 链接为提交必需项。以下介绍按实际表单裁剪，不把整页规则和证据粘入项目简介。
 
 ## 已核实的比赛要求
@@ -33,7 +35,7 @@
 | 当前可见字段 | 要求与准备情况 |
 | --- | --- |
 | 项目名称 | 必填，页面推荐中文；现有项目名为 InferPool，尚未填写表单 |
-| 前端演示地址 | 必填，尚无已验收公网地址；用户已确认有现成服务器，等待 SSH 别名/面板入口与域名后部署 |
+| 前端演示地址 | 必填；目标为 `https://demo.example.com`，远端 DNS 和对应前端构建已通过，但服务/HTTPS 尚未验收，当前不能当作可用预览链接提交 |
 | GitHub 链接 | 必填，公开仓库已就绪 |
 | 关联活动 | 必填，本轮入口关联活动 16，尚未提交 |
 | 项目截图 | 标星必填，横屏、最多 5 张、第一张为封面；指南要求至少一张展示核心功能。已有真实市场和账单截图，建议按此顺序选择 |
@@ -75,7 +77,7 @@ Monad 测试网承载两个业务合约：DemoUSD 提供演示资产，Inference
 
 业务合约已部署并完成源码验证。两个不同钱包的卖家以不同报价运行独立进程，指定卖家、短输入自动选 B、长输入自动选 A 及网页手动选择覆盖自动估价均已验收。跨钱包结算已独立核对回执、订单、用量、双方余额与授权变化；其中自动选 A 的 API 场景买卖双方同为 A，未将其包装成第三个独立钱包。
 
-前序浏览器完成正常、卖家故障、金额预算上限、缓存写入/读取与主动取消六种目标场景。真实锁款异常及一次受限恢复也保留在公开证据中。双卖家阶段根 Node 64 项、Foundry 38 项、Web 类型检查、lint 和生产构建通过；公网准备新增限额与代理测试后，agent 已执行根 76/76 通过，主 agent 已审阅补丁通过。新增保护尚未在现有服务启用，完整范围与限制在仓库文档中持续维护。
+前序浏览器完成正常、卖家故障、金额预算上限、缓存写入/读取与主动取消六种目标场景。真实锁款异常及一次受限恢复也保留在公开证据中。双卖家阶段根 Node 64 项、Foundry 38 项、Web 类型检查、lint 和生产构建通过；限额/代理阶段 76/76 已通过并完成审阅，新增单端口静态服务 6 项后最新根 82/82 与类型检查通过。新增能力仍需远端部署验收，完整范围与限制在仓库文档中持续维护。
 
 ## English submission copy
 
@@ -95,7 +97,7 @@ Inference output, token metering and cache behavior are mocked for this hackatho
 
 Two independent seller processes with different wallets and on-chain prices completed explicit selection and automatic matching scenarios. A separate browser request demonstrated a manual seller choice overriding the cheaper automatic candidate. Cross-wallet receipts, orders, usage, balances and spending grants were independently reconciled. One automatic-routing case used the same wallet as buyer and seller; this overlap is documented.
 
-Earlier browser acceptance covered normal completion, seller failure, spending caps, cache write/read and explicit cancellation. An uncertain reservation, its confirmed zero-fee failure and one guarded retry are preserved rather than omitted. The two-seller phase passed 64 root Node tests, 38 contract tests, Web type checks, lint and production build. With optional public-demo admission and proxy tests added, the implementation agent has now run 76 root tests successfully and the changes have passed review; the new policy is not enabled on the existing service. Public hosting and additional browser reliability checks remain in progress or pending.
+Earlier browser acceptance covered normal completion, seller failure, spending caps, cache write/read and explicit cancellation. An uncertain reservation, its confirmed zero-fee failure and one guarded retry are preserved rather than omitted. The two-seller phase passed 64 root Node tests, 38 contract tests, Web type checks, lint and production build. The optional admission/proxy phase passed 76 root tests and review. Six shared-port static/API/WS/SSE tests bring the latest root suite to 82 passing tests, with type checks also passing. These local tests do not establish remote deployment, signer approval or HTTPS readiness; public hosting and additional browser checks remain pending.
 
 ## 架构与实现索引
 
@@ -121,7 +123,7 @@ Earlier browser acceptance covered normal completion, seller failure, spending c
 | 两卖家 API 指定与自动匹配 | [市场证据](../contracts/deployments/inferpool-smoke-market-monad.json) 的 `cases` / `aggregate` | 三笔成功单，授权增量 `0.041120 dUSD`；跨钱包 A → B `0.023340`，A 自身费用回流 `0.017780` |
 | 网页手动覆盖自动匹配 | 同一市场证据的 `webManualOverride` | 独立第四单 B → A `0.016580 dUSD`；点击依据来自浏览器/账本观察，合约不保存 manual/auto 标记 |
 | 原锁款异常与恢复 | 市场证据的 `failedAttempts` | 原单零费用、到期链上无订单后，显式执行唯一一次受限重试；不等于 Alchemy 异常根因已经修复 |
-| 测试与 UI 验证 | [进度](progress.md#验证记录与覆盖边界) | 双卖家阶段根 Node 64 项；公网准备增加限额/代理测试后 agent 执行 76/76 通过，主 agent 审阅通过；不重复累加专项测试，静态导出不等于公网验收 |
+| 测试与 UI 验证 | [进度](progress.md#验证记录与覆盖边界) | 双卖家阶段根 Node 64 项；限额/代理阶段 76/76 通过并审阅，单端口阶段最新 82/82 与类型检查通过；不重复累加专项，静态导出不等于公网验收 |
 
 ## 已完成的图形素材与真实截图
 
@@ -141,10 +143,10 @@ Earlier browser acceptance covered normal completion, seller failure, spending c
 | 字段 | 当前可填写内容 |
 | --- | --- |
 | 项目名 | InferPool |
-| 代码仓库 | [onekb/Hackathon260905](https://github.com/onekb/Hackathon260905)；已推送基线为 `301cbda`，本阶段代码与新材料待统一提交推送，具体版本以 Git 记录为准 |
+| 代码仓库 | [onekb/Hackathon260905](https://github.com/onekb/Hackathon260905)；单端口提交 `319c6b9` 已通过 SSH 推送至 origin/main，具体版本以 Git 记录为准 |
 | 网络 | Monad Testnet，chain ID `10143` |
 | 主合约 | `0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568` |
-| 公网 Demo | 官方要求公网部署并长期可用；已有服务器待提供入口与域名，尚无已验收链接或长期运行记录，不能填本机 `127.0.0.1` |
+| 公网 Demo | 目标 `https://demo.example.com`；319c6b9 release、Node/Alchemy、unit/env 已安装并校验，尚未 start/enable；设备登录已成功、新钱包 session 待批准，旧账本未迁移，用户 HTTPS 与完整服务仍待完成 |
 | LOGO（官方说明要求） | 原创 PNG / SVG 已完成并检查；实际表单未见独立输入，尚未上传比赛 |
 | 项目截图（表单必需） | 真实市场 / 账单 JPEG 已保存并检查；第一张市场封面、第二张账单，说明图可作辅助；尚未上传比赛 |
 | 详细介绍（必需） | 优先使用本页精简介绍，按实际表单补充特性与创新，避免整页粘贴 |

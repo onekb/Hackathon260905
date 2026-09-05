@@ -1,5 +1,7 @@
 # 需求与决策记录
 
+> 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
+
 最后整理：2026-09-05，Asia/Shanghai。实现程度见 [进度](progress.md)，接口定义见 [架构与协议](architecture-and-protocol.md)。
 
 ## 目标与范围
@@ -153,4 +155,12 @@
 - **选择：** 新增显式启用的限额：每钱包未结并发 1、每 UTC 日 6 次，全局未结并发 2、本场 10 次；以固定起点和原账本统计尝试，失败锁款也计次。暂停新单保留读账、准确幂等重放、取消及结算/恢复。代理信任仅支持 none/loopback。
 - **原因：** 约束演示接单规模，防止换 Key 或常规重启刷新额度；不因限额阻断已受理订单的资金处理。固定场次次数不是 Gas 的精确价格保证。
 - **后果：** 必须保留绝对账本路径和固定起点，未结订单跨起点仍占并发；人工暂停通过受控重启。公网反代覆盖转发地址、Router 只在本机可达；多实例和无持久账本部署不适合当前存储实现。
-- **状态与依据：** [runtime-config.ts](../server/src/runtime-config.ts)、[Router README](../server/README.md) 和新增专项测试已通过；当前默认未启用、未重启现有 Monad 服务，也没有公网部署完成声明。部署模板和静态导出只是准备，仍需真实宿主、地址和公网验收。
+- **状态与依据：** [runtime-config.ts](../server/src/runtime-config.ts)、[Router README](../server/README.md) 和新增专项测试已通过；当前默认未启用、未重启现有 Monad 服务，也没有公网部署完成声明。部署模板和静态导出只是准备，远端授权、服务部署与公网验收仍待完成。
+
+### D15 — 应用准备单个 HTTP 端口，用户负责 HTTPS 反向代理
+
+- **背景：** 用户提供现成服务器、选择域名 `demo.example.com`，随后明确要求部署应用并准备端口，由用户自己配置反向代理 HTTPS。
+- **选择：** agent 准备独立 Node 运行环境、应用目录、持久账本和远端 Alchemy 授权；新增可选静态目录，使 Web、API、SSE 与 WebSocket 共用一个 HTTP 入口。用户负责既有代理上的域名、TLS 与 HTTPS 配置，不由 agent 修改 TLS/1Panel。
+- **原因：** 按用户明确分工交付一个应用入口，同时保护服务器上既有站点和工作负载。
+- **后果：** 目标浏览器/API origin 为 `https://demo.example.com`，构建、认证来源和卖家重连须一致；HTTP 入口确定为 `127.0.0.1:8788`，同机 host 网络 OpenResty 可访问。Provider A 必须通过 `wss://demo.example.com/provider` 匹配签名域，需等待用户 HTTPS 可用后上线。HTTP、HTTPS、钱包/链上交易仍分别验收。
+- **状态与依据：** 用户原话“你部署上去，准备好端口就可以了，我会部署反向代理的 HTTPS 的”。单端口 `319c6b9` 已推送并放入远端 release，82/82 和审阅通过；Node、Alchemy CLI、两份 unit/env、Linux verify 和设备登录已完成。新钱包 session 等待批准，原账本迁移和 start/enable 仍未完成，没有代理或证书改动；安装/校验不替代服务与公网验收。

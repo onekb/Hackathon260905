@@ -1,5 +1,7 @@
 # 运行与部署手册
 
+> 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
+
 下面区分本地复现、既有 Monad 合约和公网发布。部署地址见 [进度](progress.md)；执行状态不由本手册中的命令存在与否证明。
 
 ## 本地双卖家演示
@@ -253,7 +255,7 @@ npm run lint --workspace web
 
 Web 使用独立 TypeScript 配置；根 `typecheck` 不应被当作覆盖了全部 Web。前端修改还应按其配置运行类型、lint 与构建检查，最终浏览器流程另行验证。
 
-最近一次依赖恢复已正式 `npm ci` 成功。本地 Monad 浏览器交易与双卖家验收已完成；公网准备阶段根 76 项测试、类型检查、最终 Web lint/类型检查和静态导出结果分别记录在 [进度](progress.md)，不等同公网部署通过。发生依赖升级或安装变更后重新审计，勿沿用旧版本的数量。
+最近一次依赖恢复已正式 `npm ci` 成功。本地 Monad 浏览器交易与双卖家验收已完成；公网准备阶段最新根 82 项测试、类型检查、最终 Web lint/类型检查和静态导出结果分别记录在 [进度](progress.md)，不等同公网部署通过。发生依赖升级或安装变更后重新审计，勿沿用旧版本的数量。
 
 合约 ABI 更新后运行 `npm run export:abi` 同步 Web 使用的导出；ABI 变化需要同时更新接口文档并重新核对部署版本，不能只改前端副本。
 
@@ -273,9 +275,19 @@ npm run test:evm
 
 当前无公网发布验收记录。Router 运行环境要支持持续 HTTP/SSE 与 WebSocket 连接，并提供 HTTPS/WSS；设置真实 `ROUTER_PUBLIC_URL` 与精确 `ALLOWED_ORIGINS`。前端的 localhost Router URL 不能服务远程用户，卖家回环控制台也不应当作远程管理站点。
 
-[deploy/README.md](../deploy/README.md) 已提供常驻单进程 Router、持久私有账本与 nginx 同源静态/代理方案；[nginx 模板](../deploy/nginx.conf.example) 和 [Router 环境模板](../deploy/router.env.example) 是待替换配置，不是已部署证据。本机无 nginx，尚未执行 `nginx -t`，目标服务器与域名也未配置。迁移必须先处理在途订单、停旧实例，再带原账本启动唯一新实例，不能以空账本或双进程写同一路径。
+[deploy/README.md](../deploy/README.md) 提供常驻单进程 Router 与持久账本的部署准备；[nginx 模板](../deploy/nginx.conf.example) 仅作参考，[Router 环境模板](../deploy/router.env.example) 仍需按实际运行配置。用户最新明确由自己配置 HTTPS 反向代理，agent 只准备应用与 HTTP 端口，见 [D15](requirements-and-decisions.md#d15--应用准备单个-http-端口用户负责-https-反向代理)。没有 nginx/证书/1Panel 配置改动或代理验收；迁移仍须处理在途订单、停旧实例，再带原账本启动唯一新实例，不能以空账本或双进程写同一路径。
 
-用户已确认有现成服务器，当前等待 SSH 别名或面板入口、可用域名后进行实际检查和部署；不再预设免费静态站点加临时通道为交付方案。服务器存在不代表服务已配置，也不能提前填入一个公网地址。
+目标域名为 `demo.example.com`，远端 DNS 已解析到目标服务器；本机代理 DNS 结果不作为公网解析证明。Ubuntu 22.04 x86_64 保留既有 OpenResty/工作负载，官方 Node v22.23.2 与独立 `inferpool` 用户、0700 私有目录已准备。当前 `/srv/inferpool/current` 指向 `/srv/inferpool/releases/319c6b9`，服务用户只读 release；前端归档和 53 项 ABI 哈希核对见 [进度](progress.md#远端部署准备检查点)。Linux npm ci 775 packages、Alchemy CLI 0.24.0 安装 178 packages 均 exit 0；新设备 `auth login` 已 exit 0，令牌仅保留远端私有配置；新钱包 session 已申请、正在等用户官方批准，尚无有效会话。不得复制 Mac 凭证或记录 device code/带凭证 URL。
+
+两份 unit 和私有 env 已安装，Linux `systemd-analyze verify` exit 0、`daemon-reload` 完成；仅宿主旧 unit 兼容警告，无新增 unit 错误，旧服务未改。当前未 start/enable，固定 `DEMO_ADMISSION_START_UTC=2026-09-05T06:22:02Z`；配置检查通过不代表远端签名权限或端口就绪。原 Router 尚运行、账本未迁移，具体会话和启动步骤见 [部署手册](../deploy/README.md)。
+
+实际 Linux 服务账户已完成非签名只读检查：导出绝对路径、固定 epoch、loopback 代理解析均有效，链 ID 为 10143，合约 router 等于原固定身份，router.env 权限 600。区块 `59833890` 的 Router Gas 为 `0.992516012 MON`；检查并未签名或广播，设备登录与链/RPC 可读都不替代新的 wallet session 批准。
+
+单端口功能已实现：`WEB_STATIC_DIR` 指向绝对 Next 导出目录，缺少有效 `index.html` 等配置错误在链初始化前拒绝启动。Express 5 先处理 API，再处理真实静态页；不把 API 404 或未知页面回退到首页，并阻止隐藏文件、遍历和越界符号链接。默认不开启，无新增静态服务依赖。新增 6 项及根 82/82 通过，真实 WS/SSE 检查使用临时端口，不表示远端版本已启动。
+
+最终应用入口为 `127.0.0.1:8788`，统一 Web、API、SSE 与 `/provider` WebSocket；用户的 OpenResty 已确认使用 host 网络，可代理同机入口。用户将 `https://demo.example.com` 的全站路径转发到该 HTTP 入口，保留 WS 升级、关闭 SSE 缓冲和写请求自动重试，详见 [代理交接](../deploy/README.md#https-proxy-handoff-to-the-owner)。卖家 A 必须用 `wss://demo.example.com/provider` 匹配域名认证，因此 HTTPS 可用前不能以回环 WS 代替远程上线验收。
+
+迁移前已只读核对原账本 14 条：13 confirmed、1 lock_failed/unsubmitted，无运行或待结算。此时旧进程未停止、账本未迁移；迁移时仍须重新核对并停旧再开新，不能把已上传公开源码当作私有账本已移交。
 
 Router 还会读取被 Git 忽略的 `contracts/out/InferenceMarket.sol/InferenceMarket.json`，`npm ci` 不会生成它。发布前需在构建机完成 `npm run setup:contracts` 与 `forge build --root contracts`，将匹配版本的公开编译产物按原相对路径放入 release，或在目标机编译；不要只复制 TypeScript 源码后就当作可运行包。
 
@@ -291,6 +303,8 @@ INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspa
 
 最终 public-build 配置正反 **13 项**检查、完整 Web TypeScript 和 Web lint 通过；前序 `INFERPOOL_STATIC_EXPORT=true` 本地导出使用原本机 Router URL，**没有启用 public-build，也没有发布该本机配置产物**。初始 Turbopack 因 CSS helper 端口权限失败；显式 webpack 导出成功，但 Para 未使用的可选 AA 集成模块仍有警告，未因此安装无关依赖。静态 3001 实际打开钱包邮箱弹窗，但没有登录或交易；该 origin 未列入原 Router CORS，未连 API，这是预期拒绝，不是业务验收。另已在原 3000 保存 [真实市场与账单截图](../artifacts/submission/README.md)，这不扩大 3001 或公网的验证范围。
 
+域名确定后，主 agent 已针对 `https://demo.example.com` 重新执行 webpack 静态构建，exit 0，并将产物上传独立 release。尚无 HTTP 服务、HTTPS 代理、钱包/API 的完成声明。
+
 ### 可选公网请求限额
 
 [D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 的代码与测试已完成，默认关闭，本轮未重启现有 Monad Router。启用需 `DEMO_ADMISSION_ENABLED=true`、固定且不晚于启动时间的 `DEMO_ADMISSION_START_UTC`（ISO UTC、以 `Z` 结尾），以及默认 true 的 `DEMO_NEW_ORDERS_ENABLED`。关闭限额时，其余 `DEMO_*` 配置必须不存在，防止暂停配置无效却静默接单。
@@ -304,7 +318,7 @@ INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspa
 
 `ROUTER_TRUST_PROXY` 只允许默认 `none` 或本机反代 `loopback`，认证限流使用解析后的客户端 IP。本机反代必须覆盖 `X-Forwarded-For`，Router 必须保持回环地址、不能旁路直连；任意代理或布尔 true 不被支持。CORS 不能替代消费限额。完整配置和计数规则以 [Router README](../server/README.md) 为准。
 
-链上部署不等于服务器部署。后续实际读取的官方规则已要求应用部署 Monad、前端公网部署，应用和前端长期可用；规则来源及 MOJO/截止时间等未决项见 [比赛材料](hackathon-submission.md#已核实的比赛要求)。发布方式和域名仍在准备，没有长期公网运行的完成声明，本机备用演示不能替代这项交付要求。
+链上部署不等于服务器部署。官方规则要求应用部署 Monad、前端公网部署，应用和前端长期可用；规则来源及 MOJO/截止时间见 [比赛材料](hackathon-submission.md#已核实的比赛要求)。域名和 HTTPS 分工已经明确，应用服务与代理验收仍待完成，本机备用演示不能替代长期公网交付。
 
 ## 常见问题
 
