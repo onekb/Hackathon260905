@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-09-05T07:42:49.295921+00:00",
+  "release": "/srv/inferpool/releases/a78470a",
+  "market": {
+    "market_address": "0x142a4904307244Bed0cECD72dE8329A253333182",
+    "asset_symbol": "MON",
+    "asset_decimals": 18
+  },
+  "nativeOrders": 1,
+  "nativeConfirmed": 1,
+  "nativePending": 0,
+  "admissionHistoryCount": 15,
+  "epoch": "2026-09-05T06:22:02Z",
+  "epochAttempts": 2,
+  "globalAttemptsRemaining": 8,
+  "nativeLedgerMode": "0o600",
+  "oldLedgerSha256": "7e954f589bdccee01d8fdae01becd0e857396aac59f9b8dbdbcfa4bc4876b412",
+  "newOrdersEnabled": "true",
+  "legacyRuntimeEnvNamesPresent": [],
+  "services": {
+    "inferpool-router": "active",
+    "inferpool-provider": "active"
+  },
+  "assetManifestSha256": "5f4193daf4d31dbac2e3bdcf7cd06bc5a748bf74da777cd4cb47040ac5c2bfb1",
+  "scope": "Post-cutover private-ledger summary only; no credentials, request content, or private keys exported.",
+  "backupDirectory": "/srv/inferpool/state/backups/native-20260905T073750Z",
+  "archiveSha256": "3f63cc68a4b7a60fe1b4bb73c7309fcef0930b96167bd46ad828411676f2b933"
+}

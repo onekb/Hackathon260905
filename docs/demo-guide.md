@@ -2,7 +2,7 @@
 
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
-准备日期：2026-09-05，Asia/Shanghai。以下是 **5 分钟正式演示 / 3 分钟压缩备用脚本初稿**，不是已录制视频或现场执行记录。当前入口为 [https://demo.example.com](https://demo.example.com)，仍是旧 dUSD release。下方已改为 D17 原生 MON 演示提案，须待 MON 正式切换和浏览器排练后执行；旧版页面/WSS/钱包入口证据不能替代新版验收。新原生合约同钱包八笔 smoke 已通过，跨钱包/公网流式 MON 尚未验收。技术事实以 [进度与证据](progress.md) 为准，提交文案见 [比赛材料](hackathon-submission.md)。
+准备日期：2026-09-05，Asia/Shanghai。以下是 **5 分钟正式演示 / 3 分钟压缩备用脚本初稿**，不是已录制视频或现场执行记录。当前入口为 [https://demo.example.com](https://demo.example.com)，已切换为 D17 MON-only a78470a，配置/模型、公网 API/SSE 一单通过，Chrome B 已重新签名登录并读账户。下方原生 MON 付款演示仍须先完成钱包资金准备与排练；旧版页面/WSS/钱包入口证据不能替代新版验收。新原生合约同钱包八笔 smoke 已通过，公网流式 MON 已验收，跨钱包/浏览器 MON 付款尚未验收。技术事实以 [进度与证据](progress.md) 为准，提交文案见 [比赛材料](hackathon-submission.md)。
 
 ## 官方要求与当前交付缺口
 
@@ -90,7 +90,9 @@ A 原生 MON 报价为 `0.3 / 0.03 / 0.375 / 0.8` 每百万模拟单位，最低
 - [旧 dUSD 两卖家市场记录](../contracts/deployments/inferpool-smoke-market-monad.json)：三笔 API 成功单、原零费锁款失败、独立网页手动覆盖单；不要省略失败历史。
 - [原生 MON 部署与源码验证](../contracts/deployments/inferpool-mon-native-testnet.json)：新合约地址和部署证据；源码验证不等于安全审计。
 - [项目说明图](../artifacts/submission/inferpool-project-overview.png)：可辅助解释架构，明确标注非产品截图；不能当作业务实机演示或公网运行证明。
-- [公网访客市场截图](../artifacts/submission/inferpool-public-market.jpg)：切换前旧版公开页面，一在线 A、未登录；不证明 MON 页面、请求或结算。
+- [当前 MON 市场截图](../artifacts/submission/native-public-market.jpg) 与 [当前 MON 钱包截图](../artifacts/submission/native-public-wallet.jpg)：原始公网 JPEG，根已目视检查；证明登录/账户读取，未操作 B 的 MON 存款/授权/请求。当前材料优先使用这两张。
+- [原生公网 API 单](../contracts/deployments/inferpool-native-api-smoke.json)：34 批 SSE、.0001285 MON、输出 128 上限终止，A 同钱包买卖；不是 B 浏览器成交。
+- [历史公网访客市场截图](../artifacts/submission/inferpool-public-market.jpg)：切换前旧版公开页面，一在线 A、未登录；不证明 MON 页面、请求或结算。
 - [真实本机市场截图](../artifacts/submission/inferpool-market-live.jpg) 与 [真实账单截图](../artifacts/submission/inferpool-bill-live.jpg)：已保存的原始浏览器 JPEG，来自本机 Web 连接真实 Monad Router，主 agent 目视检查通过；未改像素、未为截图新下单。开发/扩展图标仍可见，录像尚未制作。
 
 本地 Anvil 备用（先按运行手册完成依赖准备，在另一组端口运行）：
@@ -107,6 +109,6 @@ npm run demo:request
 
 输出、Token、缓存都是 Mock；Router 受信计量和判责，平台与接单卖家可见请求内容。合约不验证模型身份、质量或链外用量。没有 TEE、质押罚没或无需信任推理证明，也没有真实收入或性能基准承诺。
 
-当前仅旧版公网页面、A 的 WSS 与 Para 弹窗入口已检查；MON 版尚未切换，之后须验收钱包登录、SSE/结算、买家钱包切换、浏览器断连/幂等重试，以及提款、撤销授权、离线回收等浏览器交互。对应实现或底层测试存在，不替代实际浏览器验证；最新范围以进度页为准。Alchemy 无交易引用异常根因尚未明确，演示前需继续关注提交稳定性。
+当前仅旧版公网页面、A 的 WSS 与 Para 弹窗入口已检查；MON 版现已切换，配置/模型、API/SSE 一单以及浏览器 B 签名登录/账户读取通过；仍须验收 B 的 MON 付款、买家钱包切换、浏览器断连/幂等重试，以及提款、撤销授权、离线回收等浏览器交互。对应实现或底层测试存在，不替代实际浏览器验证；最新范围以进度页为准。Alchemy 无交易引用异常根因尚未明确，演示前需继续关注提交稳定性。
 
 结束时把故障模式恢复 normal，确认没有遗留待处理订单，保存本次新请求 ID 与最终回执；若创建了临时 API Key，结束后撤销。录屏或截图仅在实际生成并检查过后再登记链接，当前没有交付视频。

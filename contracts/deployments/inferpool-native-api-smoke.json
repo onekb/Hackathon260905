@@ -1,0 +1,100 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "market": "0x142a4904307244Bed0cECD72dE8329A253333182",
+  "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "asset": "MON",
+  "idempotencyKey": "inferpool-native-public-api-v2-001",
+  "scope": "One public HTTPS/SSE request via existing Alchemy wallet; same wallet as Seller A. Does not establish browser or cross-wallet acceptance.",
+  "input": {
+    "model": "mock-reasoner",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Explain the InferPool native MON settlement flow briefly."
+      }
+    ],
+    "max_tokens": 128,
+    "max_spend": "0.001",
+    "provider_id": "seller-monad",
+    "stream": true
+  },
+  "startedAt": "2026-09-05T07:40:49.899Z",
+  "before": {
+    "available": "0.009000000000000000",
+    "authorized": "0.004890000000000000",
+    "authorizationExpiresAt": 1788678998
+  },
+  "requestId": "d60e648c-0b6a-46e5-bd2c-174f803a83e0",
+  "bill": {
+    "market_address": "0x142a4904307244Bed0cECD72dE8329A253333182",
+    "asset_symbol": "MON",
+    "asset_decimals": 18,
+    "id": "d60e648c-0b6a-46e5-bd2c-174f803a83e0",
+    "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+    "providerId": "seller-monad",
+    "seller": "0xac801eec099c65a605b809b98a09a62674614a08",
+    "model": "mock-reasoner",
+    "budget": "0.001000000000000000",
+    "quote": {
+      "input": "0.300000000000000000",
+      "cacheRead": "0.030000000000000000",
+      "cacheWrite": "0.375000000000000000",
+      "output": "0.800000000000000000",
+      "minReserve": "0.000001000000000000",
+      "version": "1"
+    },
+    "usage": {
+      "input": 87,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 128
+    },
+    "maxTokens": 128,
+    "output": "【模拟推理 / Mock】\n已收到：Explain the InferPool native MON settlement flow briefly.\n\n这是独立卖家节点生成的固定演示响应，没有调用真实 AI 模型。\n本次未使用模拟缓存。\n\n平台将按 Un",
+    "status": "budget_capped",
+    "settlement": "confirmed",
+    "charge": "0.000128500000000000",
+    "released": "0.000871500000000000",
+    "deadline": 1788594352,
+    "createdAt": 1788594052381,
+    "updatedAt": 1788594072913,
+    "cacheMode": "none",
+    "mock": true,
+    "lockTx": "0x323acdb3f63ef507da0bb51f46212a22a8b0379414aee996aaed68e7066ede94",
+    "outcome": 2,
+    "reason": "Output token or spending limit reached",
+    "settlementTx": "0xecad6ff00ecf241186a92dc880aeef70ee43acc0bb4b76dc9f9e2ce972149087",
+    "billConfirmed": true
+  },
+  "receipts": {
+    "lock": {
+      "transactionHash": "0x323acdb3f63ef507da0bb51f46212a22a8b0379414aee996aaed68e7066ede94",
+      "status": "success",
+      "blockNumber": "59848949",
+      "gasCostWei": "30630396000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x323acdb3f63ef507da0bb51f46212a22a8b0379414aee996aaed68e7066ede94"
+    },
+    "settlement": {
+      "transactionHash": "0xecad6ff00ecf241186a92dc880aeef70ee43acc0bb4b76dc9f9e2ce972149087",
+      "status": "success",
+      "blockNumber": "59848987",
+      "gasCostWei": "13222260000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xecad6ff00ecf241186a92dc880aeef70ee43acc0bb4b76dc9f9e2ce972149087"
+    }
+  },
+  "after": {
+    "available": "0.009000000000000000",
+    "authorized": "0.004761500000000000",
+    "authorizationExpiresAt": 1788678998
+  },
+  "sse": {
+    "batches": 34,
+    "firstChunkAt": 1788594060148,
+    "finishedAt": 1788594075554,
+    "incremental": true
+  },
+  "idempotentReplayVerified": true,
+  "verifiedAt": "2026-09-05T07:41:15.554Z",
+  "temporaryKeyRevoked": true
+}

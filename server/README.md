@@ -4,13 +4,13 @@ The Router authenticates buyers and independent mock providers, reserves each re
 
 ## Asset and migration boundary
 
-Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; the public service has not yet switched from legacy dUSD. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
+Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; public a78470a now uses this native market, with live config/models verified and one native API/SSE/settlement request and browser login/account reads verified; browser MON payment remains untested. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
 
 Buyers call payable `deposit()` with MON value, then separately `authorizeRouter(limit, expiresAt)`; no ERC-20 approve is required. Withdrawal is a native transfer; settlement credits the seller's internal withdrawable balance. Existing dUSD and its spending grants do not become MON or authorize the new market.
 
 Current orders and `/config` identify the native `market_address`, `asset_symbol=MON` and `asset_decimals=18`. D17 removes legacy asset configuration and read compatibility. Before cutover, reconcile/stop the old writer and retain its full ledger privately; initialize a MON-only active ledger without old orders, API keys, sessions, idempotency mappings or cache. Carry only buyer + createdAt historical attempt data, preserving the admission epoch and limits. Do not reset quotas merely by choosing a new state file.
 
-Old platform credentials are not migrated; the Para wallet stays the same, but users may need a new wallet-signature login and a new MON Key under a valid MON grant. Wallet-session request/cancel mutations also require `X-InferPool-Market` to exactly match the current market; missing or stale values return HTTP 409. The product has no legacy balance/withdraw/reclaim controls. Old chain records remain immutable historical evidence; this migration does not redeem, burn or withdraw those assets. Source cleanup is in progress and the public service has not switched yet.
+Old platform credentials are not migrated; the Para wallet stays the same, but users may need a new wallet-signature login and a new MON Key under a valid MON grant. Wallet-session request/cancel mutations also require `X-InferPool-Market` to exactly match the current market; missing or stale values return HTTP 409. The product has no legacy balance/withdraw/reclaim controls. Old chain records remain immutable historical evidence; this migration does not redeem, burn or withdraw those assets. MON-only cleanup and public cutover are complete; API/SSE/browser acceptance is recorded separately in progress.
 
 ## Run
 

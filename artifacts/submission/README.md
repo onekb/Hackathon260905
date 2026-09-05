@@ -10,15 +10,23 @@ Original artwork and separate unedited interface captures prepared on 2026-09-05
 | `inferpool-logo.png` | Ready-to-upload logo, intended for a dark background | 512 × 512 RGBA; transparent background |
 | `inferpool-project-overview.svg` | Editable-by-generator project explanation artwork | 1600 × 900 vector; lettering converted to paths |
 | `inferpool-project-overview.png` | Ready-to-upload project preview or presentation cover | 1600 × 900 PNG; opaque dark background |
-| `inferpool-public-market.jpg` | Public `https://demo.example.com` guest marketplace with one live seller A; suggested current cover | 1713 × 1452 unedited browser capture |
+| `native-public-market.jpg` | Current MON-only public market after Para B signature login; preferred submission cover | 1713 × 1452 unedited browser capture |
+| `native-public-wallet.jpg` | Current MON wallet/escrow/grant view; preferred second screenshot | 1713 × 1796 unedited browser capture |
+| `inferpool-public-market.jpg` | Historical pre-MON public guest market with one seller A | 1713 × 1452 unedited browser capture |
 | `inferpool-market-live.jpg` | Actual local Web connected to the Monad-testnet Router, two online sellers and four-part prices | 1713 × 1452 unedited browser capture |
 | `inferpool-bill-live.jpg` | Actual confirmed historical bill, usage, release amount and chain links | 1713 × 1108 unedited browser capture |
 | `build_assets.py` | Reproducible vector source: geometry, layout, labels, and text outlines | Python |
 | `render_assets.cjs` | SVG-to-PNG renderer, without browser automation | Node.js |
 
-The overview is **an original explanatory diagram, not a running product screenshot**. It explicitly says “Project overview · Not a product screenshot.” The two `*-live.jpg` files are separate real interface screenshots. No demo recording has been produced. The overview makes no claim about a public deployment, benchmark, throughput, or seller count.
+The overview is **an original explanatory diagram, not a running product screenshot**. It explicitly says “Project overview · Not a product screenshot.” The five JPEG files are separate real interface screenshots, with current MON and historical dUSD captures kept distinct. No demo recording has been produced. The overview makes no claim about a public deployment, benchmark, throughput, or seller count.
 
-## Real interface captures
+## Current MON public captures
+
+`native-public-market.jpg` and `native-public-wallet.jpg` were saved from `https://demo.example.com` after the MON-only a78470a cutover on 2026-09-05 (Asia/Shanghai). Root saved the original CUA JPEGs and opened each with `view_image`; pixels were not edited. Chrome Para B signed in again and the interface read the new market, current A quote, zero available MON escrow, zero spending grant, and .937143418 native MON in the wallet. This is login/page/account-read evidence. No B MON deposit, grant or inference request was made to create these captures; they do not prove browser payment or cross-wallet settlement.
+
+Use `native-public-market.jpg` first and `native-public-wallet.jpg` second in the current submission. The separate [native API smoke](../../contracts/deployments/inferpool-native-api-smoke.json) proves one public SSE/settlement request by A acting as buyer/seller/Router; it is not the browser's transaction history. Old dUSD images below are historical only and should not serve as current MON product evidence. No image has been uploaded to MOJO by this documentation task.
+
+## Historical dUSD interface captures
 
 The two `*-live.jpg` browser captures were taken on 2026-09-05 (Asia/Shanghai) from `http://127.0.0.1:3000/`, connected to the existing Monad Testnet Router and two seller processes. They are local UI evidence, **not proof of a public deployment**. The browser's development and extension indicators remain visible. No displayed values were edited, and no new paid request was made to create these screenshots.
 
@@ -26,7 +34,7 @@ The market capture shows two online offers, `9.928253 dUSD` available escrow and
 
 The separate `inferpool-public-market.jpg` was captured on 2026-09-05 from the actual public origin `https://demo.example.com` and opened with `view_image` by the root agent. It is the original full-page CUA JPEG, 1713 × 1452, with no pixel edits. It shows a guest marketplace with one online seller A; balance and authorization are dashes because the browser is not logged in, and no bill is shown. It contains no credentials. This is public-page evidence, not proof of a new public-origin inference or settlement. The Para login modal also opened and was closed without logging in or signing.
 
-For the MOJO form, use the public market screenshot as the current first screenshot/cover and the historical bill screenshot as the second, clearly identifying the bill's localhost origin. The local two-seller market and overview may be supporting images; do not present the earlier two-seller image as current public availability. The generator commands below reproduce the original vector assets only and do not modify the real captures.
+For historical explanations, label the earlier guest-market image as pre-MON and the local bill/two-seller images as dUSD/localhost. They are not the current cover or proof of native MON activity. The overview remains optional supporting artwork. The generator commands below reproduce the original vector assets only and do not modify the real captures.
 
 The diagram represents the implemented scope: buyers use Web/API, the Router matches and routes requests and meters simulated usage, independent seller processes stream mock responses, and Monad Testnet contracts manage budget escrow and settlement. **Mock inference · Real testnet settlement** means testnet transactions; it does not imply real model execution or assets with cash value. Current evidence and limitations remain in [`docs/progress.md`](../../docs/progress.md).
 
@@ -57,6 +65,6 @@ The PNG renderer resolves `sharp` from the installed project dependencies. If ne
 - Logo dimensions: **512 × 512**; alpha range **0–255**, confirming transparent and opaque pixels.
 - Preview dimensions: **1600 × 900**; alpha is **255** throughout, confirming an opaque background.
 - Both SVG files parsed as XML; no external image/font resources are embedded or fetched.
-- Root agent saved and visually checked all three original JPEG captures; the public market capture is separate from the earlier localhost market/bill captures.
+- Root agent saved and visually checked all five original JPEG captures; the two current MON public images are separate from the three historical dUSD images.
 
 These are asset checks, not additional application or blockchain acceptance tests.

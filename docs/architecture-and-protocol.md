@@ -1,6 +1,6 @@
 # 架构、计费与协议
 
-本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网尚未切换，D17 要求旧 dUSD 只留私有整账本备份和公开回执存档，退出活跃产品。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
+本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网 a78470a 已切换为 MON/18，D17 要求旧 dUSD 只留私有整账本备份和公开回执存档，退出活跃产品。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
 
 ## 请求如何连接
 

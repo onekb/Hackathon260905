@@ -6,7 +6,7 @@
 | --- | --- |
 | 新原生 MON 市场 | `0x142a4904307244Bed0cECD72dE8329A253333182`；[部署/双浏览器验证证据](deployments/inferpool-mon-native-testnet.json) |
 
-新合约部署交易 [0xa6da3b…10ed0](https://testnet.monadscan.com/tx/0xa6da3bd7812867daddc53999b06263d76754f7ba3bcb718acdb7d3053aa10ed0) 成功；native/MON/18、router 和运行字节码回读通过，源码验证 2/2。公网服务尚未切换，同钱包小额实链验收已通过，状态见 [进度](../docs/progress.md)。旧 dUSD 交易证据不得改标 MON。
+新合约部署交易 [0xa6da3b…10ed0](https://testnet.monadscan.com/tx/0xa6da3bd7812867daddc53999b06263d76754f7ba3bcb718acdb7d3053aa10ed0) 成功；native/MON/18、router 和运行字节码回读通过，源码验证 2/2。公网服务已切 MON，同钱包小额实链验收已通过；公网 API/SSE 一单及浏览器登录/账户读取通过，浏览器 MON 付款未验，状态见 [进度](../docs/progress.md)。旧 dUSD 交易证据不得改标 MON。
 
 在仓库根目录安装、编译与测试：
 

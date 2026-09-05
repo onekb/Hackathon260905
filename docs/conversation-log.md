@@ -478,6 +478,25 @@
 - **检查完成：** 根 npm test 91/91、npm run typecheck 通过。旧迁移测试改为 native-ledger 8 项，含零订单旧 Key 拒绝、最小配额历史超限零 lock、重启持久化/幂等次数，以及旧 session 缺失或错误市场 header 的下单/取消 409；专项 14 项包含在根全量内。
 - **切换准备：** 根审阅后修复 env 重复变量仅保留新值、临时文件创建即 0600，两项独立检查通过。前端继续补离线撤销按钮及 401 会话失效恢复，最新构建待完成；公网仍旧版，没有据此宣称正式切换。
 
+## 2026-09-05 · MON-only 封版提交与发布包上传
+
+- **前端封版：** 离线/无 session 撤销按钮按链上 activeGrantId/getGrant 判断；401 恢复登录并保留原单幂等 Key，不取消原单，旧 token 不得覆盖新会话。最终 8/8（资产 4、API error 3、撤销按钮 render 1）、类型/lint/公网构建通过。最终 index SHA256 `5f4193daf4d31dbac2e3bdcf7cd06bc5a748bf74da777cd4cb47040ac5c2bfb1` 覆盖前序产物。
+- **发布状态：** 本地提交 a78470a，MON-only 54 文件；发布包 8,284,160 bytes、SHA256 `3f63cc68a4b7a60fe1b4bb73c7309fcef0930b96167bd46ad828411676f2b933` 正在上传。公网尚未切换，不把提交、上传或静态检查记为新域名 MON 交易验收。
+
+## 2026-09-05 · MON-only a78470a 正式切换上线
+
+- **服务与回读：** 远端 npm ci exit 0，current → `/srv/inferpool/releases/a78470a`；公网 /config、/v1/models 均 200，原生 MON/18 与新合约 `0x142a4904307244Bed0cECD72dE8329A253333182` 一致。A normal、2 槽、报价 v1 为 .3/.03/.375/.8，最低 .000001 MON。
+- **账本切换：** 旧 15 单及凭证整账本留私有备份 `backups/native-20260905T073750Z`，原账本哈希保持。新 router-mon-state.json 初始不含旧订单或凭证，仅 15 条 buyer + createdAt 最小 admissionHistory；固定 epoch、限额不变，没有兑换、销毁或代提旧币。
+- **实际异常与恢复：** 首次只重启 Router 被 Provider 长连接拖住，根受控停止/启动 Provider 后恢复，无强杀。未来 switch 脚本已改同时重启两服务；当前运行的 a78470a 业务代码未变。
+- **待验：** 公网 API/SSE 单正在运行，浏览器刷新仍待结果；本条仅确认切换及配置/模型，不提前确认链上新单、流式交付或浏览器资金操作。
+
+## 2026-09-05 · 原生公网 SSE/结算与浏览器重新登录通过
+
+- **公网请求：** [API 证据](../contracts/deployments/inferpool-native-api-smoke.json) 的 d60e648c-0b6a-46e5-bd2c-174f803a83e0 已 confirmed，预算 .001 MON、费用 .0001285、释放 .0008715，34 批 SSE 增量；输入 87、输出 128，outcome 2 来自输出上限而非金额耗尽。两笔链上回执 success，重放无重复扣费，临时 Key 已撤销。A 同时为买家/卖家/Router，不是跨钱包或浏览器付款验收。
+- **首次失败保留：** 服务端时钟快约 .15 秒，首次挑战在签名前被严格有效期检查拒绝，未建单；脚本最多等五秒进入有效窗口后成功，没有放宽签名规则。
+- **真实浏览器：** Chrome 公网 Para B 重新签名登录成功，市场/报价/新账户可用 0、授权 0、钱包 .937143418 MON 读取通过。未存款、授权或请求，旧 dUSD 授权不沿用。原始 native-public-market.jpg 与 native-public-wallet.jpg 已保存和目视检查，作为当前提交截图优先项；旧三张图片仅历史。
+- **部署复核：** [公开只读摘要](../contracts/deployments/inferpool-native-public-deployment.json) 确认 native 1 confirmed/0 pending、history 15、epoch 2 attempts/剩 8；旧账本 SHA 不变、两服务 active、无旧 env 字段、账本 0600。运行 a78470a；后续维护脚本、验收证据与文档待最终提交/SSH 推送，没有宣称比赛已提交。另应用内浏览器仅以访客刷新核对纯 MON 报价与 .001 预算；API 默认只读重跑 alreadyVerified=true，未发新单。
+
 ## 后续追加格式
 
 每个新条目写日期/时区、用户输入或工程背景、决定与变更、验证/证据、未决事项及关联文档。已解决的问题保留解决过程并标注结果；出现新决定时引用被替代的决策编号，不重写历史成“从一开始就这样”。

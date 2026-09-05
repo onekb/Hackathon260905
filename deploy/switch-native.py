@@ -141,7 +141,8 @@ try:
     # After opening, never restore an old ledger: a real MON request may already have arrived.
     opened = True
     update_env(STATE / 'router.env', {'DEMO_NEW_ORDERS_ENABLED': 'true'})
-    run('systemctl', 'restart', SERVICES[0])
+    # Close the seller's WebSocket too so the Router can finish graceful shutdown.
+    run('systemctl', 'restart', *SERVICES)
     config, models = ready()
     emit(stage='live', market=config['market_address'], asset=config['asset_symbol'], providers=len(models['data']), archivedOrders=before['count'], admissionHistory=len(history), revision=args.revision)
 except Exception as error:

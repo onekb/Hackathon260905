@@ -27,6 +27,10 @@ if(!process.argv.includes('--execute')||report.verifiedAt){
 }else{
   const account=await createAlchemyBuyerSessionAccount({routerUrl:origin});assert.equal(getAddress(account.address),buyer);
   const challenge=await json('/auth/challenge',{wallet:buyer});
+  // Keep the signer's strict five-minute limit despite small server/client clock skew.
+  const clockWait=Math.max(0,Number(challenge.expiresAt)-Date.now()-300_000+50);
+  assert.ok(Number.isFinite(clockWait)&&clockWait<=5000,'Router clock differs too much from the local clock');
+  if(clockWait)await new Promise(resolve=>setTimeout(resolve,clockWait));
   const signature=await account.signMessage({message:challenge.message});
   const session=await json('/auth/verify',{wallet:buyer,nonce:challenge.nonce,signature});
   let key:any;
