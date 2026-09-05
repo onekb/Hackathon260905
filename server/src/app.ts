@@ -6,10 +6,11 @@ import { Engine, HttpError, type Order } from './engine.js';
 import { units } from './money.js';
 import type { StoredCredential } from './store.js';
 import type { TrustProxy } from './runtime-config.js';
+import { staticWeb } from './static-web.js';
 const requestSchema=z.object({model:z.string().min(1).max(100),messages:z.array(z.object({role:z.enum(['system','user','assistant']),content:z.string().max(32000)})).min(1).max(64),max_tokens:z.number().int().min(1).max(8192).default(256),max_spend:z.string().refine(v=>{try{return units(v)>0n;}catch{return false;}},'Expected a positive decimal amount with at most 6 decimal places'),provider_id:z.string().max(64).optional(),stream:z.boolean().default(false),cache:z.boolean().optional()}).strict();
 const ready=(o:Order)=>!['locking','running'].includes(o.status)&&o.settlement!=='pending';
 export function publicOrder(o:Order) {const {cacheKey,plannedUsage,lastSeq,...rest}=o;return {...rest,billConfirmed:o.settlement==='confirmed'};}
-export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string[];publicConfig?:Record<string,unknown>;trustProxy?:TrustProxy}) {
+export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string[];publicConfig?:Record<string,unknown>;trustProxy?:TrustProxy;webStaticDir?:string}) {
   const app=express();app.disable('x-powered-by');
   app.set('trust proxy',options.trustProxy==='loopback'?'loopback':false);
   app.use((req,res,next)=>{
@@ -65,6 +66,7 @@ export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string
     // A disconnected browser does not cancel the seller job or change who pays.
     write(publicOrder(order),'request');if(order.output)delta(order.output);if(ready(order))end(order);
   }));
+  if(options.webStaticDir!==undefined)app.use(staticWeb(options.webStaticDir));
   app.use((error:any,_req:Request,res:Response,_next:NextFunction)=>{if(res.headersSent)return res.end();const status=error instanceof z.ZodError?400:error.status??500;res.status(status).json({error:{message:status===500?'Internal router error':error.message,details:error instanceof z.ZodError?error.issues:undefined}});if(status===500)console.error('Router error:',error.message);});
   return app;
 }

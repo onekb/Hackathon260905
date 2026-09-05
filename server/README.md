@@ -19,6 +19,16 @@ npm run start --workspace @inferpool/server
 
 For a public deployment, terminate HTTPS/WSS in front of this process and set `ROUTER_PUBLIC_URL` to the externally reachable URL. Set `ALLOWED_ORIGINS` to comma-separated exact buyer-app origins. The default bind address is `127.0.0.1`; `HOST` changes it deliberately. Provider authentication binds signatures to the public URL host. The root EVM adapter requires an authorized Alchemy session for Monad signing; it does not import a wallet private key.
 
+## Optional Web on the same HTTP port
+
+Set `WEB_STATIC_DIR` to the **absolute** directory of a completed Next static export, for example `/srv/inferpool/releases/current/web/out`. It is disabled when unset. An empty, relative, missing or invalid export directory fails startup before chain initialization and recovery; the directory must contain an actual `index.html` within it. Keep this dedicated public build directory read-only to the service user, separate from the private ledger and Alchemy configuration.
+
+With `HOST=127.0.0.1`, `PORT=8788` and `WEB_STATIC_DIR` configured, one HTTP endpoint serves `/`, `/provider-connect/`, exported assets, all existing API routes, SSE, and the `/provider` WebSocket upgrade. API routes take precedence. Unknown API paths return JSON 404 even if an exported file has that name; unknown pages never fall back to the home page. Dotfiles, path traversal and symlinks escaping the export directory are rejected. Static files preserve the Router's `no-store` response policy.
+
+The application provides HTTP only. The server owner can proxy this single port through their existing HTTPS endpoint, preserving WebSocket upgrades and unbuffered SSE. Build the Web with its final public `NEXT_PUBLIC_ROUTER_URL`; set `ROUTER_PUBLIC_URL` and the exact frontend `ALLOWED_ORIGINS` consistently. Serving static files does not rewrite the Web's build-time Router URL or change wallet-domain authentication. No additional Next.js runtime or static-service dependency is required.
+
+Before exposing it, check the deployed port with `GET /`, `GET /provider-connect/`, an actual `/_next/static/` asset, `GET /health` and `GET /v1/models`; verify `GET /v1/unknown` returns JSON 404 and unknown pages remain 404. After the owner's HTTPS proxy is ready, verify browser login, seller WSS authentication and incremental SSE through that public origin. The static tests use temporary local ports and MemoryChain; they do not establish production proxy or wallet readiness.
+
 ## Bounded public demo
 
 The local default has no extra demo admission policy. Explicitly enable it before opening the inference API to public traffic:
@@ -83,4 +93,4 @@ npm run test --workspace @inferpool/server
 npm run typecheck
 ```
 
-Unit tests cover settlement races, duplicate chunks, budget precision, chain authorization, cache isolation, authentication, late reservation reconciliation, restart recovery, persisted public-demo quotas, pause/replay behavior and trusted-proxy authentication limits. The root integration suite exercises the HTTP and provider protocol against actual local contracts.
+Unit tests cover settlement races, duplicate chunks, budget precision, chain authorization, cache isolation, authentication, late reservation reconciliation, restart recovery, persisted public-demo quotas, pause/replay behavior, trusted-proxy authentication limits, and optional static export routing with shared-port WebSocket/SSE. The root integration suite exercises the HTTP and provider protocol against actual local contracts.

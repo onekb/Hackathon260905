@@ -1,0 +1,43 @@
+# Install as /etc/systemd/system/inferpool-provider.service (0644).
+# provider.env and the Linux-authorized Alchemy session belong to inferpool
+# under /srv/inferpool/state (directory 0700, private files 0600).
+# Do not copy another machine's session files or substitute a raw private key.
+[Unit]
+Description=InferPool independent mock seller (Monad Testnet)
+Wants=network-online.target
+After=network-online.target inferpool-router.service
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=inferpool
+Group=inferpool
+WorkingDirectory=/srv/inferpool/current
+Environment="PATH=/opt/inferpool/node/bin:/opt/inferpool/tools/bin:/usr/local/bin:/usr/bin:/bin"
+Environment=NODE_ENV=production
+UMask=0077
+ExecStartPre=/usr/bin/test -r /srv/inferpool/state/provider.env
+ExecStartPre=/usr/bin/test -x /opt/inferpool/tools/bin/alchemy
+ExecStartPre=/usr/bin/test -r /srv/inferpool/state/alchemy/config.json
+# Identity mode is explicit. All public node settings come from provider.env.
+# There is deliberately no Requires/BindsTo dependency on the Router: this
+# independent process reconnects through the configured public WSS endpoint.
+ExecStart=/opt/inferpool/node/bin/node --env-file=/srv/inferpool/state/provider.env --import tsx provider/src/main.ts --alchemy-session
+Restart=on-failure
+RestartSec=10s
+KillMode=mixed
+TimeoutStopSec=20s
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/inferpool/state
+LimitCORE=0
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=inferpool-provider
+
+[Install]
+WantedBy=multi-user.target
