@@ -6,25 +6,27 @@
 
 ## 当前结论
 
+应用现已部署到 [https://demo.example.com](https://demo.example.com)。Linux Router 与卖家 A 由 systemd 常驻，原账本安全迁移；公网页面、配置、WSS 认证与 Para 弹窗入口通过。新域名登录及推理/SSE/结算未在本轮执行，B 当前离线；此前的完整交易证据来自本机 Web/API 连接 Monad。
+
 业务合约已部署到 Monad 测试网并通过源码验证。正常收费、卖家故障零收费已用真实测试网合约交易检查；本地 Anvil 双钱包卖家联调和依赖重建后的 EVM 2/2 复测通过。测试网 HTTP smoke 也已通过真实买家签名、临时 API Key、独立 Provider 进程、锁款与结算，正常一单费用 `0.016690 dUSD`。该测试的买家、卖家、Router 仍使用同一个现有钱包。
 
 Mac 轻量钱包依赖恢复时 `npm ci` 成功，审计剩余 19 项（12 low、7 moderate，零 high/critical）。双卖家阶段根 **64/64**、根/Web 类型检查、Web lint 与 Next 构建通过；限额/代理阶段增至 **76/76** 并完成审阅。新增单端口静态服务后，Router agent 已执行根 **82/82**、根类型检查和专项类型检查通过，6 项增量用临时端口验证静态/API/WS/SSE，不代表远端已上线。Linux release 另已完成 `npm ci`（775 packages），不将 Mac 审计数字当成 Linux 新报告。浏览器签名桥重连已实测，买家钱包切换尚未验收。
 
-前序 **Chrome 独立买家** 已完成六种目标场景，八单总费 `0.078507 dUSD`，证据保留如下。本轮双卖家 API 指定 B、自动选 B、自动选 A 三场景通过，共消耗 A 授权 `0.041120 dUSD`，其中 `0.023340` 跨钱包转至 B；自动选 A 原锁款失败及一次受限恢复单独保留。浏览器另用 B 手动选 A，覆盖更便宜的自动候选 B，费用 `0.016580 dUSD`，UI 与独立 RPC 对账通过。这一浏览器单与 API 三单、前序八单分别归档。公网、实际买家钱包切换及浏览器断连/幂等重试仍未验收；网页临时 Key 只测生命周期，API 请求使用独立脚本 Key。
+前序 **Chrome 独立买家** 已完成六种目标场景，八单总费 `0.078507 dUSD`，证据保留如下。本轮双卖家 API 指定 B、自动选 B、自动选 A 三场景通过，共消耗 A 授权 `0.041120 dUSD`，其中 `0.023340` 跨钱包转至 B；自动选 A 原锁款失败及一次受限恢复单独保留。浏览器另用 B 手动选 A，覆盖更便宜的自动候选 B，费用 `0.016580 dUSD`，UI 与独立 RPC 对账通过。这一浏览器单与 API 三单、前序八单分别归档。公网应用现已上线，页面和卖家 A WSS 通过；新域名钱包登录、SSE 推理/结算、实际买家钱包切换及浏览器断连/幂等重试仍未验收；网页临时 Key 只测生命周期，API 请求使用独立脚本 Key。
 
 ## 分项状态
 
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库版本 | `319c6b9` 已通过 SSH 推送至 origin/main | 单端口补丁已审阅、根 82/82 与类型检查通过；GitHub 已更新，仍不代表公网服务可用。本轮后续文档记录单独归档，历史推送保留于日志 |
+| 仓库版本 | 源码 `319c6b9`、后续文档 `6eb65fe` 均已通过 SSH 推送至 origin/main | 单端口补丁已审阅、根 82/82 与类型检查通过；远端 release 仍为 319c6b9。Git 推送不代表公网服务可用，历史推送保留于日志 |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
-| Router | 已实现，测试通过，已重启 | `8788` 模型接口可用；认证、计量、预算、SSE、幂等、恢复和重试；单进程存储 |
+| Router | 远端 systemd 已启用并运行，健康检查通过 | 原本机 Router 已停止；单个 Linux Router 监听回环 8788，公网 /health、/config、/v1/models 200；A 的 WSS 认证通过，推理/结算的公网流程待验 |
 | 独立卖家 | 四种身份已实现，浏览器认证/下线/重连通过 | Provider 全量 34/34 与根类型检查通过；B 已实际接收两笔 API 订单并结算 |
 | 本地端到端 | 已通过 | 两个不同钱包卖家，API/WS/真实 Anvil 交易；独立进程演示已运行 |
 | Monad 合约烟测 | 已通过 | 同一钱包分别扮演买家、卖家和 Router；两种责任场景、四笔业务交易 |
 | Monad HTTP/API smoke | 已通过真实请求及结算 | 签名登录、临时 Key、独立 Provider、正常一单、幂等重试和撤销 Key；仍为同一钱包，非浏览器验收 |
-| Monad 节点接入 | 取消验收后恢复 normal，在线已验证 | `seller-monad` 每 80 ms / 4 字符，2 个可用槽位、报价版本 1；Router `8788` / 控制台 `8793`；不是多卖家成交证明 |
+| Monad 节点接入 | 远端 A 常驻，真实公网 WSS 认证通过 | 本机旧 Alchemy 卖家已停；远端 seller-monad 为 normal、2 槽、v1，报价与链上匹配，lastError=null。B 因旧 Router 停止而离线，尚非双卖家常驻 |
 | 第二测试网卖家 | 不同钱包/报价、独立进程，API 三场景与浏览器手动覆盖均通过 | API A → B 0.023340 dUSD；A 自身费用回流 0.017780；浏览器 B → A 0.016580；原锁款失败和一次显式恢复保留，各阶段汇总分开 |
 | Para 配置 | 已完成组织/项目/公开配置 | InferPool FREE；用户完成登录并授权代操作后台；公开 Key 文件忽略且权限 600，未保存私密 Key |
 | 依赖与审计 | `npm ci` 成功 | 770 installed / 774 audited；19 项（12 low / 7 moderate），零 high/critical |
@@ -33,17 +35,17 @@ Mac 轻量钱包依赖恢复时 `npm ci` 成功，审计剩余 19 项（12 low�
 | 新买家测试网资金及请求 | 浏览器操作与独立链上回读通过 | 领取 1,000、存入 10 dUSD，授权 5 dUSD / 24 小时；六种目标场景、两次额外尝试共八单完整对账；主动取消成功 |
 | 浏览器 API Key 生命周期 | 创建、离开后隐藏明文与撤销通过 | 临时 Key 未复制或保存，切页后只剩 preview，撤销后显示已撤销；没有用这把 Key 发出 API 请求 |
 | 演示 Router Gas | 前序官方免费补给 1 测试 MON，回执核对通过 | 补给时余额从 0.171218074 增至 1.171218074 MON；这是历史快照，之后市场交易 Gas 另计，演示前重读；不改变买家余额或授权 |
-| 公网 Demo | release/CLI/设备登录已完成，等待新钱包 session 批准 | `inferpool-router-linux` 会话申请已发起，尚无有效远端 wallet session。实际服务账户只读核验配置/链/合约通过；未 start/enable、未停旧或迁移账本，用户负责 HTTPS |
-| 公网新单限额 / 代理信任 | 源码与专项检查通过，默认未启用 | 新增 12 项、server 38/38、根 76/76 与类型检查由 Router agent 执行通过，主 agent 已审阅补丁通过；未重启现有服务、未启用公网保护 |
-| 单端口 Web / API | 代码已审阅、82/82 通过，已进入远端 release | 入口 `127.0.0.1:8788` 统一 Web/API/SSE/Provider WS；目标 OpenResty 为 host 网络。两份 unit 与私有 env 已安装、Linux verify exit 0、daemon-reload 完成，尚未 start/enable |
-| 原账本迁移 | 只读核对 14 条，无在途/待结算 | 13 confirmed、1 lock_failed/unsubmitted；旧进程尚未停止，原账本尚未迁移，不启动双写实例 |
+| 公网 Demo | 已上线，公网页面与常驻卖家 A 通过 | 主页、/provider-connect/、实际 JS、/config、/v1/models 200；Chrome 市场显示 Router 在线、1 卖家和正确报价。早期 502 已解决；Para Sign Up or Login 弹窗正常打开后已关闭；未登录或发推理单，SSE/结算仍待验 |
+| 公网新单限额 / 代理信任 | 源码与专项通过，远端已启动固定 epoch 配置 | 新增 12 项已纳入根测试；Linux 配置解析检查通过。默认未配置时关闭，当前远端配置已随 Router 启动；公网实际拒单行为尚未验收 |
+| 单端口 Web / API | 代码 82/82 通过，Router/Provider 均 enable 且运行 | 两服务 active/running、NRestarts 0、ExecMainStatus 0；Router 监听回环 8788，/health 200。未知 API、未知页面和 /.env 均 JSON 404；公网 SSE/交易待验 |
+| 原账本迁移 | 已停旧、私有备份、复制和哈希核对 | 停止前后 14 条安全：13 confirmed、1 lock_failed/unsubmitted；旧本机 8788 不再监听。远端 ledger 的 SHA256 一致、inferpool 持有、mode 600；未复制 Mac 登录或 session |
 | 比赛要求 / MOJO | 官方规则与实际创建表单已核对；未提交 | 单人 InferPool、仅邀请、1/3、用户队长；必填名称/前端链接/GitHub/活动/截图，横屏最多 5 张、第一张封面，富文本项目文档；仅见提交按钮、未见保存草稿，表单未填写/上传。计划表 18:30，日期/时区以现场口径为准 |
-| 比赛演示材料 | 脚本/简介、LOGO、说明图及真实 UI 截图已准备 | [素材说明](../artifacts/submission/README.md)：两张原始 JPEG 由主 agent 保存并目视确认，市场双在线、历史账单与原证据一致；来源是 localhost + 真实 Monad Router，未新下单，不是公网证据。说明图为辅图，录像未做 |
+| 比赛演示材料 | 脚本/简介、LOGO、说明图和三张原始截图已准备 | 新增公网访客市场 JPEG（一在线 A、未登录）由主 agent 保存并目视检查；前序本机双卖家/账单图片继续标本机历史来源。没有新下单或录制视频，详情见 [素材说明](../artifacts/submission/README.md) |
 | 文档维护 | 已建立并持续更新 | `docs/` 导航、根 `AGENTS.md` 每轮同步规则；没有定时自动任务 |
 
 ### 远端部署准备检查点
 
-当前选定 `/srv/inferpool/releases/319c6b9`，`/srv/inferpool/current` 指向该 release，源码与公开产物由 root 持有、服务用户只读；私有账本/Alchemy/env 目录按独立权限准备。原 Router 仍在本机运行，账本未迁移，没有远端 start/enable。固定接单起点为 `2026-09-05T06:22:02Z`，重启时保持不变。
+当前选定 `/srv/inferpool/releases/319c6b9`，`/srv/inferpool/current` 指向该 release，源码与公开产物由 root 持有、服务用户只读；私有账本/Alchemy/env 目录按独立权限准备。原本机 Router 已停止且 8788 不再监听，14 条原账本完成私有备份、迁移和 SHA256 核对；远端 Router 已 enable --now 并运行，回环与公网 /health 均 200。固定接单起点为 `2026-09-05T06:22:02Z`，重启时保持不变。
 
 | 核对项 | 实际结果 |
 | --- | --- |
@@ -51,7 +53,9 @@ Mac 轻量钱包依赖恢复时 `npm ci` 成功，审计剩余 19 项（12 low�
 | 公开 ABI artifact SHA256 | `6b00206422d978a1ad38d93465ce122b954c883320854b920042e57c56e80a68`，上传前后一致，53 条 ABI entries |
 | 远端依赖 | Linux npm ci exit 0 / 775 packages；Alchemy CLI 0.24.0 安装 exit 0 / 178 packages；不替代钱包授权 |
 | 服务配置 | 两份 unit 与私有 env 已安装；systemd-analyze verify exit 0、daemon-reload 完成；宿主旧 unit 兼容警告保留，无新增 unit 错误 |
-| 当前授权门槛 | Linux auth login exit 0，登录令牌仅存远端私有配置；新的 inferpool-router-linux wallet session 等待官方审核批准，尚无有效会话；不保存设备码、连接请求 ID 或凭证 URL |
+| 当前授权状态 | 用户批准重新申请的 Linux 会话后 connect exit 0，独立 wallet status --verify 为 valid=true、原 Router 地址，签交易/签消息权限有效；到期 2026-09-12T06:33:39.043Z，config mode 600。首次超时保留在日志，无 Mac 凭证复制 |
+| 用户 HTTPS 与只读代理审查 | 用户已配置全站反代至 127.0.0.1:8788，截图显示缓存禁用。远端 urllib 默认验证与 curl 验证均通过 TLS，证书 SAN 为 demo.example.com；先前 502 已解决，当前 /health 200。HTTP/1.1、Upgrade、Host、HTTPS scheme 已配置，实际 A 经公网 WSS 完成认证，SSE 尚未验收 |
+| 代理尚待核对项 | 站点配置没有显式 buffering/cache/read_timeout，不能从截图推定全部关闭。建议由用户覆盖 X-Forwarded-For，并显式设置 300 秒读取超时、关闭缓冲/缓存/上游重试；agent 仅读配置，未代改代理 |
 | Linux 实际服务账户只读检查 | exit 0：绝对导出目录有效、固定 epoch 和 loopback 代理配置解析通过、Monad chain ID 10143、市场 router 与既有地址一致；router.env mode 600。没有签名或交易 |
 | Router Gas 公开快照 | 区块 `59833890`：`0.992516012 MON`；只代表该读取时点，不是未来费用保证，也不证明新钱包会话已批准 |
 
@@ -164,9 +168,9 @@ B 托管 `9.944833 → 9.928253`，A `10.055167 → 10.071747`，B 授权花费�
 | Provider 独立回归 | 双卖家阶段 **34/34 通过**，包含在根全量中 | 临时钱包和本机 HTTP/WS 检查，不新增链上交易或 Alchemy 会话 |
 | 公网限额与代理专项 | 新增 **12 项**、server **38/38** 均通过 | 固定起点、持久次数、并发、暂停/准确重放和代理 IP 等；未启用到原 Monad Router |
 | 前序本机静态 Web 导出 | 配置 13 项正反检查、本机 URL 的 webpack 导出及 Web lint 通过 | `web/out` 已生成但未公网部署；未启用 public-build。Turbopack 端口权限失败与 Para AA 可选模块警告如实保留；3001 页面/钱包弹窗检查不含 API |
-| 目标域名静态构建 | `https://demo.example.com` webpack 构建 exit 0，产物已上传 | 还未完成应用服务、HTTPS、钱包/API 验收 |
+| 目标域名静态构建 | `https://demo.example.com` webpack 构建 exit 0，产物已上传 | 公开页面、JS 与配置已通过；新域名钱包、SSE/结算未验 |
 | 同端口静态/API/WS/SSE | 新增 6 项通过，根及新测试类型检查通过 | 临时本地端口与 MemoryChain；校验未结束 SSE 增量及实际 WS 握手，不涉及真实链/SSH/原 8788 重启 |
-| 真实市场 / 账单截图 | 原始 JPEG 已保存并由主 agent 目视检查 | 1713×1452 市场 / 1713×1108 账单；开发/扩展图标可见，未修改数值或像素、未发新付费单；本机截图不证明公网运行 |
+| 真实市场 / 账单截图 | 三张原始 JPEG 已保存并由主 agent 目视检查 | 新增 [公网市场](../artifacts/submission/inferpool-public-market.jpg) 1713×1452 为访客一在线 A；原本机市场 1713×1452 / 账单 1713×1108 保留本机历史来源。未修改像素、未新下单 |
 | 买家/卖家 session 签名专项 | `provider/test/signer.test.ts` **9/9 通过**（包含在全量中） | 严格验证挑战目的、域名、身份、时效与 session，不扩大任意消息签名范围 |
 | 根 TypeScript | `npm run typecheck` 通过 | 根项目检查；Web 独立配置另看构建与专项检查 |
 | 本地 EVM 适配 | 依赖重建后 `npm run test:evm` 再次 **2/2 通过** | [evm-chain.test.ts](../tests/evm-chain.test.ts)：正常与失败、报价版本、预算、并发、直接回收 |
@@ -197,7 +201,7 @@ B 托管 `9.944833 → 9.928253`，A `10.055167 → 10.071747`，B 授权花费�
 
 ## 下一步
 
-1. release、CLI、unit 和设备登录已完成；等待独立钱包 session 批准，再停旧进程、迁移原账本并启动 `127.0.0.1:8788`。HTTPS 由用户配置，之后核对域名、卖家 WSS 和真实交易；systemd verify 不等于服务已运行，MOJO 仍未填写/上传/提交。
+1. 应用部署与单端口交付已完成，公开网页、配置和常驻 A 的 WSS 认证通过。后续若继续业务验收，需在新域名登录钱包并验证有界 SSE 请求/结算；B 仍需重连。代理优化由用户处理，MOJO 仍未填写/上传/提交。
 2. 补实际买家钱包切换、浏览器断连/幂等重试，以及提款、撤销授权和离线回收等未验交互；合约/本地测试不能直接计作浏览器通过，后续范围再按用户要求推进。
 3. 演示前核对两个卖家在线、Router 测试 Gas、消费授权有效期与余额；保留原 Router 会话及各阶段证据，不混合前序八单、API 三单与本轮浏览器手动单。
 4. 公网演示前检查交易提交稳定性，并补充可脱敏诊断。Alchemy 本次无交易引用的具体原因仍未知；已经验证零费失败与一次显式恢复，未宣称底层问题彻底修复。

@@ -395,6 +395,23 @@
 - **非签名核查：** Linux 实际服务账户只读检查 exit 0：导出绝对路径、固定 epoch、loopback 代理解析、Monad 10143、市场固定 Router 地址均正确，router.env 权限 600。区块 `59833890` Router MON 为 `0.992516012`，只是当时公开余额快照，无新签名或交易。
 - **服务边界：** 仍未 start/enable，旧 Router 未停止、原账本未迁移；等待钱包会话批准后继续，不借设备登录成功提前宣称服务或 HTTPS 已完成。
 
+## 2026-09-05 · 用户配置 HTTPS，证书通过但后端 502；钱包会话重新申请
+
+- **仓库记录：** 部署文档提交 `6eb65fe` 已由主 agent 通过 SSH 推送，工作树在本轮开始时干净；服务器源码 release 仍为 `319c6b9`。
+- **用户与代理：** 用户截图确认 `demo.example.com` 全站转发到 `127.0.0.1:8788`，界面显示缓存禁用。主 agent 的远端 urllib 默认 TLS 校验成功，`/` 与 `/health` 均返回 502；后端尚未启动，不声明 Demo 可用。
+- **只读审查：** Provider agent 于 14:33 Asia/Shanghai 检查该站代理与公开证书，curl TLS 校验成功、SAN 匹配。HTTP/1.1、Upgrade、Host、HTTPS scheme 已配置，尚无真实 WS 101/SSE 结果。站点未显式设置 buffering/cache/read_timeout，待用户核对客户端 IP 覆盖、300 秒读取超时及关闭缓冲/缓存/重试；agent 未改代理、未读取私钥。
+- **授权超时与恢复：** 首次远端 wallet connect 在 5 分钟未获批准后 exit 6 timeout，官方页面 expired；`wallet status --verify` 回读 valid=false / status none。设备登录仍完成，主 agent 没有重登录或加 `--force`，重新申请同名 `inferpool-router-linux` 会话。新请求尚待批准，没有有效钱包会话，不保存设备码、连接请求 ID 或凭证 URL。
+- **当前边界：** 仍未 start/enable，旧 Router 未停止、账本未迁移，无本轮推理交易；代理建议与业务验收继续分别跟踪，参见 [部署交接](../deploy/README.md#https-proxy-handoff-to-the-owner)。
+
+## 2026-09-05 · Linux 会话批准、账本迁移与应用上线完成
+
+- **授权已解决：** 用户批准新服务器钱包会话后，CLI connect exit 0，独立 status --verify 确认 valid=true、原 Router 地址及签交易/签消息权限。会话到期 `2026-09-12T06:33:39.043Z`，config mode 600；不保存认证材料、不复制 Mac 登录/session。此前超时与 502 保留为真实过程。
+- **安全迁移：** 主 agent 在停旧前后核对 14 条订单：13 confirmed、1 lock_failed/unsubmitted，无运行或待结算。旧本机 Router SIGTERM 停止且 8788 不再监听；私有备份经 SCP 迁入远端 state，SHA256 一致、inferpool 持有、mode 600，再启动新实例，没有双写。
+- **服务与端口：** Linux Router 与 Provider A 均已 enable，systemd active/running、NRestarts 0、ExecMainStatus 0；Router 监听 `127.0.0.1:8788`。回环及公网 /health 200，原 502 已解决。旧本机 Alchemy 卖家已停止，B 因旧 Router 断连而离线；临时本机 3001 静态预览也已停止。
+- **公网验收：** `https://demo.example.com` 的主页、/provider-connect/、实际 JS、/config、/v1/models 均 200；链 10143 与合约正确。A normal、2 槽、报价 v1（30/3/37.5/80、最低 .0001）；控制台回读 public WSS、lastError=null、pricingMatchesEffective=true，证明实际公网 WSS 认证成功。未知 API、未知页与 /.env 均 JSON 404。Chrome 市场显示 Router 在线、一在线及正确报价。
+- **网页与素材：** 公网连接钱包按钮实际打开 Para Sign Up or Login 弹窗，无初始化错误，随后关闭。主 agent 保存并目视检查 [公网访客市场 JPEG](../artifacts/submission/inferpool-public-market.jpg)，1713×1452、无像素修改或凭证；未登录故余额/授权为破折号，无账单。前序交易截图继续注明本机来源，说明图不冒充截图。
+- **交付边界：** 按用户最后要求，应用与单端口交付完成，HTTPS 由用户配置；300 秒超时、显式禁缓冲等代理建议未代改。当前仅 A 公网常驻；新域名登录、充值、签名、推理/SSE/结算均未在本轮执行，MOJO 仍未填写、上传或提交。本轮文档与截图待主 agent 统一提交推送，不预报提交哈希。
+
 ## 后续追加格式
 
 每个新条目写日期/时区、用户输入或工程背景、决定与变更、验证/证据、未决事项及关联文档。已解决的问题保留解决过程并标注结果；出现新决定时引用被替代的决策编号，不重写历史成“从一开始就这样”。

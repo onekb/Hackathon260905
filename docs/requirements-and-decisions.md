@@ -155,7 +155,7 @@
 - **选择：** 新增显式启用的限额：每钱包未结并发 1、每 UTC 日 6 次，全局未结并发 2、本场 10 次；以固定起点和原账本统计尝试，失败锁款也计次。暂停新单保留读账、准确幂等重放、取消及结算/恢复。代理信任仅支持 none/loopback。
 - **原因：** 约束演示接单规模，防止换 Key 或常规重启刷新额度；不因限额阻断已受理订单的资金处理。固定场次次数不是 Gas 的精确价格保证。
 - **后果：** 必须保留绝对账本路径和固定起点，未结订单跨起点仍占并发；人工暂停通过受控重启。公网反代覆盖转发地址、Router 只在本机可达；多实例和无持久账本部署不适合当前存储实现。
-- **状态与依据：** [runtime-config.ts](../server/src/runtime-config.ts)、[Router README](../server/README.md) 和新增专项测试已通过；当前默认未启用、未重启现有 Monad 服务，也没有公网部署完成声明。部署模板和静态导出只是准备，远端授权、服务部署与公网验收仍待完成。
+- **状态与依据：** [runtime-config.ts](../server/src/runtime-config.ts)、[Router README](../server/README.md) 和新增专项测试已通过；未配置时默认关闭；现已完成远端授权及原账本迁移，带固定 epoch 的远端 Router 已运行。公网页面与 WSS 通过，实际限额拒单及流式推理仍待验收。
 
 ### D15 — 应用准备单个 HTTP 端口，用户负责 HTTPS 反向代理
 
@@ -163,4 +163,4 @@
 - **选择：** agent 准备独立 Node 运行环境、应用目录、持久账本和远端 Alchemy 授权；新增可选静态目录，使 Web、API、SSE 与 WebSocket 共用一个 HTTP 入口。用户负责既有代理上的域名、TLS 与 HTTPS 配置，不由 agent 修改 TLS/1Panel。
 - **原因：** 按用户明确分工交付一个应用入口，同时保护服务器上既有站点和工作负载。
 - **后果：** 目标浏览器/API origin 为 `https://demo.example.com`，构建、认证来源和卖家重连须一致；HTTP 入口确定为 `127.0.0.1:8788`，同机 host 网络 OpenResty 可访问。Provider A 必须通过 `wss://demo.example.com/provider` 匹配签名域，需等待用户 HTTPS 可用后上线。HTTP、HTTPS、钱包/链上交易仍分别验收。
-- **状态与依据：** 用户原话“你部署上去，准备好端口就可以了，我会部署反向代理的 HTTPS 的”。单端口 `319c6b9` 已推送并放入远端 release，82/82 和审阅通过；Node、Alchemy CLI、两份 unit/env、Linux verify 和设备登录已完成。新钱包 session 等待批准，原账本迁移和 start/enable 仍未完成，没有代理或证书改动；安装/校验不替代服务与公网验收。
+- **状态与依据：** 用户原话“你部署上去，准备好端口就可以了，我会部署反向代理的 HTTPS 的”。单端口 `319c6b9` 已推送并放入远端 release，82/82 和审阅通过；Node、Alchemy CLI、两份 unit/env、Linux verify 和设备登录已完成。用户已配置全站代理，agent 仅读审查、未修改代理或证书。首次钱包申请超时后已重申请并获批准；原账本安全迁移、旧 Router 停止后，Linux Router 已 enable/start。早期 502 已解决，回环及公网 /health 200；随后公网页面、配置及常驻卖家 A 的真实 WSS 认证通过，按用户最后分工完成应用/端口交付；新域名钱包登录、SSE 推理与结算仍待后续验收，B 尚未公网常驻。

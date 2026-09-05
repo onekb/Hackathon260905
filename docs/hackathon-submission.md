@@ -2,7 +2,7 @@
 
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
-版本：2026-09-05，Asia/Shanghai。**文案初稿；尚未提交比赛，公网 Demo 正在准备。** 已读取 Monad Blitz 官方参赛、演示与提交要求。正式演示为每队 5 分钟，3 分钟仅作压缩备用；LOGO、预览图、简介、可用预览链接和 GitHub 链接为提交必需项。以下介绍按实际表单裁剪，不把整页规则和证据粘入项目简介。
+版本：2026-09-05，Asia/Shanghai。**提交文案待填表；应用已上线 https://demo.example.com，尚未提交比赛。** 已读取 Monad Blitz 官方参赛、演示与提交要求。正式演示为每队 5 分钟，3 分钟仅作压缩备用；LOGO、预览图、简介、可用预览链接和 GitHub 链接为提交必需项。以下介绍按实际表单裁剪，不把整页规则和证据粘入项目简介。
 
 ## 已核实的比赛要求
 
@@ -15,7 +15,7 @@
 | 编码和资源须在活动期间完成；允许提前研究和规划 | 编码窗口、资源来源与活动开始/截止时间尚未对照核验 |
 | 提交材料须公开，例如公开 GitHub 仓库 | 主 agent 已用 `gh repo view` 确认 [仓库](https://github.com/onekb/Hackathon260905) 为 PUBLIC、默认分支 main；其余材料仍待完成 |
 | 应用部署到 Monad，并保持长期可用 | 已有 Monad 测试网部署和交易证据；应用的长期运行尚未验收，合约存在不代表服务持续可用 |
-| 前端必须公网部署并保持长期可用 | 正在准备，尚无已验收公网链接或长期运行记录；本机预览和现场备用流程不能替代此要求 |
+| 前端必须公网部署并保持长期可用 | 应用已上线 https://demo.example.com，页面/配置与常驻 A 的 WSS 已验收；新域名交易路径待验，长期可用仍需维持服务并续批会话；历史本机预览不能替代此要求 |
 | 在 MOJO 注册、组队并提交；仅队长提交项目详情；提交阶段开始后不可再加入队伍 | 已登录并在 [MOJO 活动](https://mojo.devnads.com/events/16) 建立 InferPool 队伍，回读为已在队伍中、队长；尚未提交项目或投票 |
 
 以上是参赛要求，不是全部满足声明。“长期可用”目前没有在已读取内容中得到具体天数，不自行填入期限。用户的单人/队名决定及 MOJO 建队、队长状态已经确认；实际提交表单已只读核查，当前未见保存草稿按钮，未填写、上传或提交项目。不记录个人真名或邮箱。
@@ -35,7 +35,7 @@
 | 当前可见字段 | 要求与准备情况 |
 | --- | --- |
 | 项目名称 | 必填，页面推荐中文；现有项目名为 InferPool，尚未填写表单 |
-| 前端演示地址 | 必填；目标为 `https://demo.example.com`，远端 DNS 和对应前端构建已通过，但服务/HTTPS 尚未验收，当前不能当作可用预览链接提交 |
+| 前端演示地址 | 必填；目标为 `https://demo.example.com`，远端 DNS、对应前端构建与 TLS 证书检查已通过，Router 已启动，公网页面与常驻卖家 A 的 WSS 已验收；可用作当前应用预览，新域名钱包登录及请求/结算仍待验，尚未填入或提交 MOJO |
 | GitHub 链接 | 必填，公开仓库已就绪 |
 | 关联活动 | 必填，本轮入口关联活动 16，尚未提交 |
 | 项目截图 | 标星必填，横屏、最多 5 张、第一张为封面；指南要求至少一张展示核心功能。已有真实市场和账单截图，建议按此顺序选择 |
@@ -77,7 +77,7 @@ Monad 测试网承载两个业务合约：DemoUSD 提供演示资产，Inference
 
 业务合约已部署并完成源码验证。两个不同钱包的卖家以不同报价运行独立进程，指定卖家、短输入自动选 B、长输入自动选 A 及网页手动选择覆盖自动估价均已验收。跨钱包结算已独立核对回执、订单、用量、双方余额与授权变化；其中自动选 A 的 API 场景买卖双方同为 A，未将其包装成第三个独立钱包。
 
-前序浏览器完成正常、卖家故障、金额预算上限、缓存写入/读取与主动取消六种目标场景。真实锁款异常及一次受限恢复也保留在公开证据中。双卖家阶段根 Node 64 项、Foundry 38 项、Web 类型检查、lint 和生产构建通过；限额/代理阶段 76/76 已通过并完成审阅，新增单端口静态服务 6 项后最新根 82/82 与类型检查通过。新增能力仍需远端部署验收，完整范围与限制在仓库文档中持续维护。
+前序浏览器完成正常、卖家故障、金额预算上限、缓存写入/读取与主动取消六种目标场景。真实锁款异常及一次受限恢复也保留在公开证据中。双卖家阶段根 Node 64 项、Foundry 38 项、Web 类型检查、lint 和生产构建通过；限额/代理阶段 76/76 已通过并完成审阅，新增单端口静态服务 6 项后最新根 82/82 与类型检查通过。应用已部署到 https://demo.example.com，页面、配置、常驻 A 的 WSS 和 Para 弹窗入口通过；新域名登录与 SSE/结算待验，完整范围与限制在仓库文档中持续维护。
 
 ## English submission copy
 
@@ -97,7 +97,7 @@ Inference output, token metering and cache behavior are mocked for this hackatho
 
 Two independent seller processes with different wallets and on-chain prices completed explicit selection and automatic matching scenarios. A separate browser request demonstrated a manual seller choice overriding the cheaper automatic candidate. Cross-wallet receipts, orders, usage, balances and spending grants were independently reconciled. One automatic-routing case used the same wallet as buyer and seller; this overlap is documented.
 
-Earlier browser acceptance covered normal completion, seller failure, spending caps, cache write/read and explicit cancellation. An uncertain reservation, its confirmed zero-fee failure and one guarded retry are preserved rather than omitted. The two-seller phase passed 64 root Node tests, 38 contract tests, Web type checks, lint and production build. The optional admission/proxy phase passed 76 root tests and review. Six shared-port static/API/WS/SSE tests bring the latest root suite to 82 passing tests, with type checks also passing. These local tests do not establish remote deployment, signer approval or HTTPS readiness; public hosting and additional browser checks remain pending.
+Earlier browser acceptance covered normal completion, seller failure, spending caps, cache write/read and explicit cancellation. An uncertain reservation, its confirmed zero-fee failure and one guarded retry are preserved rather than omitted. The two-seller phase passed 64 root Node tests, 38 contract tests, Web type checks, lint and production build. The optional admission/proxy phase passed 76 root tests and review. Six shared-port static/API/WS/SSE tests bring the latest root suite to 82 passing tests, with type checks also passing. The public application is now available at https://demo.example.com: page/config checks, seller A WSS authentication and the login modal passed. Login and inference/SSE/settlement on the new origin remain untested; the earlier transaction evidence came from the localhost frontend.
 
 ## 架构与实现索引
 
@@ -131,12 +131,13 @@ Earlier browser acceptance covered normal completion, seller failure, spending c
 | --- | --- |
 | [LOGO PNG](../artifacts/submission/inferpool-logo.png) / [SVG](../artifacts/submission/inferpool-logo.svg) | 原创 IP 图形；512 × 512 PNG、透明背景，适合深色底；尺寸、透明度与目视检查通过 |
 | [项目说明 PNG](../artifacts/submission/inferpool-project-overview.png) / [SVG](../artifacts/submission/inferpool-project-overview.svg) | 1600 × 900，深色与绿色；表现买家、Router、独立卖家和链上预算/结算，并标明 Mock 与真实测试网结算；无裁切或文字错乱 |
-| [真实市场截图](../artifacts/submission/inferpool-market-live.jpg) | 1713 × 1452 JPEG；两卖家在线，托管 `9.928253`、剩余授权 `4.904913 dUSD`；建议第一张作为封面 |
+| [公网市场截图](../artifacts/submission/inferpool-public-market.jpg) | 1713 × 1452 原始 JPEG；https://demo.example.com 访客市场、一在线 A，未登录故余额/授权为破折号；主 agent 目视检查通过，建议当前封面 |
+| [本机市场截图](../artifacts/submission/inferpool-market-live.jpg) | 1713 × 1452 JPEG；历史两卖家在线，托管 `9.928253`、剩余授权 `4.904913 dUSD`；本机来源的补充材料 |
 | [真实账单截图](../artifacts/submission/inferpool-bill-live.jpg) | 1713 × 1108 JPEG；已核验历史单 `69a28714…`，费 `0.016580`、释放 `0.083420 dUSD`，输入 54、输出 187；建议第二张 |
 
 说明图明确标注 **Not a product screenshot**，不包含虚构指标、实时节点数量、个人信息或公网完成声明。两张最终 PNG 已目视检查，SVG 已验证 XML 与外部资源；源文件与复现命令见 [素材 README](../artifacts/submission/README.md)。这些检查不证明实际产品画面、公网链接或业务交易已通过。
 
-两张 `*-live.jpg` 来自 `http://127.0.0.1:3000` 连接真实 Monad Router 的原始浏览器 JPEG，主 agent 已保存并用 `view_image` 确认可用。没有修改像素或账单数值，只在 UI 收起 Next issue 提示；开发/扩展图标仍可见。截图没有产生新付费订单，不是公网部署证据，也不是当前余额永远不变的保证。录像尚未制作。
+两张 `*-live.jpg` 来自 `http://127.0.0.1:3000` 连接真实 Monad Router 的原始浏览器 JPEG，主 agent 已保存并用 `view_image` 确认可用。没有修改像素或账单数值，只在 UI 收起 Next issue 提示；开发/扩展图标仍可见。截图没有产生新付费订单，不是公网部署证据，也不是当前余额永远不变的保证。新增 `inferpool-public-market.jpg` 来自真实公网访客页面，未改像素、无凭证，显示当前一在线卖家；不能据此宣称新域名钱包登录或交易通过。公网 Para 弹窗已打开后关闭，无登录、充值、签名或请求。录像尚未制作。
 
 ## 提交表单待填项
 
@@ -146,13 +147,13 @@ Earlier browser acceptance covered normal completion, seller failure, spending c
 | 代码仓库 | [onekb/Hackathon260905](https://github.com/onekb/Hackathon260905)；单端口提交 `319c6b9` 已通过 SSH 推送至 origin/main，具体版本以 Git 记录为准 |
 | 网络 | Monad Testnet，chain ID `10143` |
 | 主合约 | `0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568` |
-| 公网 Demo | 目标 `https://demo.example.com`；319c6b9 release、Node/Alchemy、unit/env 已安装并校验，尚未 start/enable；设备登录已成功、新钱包 session 待批准，旧账本未迁移，用户 HTTPS 与完整服务仍待完成 |
+| 公网 Demo | [https://demo.example.com](https://demo.example.com) 已可访问；Linux 钱包已批准，原账本已安全迁移、Router 已 enable/start；用户 HTTPS 代理下 /health 200，早期 502 已解决。公网页面、配置、常驻 A 的 WSS 与 Para 弹窗入口已通过；B 离线，新域名钱包登录与 SSE/交易仍待验收 |
 | LOGO（官方说明要求） | 原创 PNG / SVG 已完成并检查；实际表单未见独立输入，尚未上传比赛 |
-| 项目截图（表单必需） | 真实市场 / 账单 JPEG 已保存并检查；第一张市场封面、第二张账单，说明图可作辅助；尚未上传比赛 |
+| 项目截图（表单必需） | 公网访客市场 JPEG 作封面；历史本机账单/双卖家市场保留来源说明，说明图可作辅助，全部已保存并检查；尚未上传比赛 |
 | 详细介绍（必需） | 优先使用本页精简介绍，按实际表单补充特性与创新，避免整页粘贴 |
 | 演示视频 / Slides | 非已确认必交附件；官方建议截图/短视频后备、Slides 可选，当前未生成视频；已有 [5 分钟正式 / 3 分钟压缩脚本](demo-guide.md) |
 | 比赛与规则 | Monad Blitz 来源见上方；计划表截止为 18:30，页面未明确日期或时区，现场口径为准；实际场次/赛道仍待核实 |
 | 提交平台与团队 | [MOJO](https://mojo.devnads.com/events/16) 已登录并建队；独立参赛、队名 InferPool、仅邀请、1/3，用户为队长；未邀请他人或提交项目 |
 | 团队联系信息、许可要求 | 按实际提交者与比赛规则填写，不从登录记录推断 |
 
-尚未验收的公网服务、实际买家钱包切换、浏览器断连/幂等和部分资金控制交互不得改写为已完成。发布与比赛提交分开记录：仓库已推送、Demo 上线、视频完成和表单提交是四个不同结果。
+尚未验收的新域名钱包登录与推理/结算、实际买家钱包切换、浏览器断连/幂等和部分资金控制交互不得改写为已完成。发布与比赛提交分开记录：仓库已推送、Demo 上线、视频完成和表单提交是四个不同结果。
