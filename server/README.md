@@ -19,6 +19,27 @@ npm run start --workspace @inferpool/server
 
 For a public deployment, terminate HTTPS/WSS in front of this process and set `ROUTER_PUBLIC_URL` to the externally reachable URL. Set `ALLOWED_ORIGINS` to comma-separated exact buyer-app origins. The default bind address is `127.0.0.1`; `HOST` changes it deliberately. Provider authentication binds signatures to the public URL host. The root EVM adapter requires an authorized Alchemy session for Monad signing; it does not import a wallet private key.
 
+## Bounded public demo
+
+The local default has no extra demo admission policy. Explicitly enable it before opening the inference API to public traffic:
+
+```sh
+DEMO_ADMISSION_ENABLED=true
+DEMO_ADMISSION_START_UTC='<fixed ISO UTC start, such as 2026-09-05T05:45:00.000Z>'
+DEMO_NEW_ORDERS_ENABLED=true
+ROUTER_TRUST_PROXY=loopback
+```
+
+Replace the start placeholder with the actual fixed beginning of this demonstration, at or before startup. Accepted timestamps end in `Z` and include seconds, with optional three-digit milliseconds. Keep this exact value and the same absolute `ROUTER_STATE_PATH` across restarts; do not generate a new start time in a launch command. Advancing it intentionally starts a different quota window and must be treated as a new demonstration budget, not ordinary restart configuration. Invalid booleans, missing/invalid/future start times, and unsupported proxy settings fail startup before chain initialization or recovery. If admission is disabled or unset, the other `DEMO_*` settings must be absent, so a misspelled or ineffective pause cannot silently leave new requests enabled.
+
+Enabled limits are fixed: one unsettled request per wallet, six new attempts per wallet per UTC day within this demo, two unsettled requests globally, and ten total new attempts since the configured start. An attempt is consumed when its order is persisted immediately before `chain.lock`; a failed or uncertain lock still counts. Invalid parameters, insufficient balance/authorization, unavailable sellers, and admission rejections create no order and use no attempt. Quota rejection occurs before chain submission and charges no dUSD. Counts derive from all persisted orders, not API keys or the last 100 orders returned by the listing API. An idempotency hit returns its original order before the new-order checks, so replay does not use another attempt.
+
+Concurrency includes locking, running, uncertain reservations, and pending/failed settlements—even orders created before this demo's start. A settled or conclusively absent failed lock releases its concurrent slot, but never restores its consumed attempt. Checks and order persistence use the existing serialized creation path, preventing competing requests from exceeding the last slot. Public demo quotas bound newly admitted work; they do not promise a precise MON gas cost or stop settlement/reconciliation for already admitted work.
+
+Set `DEMO_NEW_ORDERS_ENABLED=false` while keeping admission enabled and the same start to pause new orders with HTTP 503. Limits return HTTP 429. These settings are read at startup, with no HTTP endpoint for increasing limits; apply a manual pause through controlled restart, preferably after current requests have settled. The existing restart-recovery behavior still applies. Queries, exact idempotency replay, cancellation, settlement retries and recovery remain available while paused or exhausted. A cancellation during unconfirmed locking retains its existing HTTP 409 behavior; the admission policy does not change order-state rules.
+
+`ROUTER_TRUST_PROXY` accepts only `none` (default) or `loopback`. Authentication limits use Express's resolved `req.ip`; without trust, client-supplied `X-Forwarded-For` cannot create a fresh limit bucket. In loopback mode, only loopback proxy hops are trusted. The reverse proxy must overwrite incoming `X-Forwarded-For` with the verified client address (not retain an untrusted supplied chain), and the Router must remain reachable only through that proxy. This mode is for a local reverse proxy, not arbitrary remote proxy addresses. CORS is not a spending quota: non-browser API clients can omit `Origin`.
+
 ## Buyer API
 
 - `POST /auth/challenge` with `{ "wallet": "0x..." }` returns a five-minute, one-use message.
@@ -62,4 +83,4 @@ npm run test --workspace @inferpool/server
 npm run typecheck
 ```
 
-Unit tests cover settlement races, duplicate chunks, budget precision, chain authorization, cache isolation, authentication, late reservation reconciliation and restart recovery. The root integration suite exercises the HTTP and provider protocol against actual local contracts.
+Unit tests cover settlement races, duplicate chunks, budget precision, chain authorization, cache isolation, authentication, late reservation reconciliation, restart recovery, persisted public-demo quotas, pause/replay behavior and trusted-proxy authentication limits. The root integration suite exercises the HTTP and provider protocol against actual local contracts.

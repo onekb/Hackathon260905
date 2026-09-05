@@ -253,7 +253,7 @@ npm run lint --workspace web
 
 Web 使用独立 TypeScript 配置；根 `typecheck` 不应被当作覆盖了全部 Web。前端修改还应按其配置运行类型、lint 与构建检查，最终浏览器流程另行验证。
 
-最近一次依赖恢复已正式 `npm ci` 成功。根类型检查、最终全量 Node 单测（含买家签名增量）、最新 Next 生产构建和全量 lint 通过，浏览器复验尚未完成；确切结果见 [进度](progress.md)。发生依赖升级或安装变更后，重新审计，勿沿用旧版本的数量。
+最近一次依赖恢复已正式 `npm ci` 成功。本地 Monad 浏览器交易与双卖家验收已完成；公网准备阶段根 76 项测试、类型检查、最终 Web lint/类型检查和静态导出结果分别记录在 [进度](progress.md)，不等同公网部署通过。发生依赖升级或安装变更后重新审计，勿沿用旧版本的数量。
 
 合约 ABI 更新后运行 `npm run export:abi` 同步 Web 使用的导出；ABI 变化需要同时更新接口文档并重新核对部署版本，不能只改前端副本。
 
@@ -273,7 +273,38 @@ npm run test:evm
 
 当前无公网发布验收记录。Router 运行环境要支持持续 HTTP/SSE 与 WebSocket 连接，并提供 HTTPS/WSS；设置真实 `ROUTER_PUBLIC_URL` 与精确 `ALLOWED_ORIGINS`。前端的 localhost Router URL 不能服务远程用户，卖家回环控制台也不应当作远程管理站点。
 
-链上部署不等于服务器部署。发布方式、域名和现场演示入口仍按比赛实际要求决定；没有明确要求的外部发布不作为当前开发前置阻塞。
+[deploy/README.md](../deploy/README.md) 已提供常驻单进程 Router、持久私有账本与 nginx 同源静态/代理方案；[nginx 模板](../deploy/nginx.conf.example) 和 [Router 环境模板](../deploy/router.env.example) 是待替换配置，不是已部署证据。本机无 nginx，尚未执行 `nginx -t`，目标服务器与域名也未配置。迁移必须先处理在途订单、停旧实例，再带原账本启动唯一新实例，不能以空账本或双进程写同一路径。
+
+用户已确认有现成服务器，当前等待 SSH 别名或面板入口、可用域名后进行实际检查和部署；不再预设免费静态站点加临时通道为交付方案。服务器存在不代表服务已配置，也不能提前填入一个公网地址。
+
+Router 还会读取被 Git 忽略的 `contracts/out/InferenceMarket.sol/InferenceMarket.json`，`npm ci` 不会生成它。发布前需在构建机完成 `npm run setup:contracts` 与 `forge build --root contracts`，将匹配版本的公开编译产物按原相对路径放入 release，或在目标机编译；不要只复制 TypeScript 源码后就当作可运行包。
+
+### 静态 Web 导出
+
+在已配置真实 Router HTTPS origin 与 Para 前端公开 Key 的构建环境中执行：
+
+```bash
+INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspace web -- --webpack
+```
+
+`INFERPOOL_STATIC_EXPORT=true` 选择静态导出到 `web/out/`；`INFERPOOL_PUBLIC_BUILD=true` 要求多个标签的 HTTPS DNS origin 和 Para 前端 Key。检查主机名时去掉尾点，拒绝所有 IP 字面值（含映射 IPv6）、localhost/.localhost/.local/单标签名称、凭证、路径、query/hash。它不证明 DNS 能解析或服务可达，仍需上线后实测。变量未开启时保留原 Next 行为；`NEXT_PUBLIC_ROUTER_URL` 编译进文件，更换公开地址后要重新构建。
+
+最终 public-build 配置正反 **13 项**检查、完整 Web TypeScript 和 Web lint 通过；前序 `INFERPOOL_STATIC_EXPORT=true` 本地导出使用原本机 Router URL，**没有启用 public-build，也没有发布该本机配置产物**。初始 Turbopack 因 CSS helper 端口权限失败；显式 webpack 导出成功，但 Para 未使用的可选 AA 集成模块仍有警告，未因此安装无关依赖。静态 3001 实际打开钱包邮箱弹窗，但没有登录或交易；该 origin 未列入原 Router CORS，未连 API，这是预期拒绝，不是业务验收。另已在原 3000 保存 [真实市场与账单截图](../artifacts/submission/README.md)，这不扩大 3001 或公网的验证范围。
+
+### 可选公网请求限额
+
+[D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 的代码与测试已完成，默认关闭，本轮未重启现有 Monad Router。启用需 `DEMO_ADMISSION_ENABLED=true`、固定且不晚于启动时间的 `DEMO_ADMISSION_START_UTC`（ISO UTC、以 `Z` 结尾），以及默认 true 的 `DEMO_NEW_ORDERS_ENABLED`。关闭限额时，其余 `DEMO_*` 配置必须不存在，防止暂停配置无效却静默接单。
+
+| 启用后限制 | 计算方式 |
+| --- | --- |
+| 每钱包未结并发 1、全局未结并发 2 | 计入原起点之前仍未解决的订单；锁款不明、pending/failed 结算也占位，只有结算终态或确定锁款失败后释放 |
+| 每钱包每 UTC 日 6 次、本场全局 10 次 | 读取账本全部订单，在固定起点之后按 `createdAt` 计数；订单持久化、即将锁款时消耗一次，锁款失败仍计次；参数、余额和策略拒绝不计 |
+
+同幂等 Key/同参数先返回原订单；换 API Key、重启或只读取最近订单不能重置次数。重启保持原起点与绝对 `ROUTER_STATE_PATH`，不得自动换起点补额度。新单暂停返回 `503`，超过限额返回 `429`；查询、准确重放、取消、结算重试与恢复继续工作，锁款未确认时取消仍可能按原规则返回 `409`。`DEMO_NEW_ORDERS_ENABLED=false` 在启动时读取，手动暂停需要受控重启，尽量先等待在途订单结束，不是现成的 HTTP 管理开关。
+
+`ROUTER_TRUST_PROXY` 只允许默认 `none` 或本机反代 `loopback`，认证限流使用解析后的客户端 IP。本机反代必须覆盖 `X-Forwarded-For`，Router 必须保持回环地址、不能旁路直连；任意代理或布尔 true 不被支持。CORS 不能替代消费限额。完整配置和计数规则以 [Router README](../server/README.md) 为准。
+
+链上部署不等于服务器部署。后续实际读取的官方规则已要求应用部署 Monad、前端公网部署，应用和前端长期可用；规则来源及 MOJO/截止时间等未决项见 [比赛材料](hackathon-submission.md#已核实的比赛要求)。发布方式和域名仍在准备，没有长期公网运行的完成声明，本机备用演示不能替代这项交付要求。
 
 ## 常见问题
 

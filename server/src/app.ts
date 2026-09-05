@@ -5,11 +5,13 @@ import { Auth } from './auth.js';
 import { Engine, HttpError, type Order } from './engine.js';
 import { units } from './money.js';
 import type { StoredCredential } from './store.js';
+import type { TrustProxy } from './runtime-config.js';
 const requestSchema=z.object({model:z.string().min(1).max(100),messages:z.array(z.object({role:z.enum(['system','user','assistant']),content:z.string().max(32000)})).min(1).max(64),max_tokens:z.number().int().min(1).max(8192).default(256),max_spend:z.string().refine(v=>{try{return units(v)>0n;}catch{return false;}},'Expected a positive decimal amount with at most 6 decimal places'),provider_id:z.string().max(64).optional(),stream:z.boolean().default(false),cache:z.boolean().optional()}).strict();
 const ready=(o:Order)=>!['locking','running'].includes(o.status)&&o.settlement!=='pending';
 export function publicOrder(o:Order) {const {cacheKey,plannedUsage,lastSeq,...rest}=o;return {...rest,billConfirmed:o.settlement==='confirmed'};}
-export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string[];publicConfig?:Record<string,unknown>}) {
+export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string[];publicConfig?:Record<string,unknown>;trustProxy?:TrustProxy}) {
   const app=express();app.disable('x-powered-by');
+  app.set('trust proxy',options.trustProxy==='loopback'?'loopback':false);
   app.use((req,res,next)=>{
     const origin=req.headers.origin;
     if(origin&&!options.allowedOrigins.includes(origin))return res.status(403).json({error:{message:'Origin is not allowed'}});
@@ -23,7 +25,7 @@ export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string
   const identity=(req:Request)=>auth.authenticate(req.headers.authorization);
   const session=(req:Request)=>{const c=identity(req);auth.requireSession(c);return c;};
   const limited=new Map<string,{start:number;count:number}>();
-  app.use('/auth',(req,res,next)=>{const key=req.socket.remoteAddress??'unknown';const now=Date.now();let item=limited.get(key);if(!item||now-item.start>60000){item={start:now,count:0};limited.set(key,item);}if(++item.count>60)return res.status(429).json({error:{message:'Too many authentication attempts'}});next();});
+  app.use('/auth',(req,res,next)=>{const key=req.ip??req.socket.remoteAddress??'unknown';const now=Date.now();for(const [ip,item] of limited)if(now-item.start>60000)limited.delete(ip);let item=limited.get(key);if(!item){if(limited.size>=10000)return res.status(429).json({error:{message:'Too many authentication clients'}});item={start:now,count:0};limited.set(key,item);}if(++item.count>60)return res.status(429).json({error:{message:'Too many authentication attempts'}});next();});
   app.get('/health',(_req,res)=>res.json({ok:true,chain_mode:engine.chain.mode,mock_inference:true,providers:engine.providers.size}));
   app.get('/config',(_req,res)=>res.json({chain_mode:engine.chain.mode,mock_inference:true,metering:'One Unicode code point equals one simulated token',...options.publicConfig}));
   app.post('/auth/challenge',(req,res,next)=>{try{res.json(auth.createChallenge(z.string().parse(req.body.wallet)));}catch(e){next(e);}});

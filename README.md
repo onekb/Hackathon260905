@@ -4,7 +4,7 @@
 
 所有 AI 输出、Token 和缓存效果都是 **Mock**。DemoUSD 是自建测试代币，不是官方 USDC，也不代表真实美元资产。平台负责链外计量与判责，合约约束资金权限和预算，不证明模型真实性。
 
-业务合约已部署并验证源码，浏览器六种目标场景八单、Monad 双卖家 API 三场景及网页手动选择覆盖自动估价均已完成对账，保留原锁款失败及一次受限恢复证据。下一步是公网 Demo/比赛材料与剩余买家钱包切换、断连幂等验证。检查记录、各阶段范围和交易证据见 [开发进度](docs/progress.md)。
+业务合约已部署并验证源码，浏览器六种目标场景、Monad 双卖家指定/自动匹配及网页手动选择均已对账，原失败与恢复留证。演示文案、LOGO 和真实本机截图已准备；下一步使用用户现成服务器部署长期公网 Demo，等待服务器入口与域名。代码及静态导出就绪不代表公网已上线，完整范围见 [开发进度](docs/progress.md)。
 
 ## 本地快速开始
 
@@ -51,6 +51,7 @@ npm run dev:web
 | 首版范围、验收目标与选择原因 | [需求与决策](docs/requirements-and-decisions.md) |
 | 连接、信任边界、计费和接口 | [架构与协议](docs/architecture-and-protocol.md) |
 | 配置、启动、部署、测试与故障处理 | [运行手册](docs/runbook.md) |
+| 五分钟正式演示与中英文提交材料 | [演示指南](docs/demo-guide.md) / [比赛材料](docs/hackathon-submission.md) |
 | 当前完成度、测试结果与链上证据 | [开发进度](docs/progress.md) |
 | 用户讨论、变更及解决过程 | [对话日志](docs/conversation-log.md) |
 | 完整需求基线 | [MVP_SPEC.md](MVP_SPEC.md) |

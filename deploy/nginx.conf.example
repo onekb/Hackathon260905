@@ -1,0 +1,57 @@
+# Install inside nginx's http context after replacing the domain and paths.
+# This is a direct HTTPS edge. If another proxy/CDN sits in front, configure
+# nginx real_ip for that exact trusted proxy range before enabling req.ip limits.
+server {
+    listen 443 ssl;
+    server_name inferpool.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/inferpool.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/inferpool.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    root /srv/inferpool/web/out;
+    index index.html;
+    client_max_body_size 256k;
+
+    # Override untrusted forwarded headers; Router trusts loopback only.
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_http_version 1.1;
+    proxy_connect_timeout 10s;
+    proxy_read_timeout 240s;
+    proxy_send_timeout 240s;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_next_upstream off;
+
+    location = /provider {
+        # proxy_set_header is inherited only when none are defined locally.
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_pass http://127.0.0.1:8788;
+    }
+
+    location ~ ^/(auth|account|api-keys|v1|config|health)(/|$) {
+        proxy_pass http://127.0.0.1:8788;
+    }
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+
+server {
+    listen 80;
+    server_name inferpool.example.com;
+    return 308 https://$host$request_uri;
+}

@@ -23,6 +23,8 @@ npm run dev:web
 
 `localhost` 地址只在运行这些进程的电脑上有效。公开前端之前，还需公开可用的 HTTPS/WSS Router、正确的前端环境变量和 Origin；启动 Next 不会自动产生公网 Demo。
 
+公网准备支持可选静态导出：`INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspace web -- --webpack`（根目录执行）。产物为 `web/out/`；公网标志会检查 HTTPS Router Origin 和 Para 前端 Key，防止发布后仍连接访客的本机。完整配置、持久账本与 HTTPS/SSE/WSS 代理模板见 [部署准备](../deploy/README.md)。未设置这些标志时保留原有 Next 开发和构建方式。
+
 ## 五个导航页面
 
 这些页面在同一路由内切换，共用钱包、订单和后端计费流程。
