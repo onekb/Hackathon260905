@@ -19,7 +19,7 @@
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库版本 | 独立买家 MON 网页验收 fc9170f 已通过 SSH 推送到 origin/main | GitHub 从 4194bc3 更新至 fc9170f；含只读验证脚本、六笔交易证据、三张截图及 MOJO 文案。远端仍运行 a78470a，本轮无需重新部署 |
+| 仓库版本 | MOJO #385 提交归档 50b2312 已通过 SSH 推送到 origin/main | GitHub 从 ac73802 更新至 50b2312；含提交回执、待审核截图和同步文档。网页验收证据在 fc9170f；远端仍运行 a78470a，本轮无需重新部署 |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
 | Router | 远端 systemd 已启用并运行，健康检查通过 | 原本机 Router 已停止；单个 Linux Router 监听回环 8788，公网 /health、/config、/v1/models 200；A 的 WSS 认证通过；原生公网 API/SSE 一单已核对，浏览器 B 正常/故障付款与独立对账通过，逐帧 SSE 未采证 |
 | 独立卖家 | 四种身份已实现，浏览器认证/下线/重连通过 | Provider 全量 34/34 与根类型检查通过；B 已实际接收两笔 API 订单并结算 |
@@ -272,7 +272,7 @@ B 托管 `9.944833 → 9.928253`，A `10.055167 → 10.071747`，B 授权花费�
 
 活动 16 页面明确显示团队已创建“InferPool｜MON 预算托管的 AI 推理市场”，[项目 #385](https://mojo.devnads.com/projects/385) 详情状态为 **待审核**，关联 Monad Blitz@惠州，团队/队长正确。Demo href 为 https://demo.example.com、GitHub 地址正确，三张图片及正文均回读完整。提交未要求新的协议或资格声明，没有因此认定编码窗口合规，也未投票。
 
-Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成功，没有新增扩展权限。MOJO 强制将正常账单与两单对照裁为 16:9，主端目视确认费用、响应和账单仍保留，仓库原图未改；第三图为原本 16:9 的说明图，含 LOGO 并注明非运行截图。正文独立 LOGO 上传没有得到图片结果，已撤销空占位，改用公开 GitHub PNG/SVG 链接；不存在独立 LOGO 字段，不声称 LOGO 单独上传成功。本轮没有新链上请求，当前回执/文档待归档。
+Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成功，没有新增扩展权限。MOJO 强制将正常账单与两单对照裁为 16:9，主端目视确认费用、响应和账单仍保留，仓库原图未改；第三图为原本 16:9 的说明图，含 LOGO 并注明非运行截图。正文独立 LOGO 上传没有得到图片结果，已撤销空占位，改用公开 GitHub PNG/SVG 链接；不存在独立 LOGO 字段，不声称 LOGO 单独上传成功。本轮没有新链上请求，回执、截图与文档已在 50b2312 通过 SSH 推送至 origin/main。
 
 ## 下一步
 
