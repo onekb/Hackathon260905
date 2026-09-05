@@ -15,7 +15,7 @@
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库连接 | SSH 已连接 | origin 为 `git@github.com:onekb/Hackathon260905.git`；本次检查尚未 commit/push |
+| 仓库版本 | 已有首个本地提交，未推送 | `30d3956` — `Build InferPool Monad testnet marketplace and development docs`，144 个文件；origin 为 `git@github.com:onekb/Hackathon260905.git` |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
 | Router | 已实现，测试通过，已重启 | `8788` 模型接口可用；认证、计量、预算、SSE、幂等、恢复和重试；单进程存储 |
 | 独立卖家 | 已实现并联调 | 本地控制台与故障模式；链上报价权威；支持私钥/临时身份/现有 Alchemy session 三选一 |
@@ -81,6 +81,7 @@
 | Web lint | 全量 `npm run lint --workspace web` exit 0 | **0 errors / 0 warnings**；之前的 5 errors / 1 warning 已解决 |
 | Para 初始化修复 | 类型、配置解析器断言与实际冷刷新通过 | 新标签正常渲染，无空 session 和 Solana runtime 异常；这不代表登录已完成 |
 | 浏览器市场/钱包入口 | 实际冷刷新与点击检查通过 | `seller-monad`、四项报价 v1；Chrome 已置前，确认真实 InferPool 邮箱弹窗 |
+| 五页访客界面 | 独立应用内预览逐页检查通过 | 市场、账单、钱包与授权、API 接入、成为卖家；未登录提示与禁用操作符合预期，无 RuntimeError；未打断 Chrome 验证码流程 |
 | 浏览器钱包与交易 | 等待用户在 Chrome 邮箱/验证码登录 | 先前应用内弹窗用户未看到，已切换操作入口；登录、余额、签名和资金/请求交易尚未验收 |
 
 本次 full Para SDK 的初装审计曾报告 120 项问题（含 Cosmos 依赖路径的 2 项 critical）。切换 Lite 内嵌钱包并移除不需要的多链/外部连接依赖后，当前审计为 **19 项：12 low、7 moderate，零 high/critical**；这不代表完全没有依赖风险。CLI 3.18 的 doctor 对 Lite/`ParaProviderMin`/无外部钱包配置存在静态规则误报，已按本机源码确认；仍需真实运行验证。
