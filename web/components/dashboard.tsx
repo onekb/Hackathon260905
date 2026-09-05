@@ -5,6 +5,7 @@ import { ArrowDownLeft, ArrowUpRight, ArrowRight, Box, Braces, Check, CircleStop
 import { keccak256, stringToHex } from 'viem';
 import { api, ApiError, post, ROUTER_URL, short, txUrl } from '@/lib/api';
 import { formatAmount, orderAsset, parseAmount } from '@/lib/assets';
+import { executionEnded, newerSnapshot, type OrderSnapshot as Snapshot } from '@/lib/order-snapshot';
 import type { AccountInfo, ApiKeyInfo, MarketConfig, Order, PriceKey, Seller, WalletAccess } from '@/lib/types';
 import AccountPanel from './account-panel';
 import SellerPanel from './seller-panel';
@@ -12,18 +13,9 @@ const priceLabels: Record<PriceKey, string> = { input: '普通输入', cacheRead
 const statuses: Record<string, string> = { locking: '确认锁款', running: '正在生成', completed: '生成完成', budget_capped: '预算 / 输出上限', buyer_cancelled: '买家已取消', seller_failed: '卖家故障 · 全免', platform_failed: '平台故障 · 全免', lock_failed: '锁款失败', reservation_unknown: '正在核对锁款' };
 const money = formatAmount;
 const isRunning = (o: Order | null) => !!o && ['locking', 'running'].includes(o.status);
-const executionEnded = (o: Order) => ['completed', 'budget_capped', 'buyer_cancelled', 'seller_failed', 'platform_failed', 'lock_failed'].includes(o.status);
 const settlementLabel = (o: Order) => o.billConfirmed ? '已确认' : o.status === 'lock_failed' ? '未锁款' : o.status === 'reservation_unknown' ? '核对中' : o.settlement === 'failed' ? '待重试' : o.settlement === 'pending' ? '结算中' : '未提交';
 const messageOf = (e: unknown) => e instanceof Error ? e.message : '操作未完成，请稍后重试。';
-type Snapshot = Order & { updatedAt?: number };
 type RequestAttempt = Readonly<{ key: string; body: string; requestId?: string; ended: boolean }>;
-function newerSnapshot(previous: Snapshot | undefined, incoming: Snapshot): Snapshot {
-  if (!previous) return incoming;
-  if (previous.billConfirmed && !incoming.billConfirmed) return previous;
-  if (executionEnded(previous) && !executionEnded(incoming)) return previous;
-  if (previous.updatedAt !== undefined && incoming.updatedAt !== undefined && previous.updatedAt > incoming.updatedAt) return previous;
-  return incoming;
-}
 export default function Dashboard({ wallet, config }: { wallet: WalletAccess; config: MarketConfig }) {
   const [tab, setTab] = useState('play');
   // A new component instance isolates even A -> B -> A wallet switches and network changes.
@@ -44,6 +36,7 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
   const [maxTokens, setMaxTokens] = useState('512');
   const [cache, setCache] = useState(false);
   const [busy, setBusy] = useState('');
+  const waitingForBudget = busy === 'request' && (!order || order.status === 'locking');
   const [error, setError] = useState('');
   const [retryRequest, setRetryRequest] = useState(false);
   const [cancelling, setCancelling] = useState('');
@@ -252,7 +245,7 @@ function DashboardSession({ wallet, config, tab, setTab }: { wallet: WalletAcces
         <div className="seller-grid">{sellers.map((s,i)=><button key={s.provider_id} className={`seller-card ${provider===s.provider_id?'selected':''}`} disabled={busy==='request'||retryRequest} onClick={()=>{setProvider(s.provider_id);setModel(s.id);}}><div className="seller-top"><span className={`node-icon n${i%2}`}><Layers3 size={21}/></span><div><h3>{s.provider_name}</h3><p>{s.id}</p></div><span className="seller-status"><i/>{s.available_slots?'可接单':'忙碌'}</span></div><div className="card-prices"><div><span>普通输入</span><b>{money(s.quote.input)}</b></div><div><span>输出</span><b>{money(s.quote.output)}</b></div></div><div className="cache-price"><span>缓存读 {money(s.quote.cacheRead)}</span><span>缓存写 {money(s.quote.cacheWrite)}</span></div><div className="seller-footer"><span>最低预留 {money(s.quote.minReserve)} MON</span><span>{provider===s.provider_id?<Check size={17}/>:<ArrowUpRight size={17}/>}</span></div></button>)}{!sellers.length&&<div className="empty panel"><Radio/><h3>{online?'暂时没有在线节点':'正在连接推理市场'}</h3><p>卖家运行节点并发布报价后，会出现在这里。</p><button className="text-button" onClick={()=>void refreshPublic()}>刷新节点</button></div>}</div>
         <div className="workspace-grid"><section className="panel playground"><div className="panel-title"><h2><Terminal size={18}/> 在线体验台</h2><span className="subtle-pill">流式响应</span></div><div className="request-options"><label className="field">节点<select value={provider} onChange={e=>setProvider(e.target.value)} disabled={busy==='request'||retryRequest}><option value="auto">自动匹配 · 估算总价最低</option>{sellers.filter(s=>s.id===model).map(s=><option key={s.provider_id} value={s.provider_id}>{s.provider_name}</option>)}</select></label><label className="field">本次预算 · MON<input inputMode="decimal" value={budget} onChange={e=>setBudget(e.target.value)} disabled={busy==='request'||retryRequest}/></label><label className="field">最多输出<input type="number" min={1} max={8192} value={maxTokens} onChange={e=>setMaxTokens(e.target.value)} disabled={busy==='request'||retryRequest}/></label></div>
           <label className="field prompt-label">输入内容<textarea value={prompt} onChange={e=>setPrompt(e.target.value)} rows={4} disabled={busy==='request'||retryRequest} placeholder="向模型发送一条消息…"/></label><div className="request-toolbar"><label className="check-label"><input type="checkbox" checked={cache} onChange={e=>setCache(e.target.checked)} disabled={busy==='request'||retryRequest}/> 模拟上下文缓存</label><button className="button" onClick={run} disabled={!!busy||!online||(!retryRequest&&!sellers.length)}>{busy==='request'?<LoaderCircle className="spin" size={17}/>:<Play size={16}/>} {busy==='request'?'请求处理中':retryRequest?'恢复同一请求':token?'运行请求':'登录后运行'}</button></div>
-          <div className="output-window"><div className="output-heading"><span><i className={isRunning(order)?'pulsing':''}/>{order?statuses[order.status]:'等待请求'}</span>{isRunning(order)&&<button className="text-button danger" onClick={cancel} disabled={cancelling===order?.id}><CircleStop size={15}/> {cancelling===order?.id?'取消中…':'取消请求'}</button>}</div><div className="output-text" aria-live="polite">{order?.output||<div className="output-empty"><Terminal size={28}/><span>响应将逐步显示在这里</span><small>先锁定预算，再向卖家发送请求</small></div>}</div></div><p className="fine-print">Mock 使用 Unicode 字符模拟 Token，不代表真实模型能力。平台与接单卖家可见请求内容。</p></section>
+          <div className="output-window"><div className="output-heading"><span><i className={isRunning(order)?'pulsing':''}/>{order?statuses[order.status]:waitingForBudget?'正在提交与确认预算':'等待请求'}</span>{isRunning(order)&&<button className="text-button danger" onClick={cancel} disabled={cancelling===order?.id}><CircleStop size={15}/> {cancelling===order?.id?'取消中…':'取消请求'}</button>}</div><div className="output-text" aria-live="polite">{order?.output||<div className="output-empty"><Terminal size={28}/><span>{waitingForBudget?'正在提交请求并确认链上预算':'响应将逐步显示在这里'}</span><small>锁款确认后，卖家才会开始输出</small></div>}</div></div><p className="fine-print">Mock 使用 Unicode 字符模拟 Token，不代表真实模型能力。平台与接单卖家可见请求内容。</p></section>
           <Bill key={order?.id??'empty'} order={order} config={config} wallet={wallet} onRefresh={refresh}/></div>
       </>}
       {tab==='bills'&&<div className="billing-layout"><section className="panel"><div className="panel-title"><h2>最近请求</h2><button className="text-button" onClick={()=>void refresh()}><RefreshCw size={15}/>刷新</button></div>{!token?<div className="empty"><Wallet/><p>连接钱包并签名登录后查看你的请求。</p><button className="button" onClick={authenticate}>登录</button></div>:!orders.length?<div className="empty">还没有请求。去体验台开始第一次推理。</div>:<div className="table-wrap"><table><thead><tr><th>请求 / 节点</th><th>状态</th><th>费用 / 资产</th><th>结算</th></tr></thead><tbody>{orders.map(o=><tr key={o.id} onClick={()=>selectOrder(o)}><td><button className="text-button">{o.id.slice(0,8)}</button><small>{o.providerId}</small></td><td>{statuses[o.status]}</td><td>{o.billConfirmed?money(o.charge):'待确认'} <small>{orderAsset(o,config).symbol}</small></td><td><span className={o.billConfirmed?'tag-good':'muted'}>{settlementLabel(o)}</span></td></tr>)}</tbody></table></div>}</section><Bill key={order?.id??'empty'} order={order} config={config} wallet={wallet} onRefresh={refresh}/></div>}

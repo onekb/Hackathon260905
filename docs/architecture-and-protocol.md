@@ -31,6 +31,12 @@ sequenceDiagram
 | Provider | 独立身份、主动长连接、Mock 响应、故障模式、本地控制台 | [provider/src](../provider/src/) |
 | InferenceMarket（原生 MON） | 18 位 wei，payable 存款、报价、授权、锁款、结算、回收及原生提款 | [InferenceMarket.sol](../contracts/src/InferenceMarket.sol) |
 
+### 流式消息与界面状态
+
+本地修复已完成、尚待部署：Provider Hub 串行完成认证及消息准入，已认证业务事件分发不等待链上结算。Engine 继续按 `requestId` 串行处理片段和终态，保证同一订单顺序；另一订单等待结算时，不阻塞该连接的心跳与其他订单输出。认证期间断线会终止接入，异步业务错误仍有明确处理。依据为 [Hub](../server/src/provider-hub.ts) 和 [6 项回归](../server/test/provider-hub.test.ts)，其中真实本地 WS → HTTP/SSE 覆盖两单并发。
+
+Web 同时接收 SSE 和轮询快照，[合并规则](../web/lib/order-snapshot.ts) 保留已确认账单及终态，拒绝输出长度/计量减少、running 回退 locking 和明确更旧的快照；即使时间戳相同或缺失，也不允许旧轮询撤回已展示输出。链上预算提交与确认阶段单独提示，首个 SSE 事件仍需等待锁款；本轮未改 SSE 协议或代理设置。测试与线上状态分开记录在[进度](progress.md)。
+
 ## 资金与权限
 
 买家调用 payable `deposit()`，通过 `msg.value` 存入原生 MON，再调用 `authorizeRouter(totalLimit, expiresAt)` 设置独立消费授权；不再需要 ERC-20 approve。Router 只能使用合约内获授权的托管余额，不能直接从钱包任意扣 MON。买家存款/授权/提款仍需预留链上 Gas。API Key 只代表调用身份，不会增加授权、签交易或获得提款权。
