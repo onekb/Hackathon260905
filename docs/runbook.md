@@ -91,7 +91,7 @@ D17 已要求移除旧资产 UI、ABI、源码/测试和资金脚本，当前产
 
 ### 两卖家 smoke 的准备与执行边界
 
-此标题保留给历史证据链接。旧脚本已退出产品；参数、异常恢复与三单/独立网页单仅见 [历史运行手册](https://github.com/onekb/Hackathon260905/blob/2b4de54536645a0a020e1071a06c909b285611c2/docs/runbook.md)，不作为新 MON 验收步骤。
+此标题保留给历史证据链接。旧脚本已退出产品；参数、异常恢复与三单/独立网页单仅见 [历史运行手册](https://github.com/onekb/Hackathon260905/blob/28e9e2e1c898eb26018ca07f492488f38543a30c/docs/runbook.md)，不作为新 MON 验收步骤。
 
 ### 实际 API 到测试网结算验收
 

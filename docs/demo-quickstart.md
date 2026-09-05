@@ -1,10 +1,12 @@
 # InferPool 五分钟上台速查
 
+> PPT/PDF 仅保留本地，不随 Git 仓库提供；文件位置见 [本地演示材料说明](../artifacts/presentation/README.md)。下文质量检查指原交付版本，不包含后续用户编辑。
+
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
 **两分钟讲三页 PPT，三分钟演示网页。现场只发一笔正常请求；卖家故障展示先前已确认订单。** 入口：[demo.example.com](https://demo.example.com)。MOJO [#385](https://mojo.devnads.com/projects/385) 已提交、待审核。
 
-新版主线：[v2 PPT](../artifacts/presentation/InferPool-pitch-v2.pptx) · [v2 PDF](../artifacts/presentation/InferPool-pitch-v2.pdf)（3页全部逐页检查通过）；[旧版文件](../artifacts/presentation/README.md)保留。
+新版主线：本地 v2 PPT（`InferPool-pitch-v2.pptx`） · 本地 v2 PDF（`InferPool-pitch-v2.pdf`）（3页全部逐页检查通过）；[旧版文件](../artifacts/presentation/README.md)保留。
 
 ## 上台前准备
 

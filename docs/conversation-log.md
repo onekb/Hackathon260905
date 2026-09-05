@@ -554,7 +554,7 @@
 
 ## 2026-09-05 · 三页 PPT 已完成，PDF 字体最终核对中
 
-根已生成 [InferPool-pitch.pptx](../artifacts/presentation/InferPool-pitch.pptx)，恰好3页且每页含讲稿备注，结构/版面检查通过：项目及费用上限、MON单次锁款/执行/结算、正常 .0001658 MON 与故障0的历史账单。配套 [PDF](../artifacts/presentation/InferPool-pitch.pdf) 已生成、中文字体待最终核对；文档已加两文件入口及 [简短说明](../artifacts/presentation/README.md)，没有提前标PDF最终通过。仍按2分钟讲解+3分钟网页，现场仅1笔正常请求，故障用历史单；本轮未交易、改业务代码或提交/推送。
+根已生成 本地产物 `../artifacts/presentation/InferPool-pitch.pptx`（InferPool-pitch.pptx），恰好3页且每页含讲稿备注，结构/版面检查通过：项目及费用上限、MON单次锁款/执行/结算、正常 .0001658 MON 与故障0的历史账单。配套 本地产物 `../artifacts/presentation/InferPool-pitch.pdf`（PDF） 已生成、中文字体待最终核对；文档已加两文件入口及 [简短说明](../artifacts/presentation/README.md)，没有提前标PDF最终通过。仍按2分钟讲解+3分钟网页，现场仅1笔正常请求，故障用历史单；本轮未交易、改业务代码或提交/推送。
 
 ## 2026-09-05 · PPT 与 PDF 最终检查完成
 
@@ -572,7 +572,7 @@
 
 ## 2026-09-05 · v2 PPT/PDF 最终交付检查完成
 
-根确认 [v2 PPT](../artifacts/presentation/InferPool-pitch-v2.pptx) 与 [v2 PDF](../artifacts/presentation/InferPool-pitch-v2.pdf) 三页均逐页检查通过；末页截图放大为全宽账单区，两笔订单、0费用、.001释放清晰可读，中文无溢出。当前入口全部改为已完成，旧版保留；根准备提交与SSH推送，未提前记录推送成功。本轮没有新交易或业务部署。
+根确认 本地产物 `../artifacts/presentation/InferPool-pitch-v2.pptx`（v2 PPT） 与 本地产物 `../artifacts/presentation/InferPool-pitch-v2.pdf`（v2 PDF） 三页均逐页检查通过；末页截图放大为全宽账单区，两笔订单、0费用、.001释放清晰可读，中文无溢出。当前入口全部改为已完成，旧版保留；根准备提交与SSH推送，未提前记录推送成功。本轮没有新交易或业务部署。
 
 ## 2026-09-05 · 演示域名引用与历史清理可行性
 
@@ -585,6 +585,19 @@
 - **明确范围：** 用户回复“只处理 git 仓库和 git 历史”，授权清理当前 Git 跟踪文件、PPT/PDF 及历史并同步远端。[D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名) 记录此决定；服务器、MOJO 实际内容、DNS/HTTPS、Para、ignored 文件及 IP 等其他数据不在范围内。
 - **采用解释：** `demo.example.com` 只作脱敏占位，不是新上线网址。替换公开回执里的域名展示不会改动链上地址、交易哈希、金额和结果；历史部署短 SHA/release 名保留为当时标签，不伪装成重写后 SHA，也不声称重新部署。
 - **执行与限制：** 主 agent 正在清理和准备历史重写，文档先记录授权，尚未确认完成或推送成功。历史变更后应重新克隆或受控迁移，不能从旧副本 merge/push 回污染；外部缓存及第三方副本不承诺抹除。最终验证待补入[盘点](domain-reference-audit.md)和[进度](progress.md)。
+
+## 2026-09-05 · GitHub 域名历史已清理，独立克隆通过
+
+- **远端交付：** 主 agent 通过 SSH 精确 `force-with-lease` 将 GitHub `main` 从旧 `895a613` 更新到 `a4842c77b093d1930ef25f804cd8342c33d34873`。重写 92 个文本 blob 与 4 个演示 blob；7 个原始提交 SHA 不变，14 个原始提交和新清理提交共 15 个 SHA 改变。
+- **验证：** 22 个提交逐一检查路径、权限、非目标 blob、作者时间、消息及父关系，净化后的当前树一致。独立从 GitHub 全新 mirror 克隆含 22 commit/167 tree/443 blob，共 632 对象、1,418 目录项，refs 仅 main、无 tags、无不可达对象和 reflog。原文、路径、提交、PPT 解压与全部 PDF 流均零命中且无失败；类型检查与 3 项离线 origin 拒绝用例已通过。两处当前历史源码链接按真实 commit-map 更新，服务器 release 标签保留。
+- **本地未完：** 原 `.git` 的旧 Codex refs/reflog/对象尚待清理和 GC。用户 WPS 新编辑又带回域名，已私有备份；待关闭文件后只净化域名并保留其余编辑为未提交修改，不把用户新增编辑混入清理提交。尚未声称原工作区全部清理完毕，详见[盘点](domain-reference-audit.md)。
+- **边界：** 本轮未修改服务器、MOJO 实际内容、DNS/HTTPS、Para、ignored 文件或链上数据；独立克隆零残留不代表清除了外部缓存和已有副本。
+
+## 2026-09-05 · 用户最终要求演示文件仅留本地
+
+- **范围纠正：** 用户明确“PPT 不需要管，只处理 Git 和 Git 历史，PPT 不上传到仓库”。此要求覆盖前条净化本地 PPT 后继续跟踪的方案；两版 PPTX 与对应 PDF 从当前 Git 跟踪和全部历史移除，并加入 ignore。
+- **本地保护：** 不再修改用户正在编辑的演示内容，不需要关闭 WPS，不把新增编辑提交。历史生成、检查与交付叙述仅代表当时产物；当前用户编辑未重新审阅。文档改用本地产物路径说明，新克隆不含这 4 个文件。
+- **当前状态：** 前次 a4842c7 推送及 632 对象独立扫描是中间阶段。主 agent 正执行最终文件移除、历史重写和远端复核，原 `.git` 旧对象也待收尾，不提前称最终完成。其余线上系统继续保持原样，见 [D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名)。
 
 ## 后续追加格式
 

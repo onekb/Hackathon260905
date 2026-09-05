@@ -6,7 +6,7 @@
 
 ## 当前结论
 
-**当前执行：仓库域名清理。** 用户已明确仅清理 Git 跟踪文件与提交历史，主 agent 正在执行，尚未确认历史重写、推送或最终扫描完成。服务器、MOJO 实际字段、DNS/HTTPS、Para 和 ignored 本地产物不在范围内，线上服务保持原样；见 [D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名) 与[清理盘点](domain-reference-audit.md)。
+**最终范围调整：PPT/PDF 只留本地，正在从 Git 和历史移除。** 用户最新明确演示文件不上传仓库；两版 PPTX 与对应 PDF 将退出当前跟踪和全部历史并加入 ignore，本地内容和用户新增编辑不动，不需要关闭 WPS。前次 `a4842c77b093d1930ef25f804cd8342c33d34873` 的推送及独立克隆零域名结果是中间阶段，最终重写、远端复核和原 `.git` 旧对象清理尚待完成。详见 [D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名) 与[清理盘点](domain-reference-audit.md)。
 
 **脱敏与历史标签说明：** 仓库中的 `demo.example.com` 是地址脱敏占位，不是新网址或新验收结果。下文旧 Git SHA、服务器 release 名及当时产物摘要作为历史证据标签保留，不能当作重写后的提交 SHA；回执仅替换域名展示，不改链上地址、交易哈希、金额或验收结论。
 
@@ -235,7 +235,7 @@ B 托管 `9.944833 → 9.928253`，A `10.055167 → 10.071747`，B 授权花费�
 | 验证层 | 已有证据 | 覆盖与限制 |
 | --- | --- | --- |
 | Foundry | D17 清理后 **41/41 通过** | 市场 38、Counter 2、不变量 1 套；invariant 128 × 64、fuzz 256；[业务测试](../contracts/test/InferenceMarket.t.sol) 涵盖资金、权限、预算、报价、授权、终态及回收 |
-| 根 Node 单测 | D17 MON-only **91/91 通过**，根类型检查通过 | 含静态目录/同端口 6 项、限额/代理 12 项、浏览器签名与恢复；45/48/60/64/76/82 为历史计数，不相加；[server/test](../server/test/) / [provider/test](../provider/test/) / [恢复测试](https://github.com/onekb/Hackathon260905/blob/2b4de54536645a0a020e1071a06c909b285611c2/scripts/smoke-market-monad.test.ts) |
+| 根 Node 单测 | D17 MON-only **91/91 通过**，根类型检查通过 | 含静态目录/同端口 6 项、限额/代理 12 项、浏览器签名与恢复；45/48/60/64/76/82 为历史计数，不相加；[server/test](../server/test/) / [provider/test](../provider/test/) / [恢复测试](https://github.com/onekb/Hackathon260905/blob/28e9e2e1c898eb26018ca07f492488f38543a30c/scripts/smoke-market-monad.test.ts) |
 | Provider 独立回归 | 双卖家阶段 **34/34 通过**，包含在根全量中 | 临时钱包和本机 HTTP/WS 检查，不新增链上交易或 Alchemy 会话 |
 | 公网限额与代理专项 | 新增 **12 项**、server **38/38** 均通过 | 固定起点、持久次数、并发、暂停/准确重放和代理 IP 等；未启用到原 Monad Router |
 | 前序本机静态 Web 导出 | 配置 13 项正反检查、本机 URL 的 webpack 导出及 Web lint 通过 | `web/out` 已生成但未公网部署；未启用 public-build。Turbopack 端口权限失败与 Para AA 可选模块警告如实保留；3001 页面/钱包弹窗检查不含 API |
@@ -284,11 +284,11 @@ Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成
 
 ### 前序短 PPT 与现场操作流程准备
 
-用户紧急要求短 PPT 和演示操作流程；[三页 PPT](../artifacts/presentation/InferPool-pitch.pptx) 已实际生成，含每页讲稿备注，结构/版面检查通过；[同目录 PDF](../artifacts/presentation/InferPool-pitch.pdf) 已由 bundled LibreOffice 导出并逐页检查3页，中文清晰、无溢出；末页账单区域裁切正确，原始截图未改。已准备 [五分钟速查](demo-quickstart.md)：2 分钟讲解、3 分钟网页，现场只发一笔正常请求（预算 .001 MON、最多输出512、指定seller-monad、缓存关闭），故障用先前 c985df51 已确认订单，正常历史 d6f9abd0 备用。此文档准备未执行链上请求、未改业务代码，PPT/PDF 均已完成；[文件说明](../artifacts/presentation/README.md)集中记录来源与备用打开方式。
+用户紧急要求短 PPT 和演示操作流程；本地产物 `../artifacts/presentation/InferPool-pitch.pptx`（三页 PPT） 已实际生成，含每页讲稿备注，结构/版面检查通过；本地产物 `../artifacts/presentation/InferPool-pitch.pdf`（同目录 PDF） 已由 bundled LibreOffice 导出并逐页检查3页，中文清晰、无溢出；末页账单区域裁切正确，原始截图未改。已准备 [五分钟速查](demo-quickstart.md)：2 分钟讲解、3 分钟网页，现场只发一笔正常请求（预算 .001 MON、最多输出512、指定seller-monad、缓存关闭），故障用先前 c985df51 已确认订单，正常历史 d6f9abd0 备用。此文档准备未执行链上请求、未改业务代码，PPT/PDF 均已完成；[文件说明](../artifacts/presentation/README.md)集中记录来源与备用打开方式。
 
 ## 下一步
 
-先完成已授权的 Git 域名清理，核对当前文本、PPT/PDF 内容、全部目标历史 refs 与远端结果后更新本页；旧本地副本须重新克隆或完成受控迁移，不要直接 merge/push 回新历史。此项不包含重新部署或任何链上操作。
+按用户最终范围，将两版 PPTX/PDF 从当前 Git 跟踪和全部历史移除，保留本地字节并忽略后续编辑；再次重写、独立克隆检查以及原 `.git` 旧 refs/reflog/对象清理完成后补最终结果。当前用户编辑版本未审阅，新克隆不含这些本地演示文件。旧副本须重新克隆或受控迁移，不要直接 merge/push 回新历史；此项不包含重新部署或任何链上操作。
 
 独立买家 MON 网页验收与 MOJO 正式提交已完成，项目 [#385](https://mojo.devnads.com/projects/385) 正在等待主办方审核。下一步按 [五分钟正式脚本](demo-guide.md) 排演并准备短录屏后备；当前没有成片，不代主办方审核或投票。
 

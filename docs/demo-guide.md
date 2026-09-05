@@ -1,8 +1,10 @@
 # InferPool 演示指南
 
+> PPT/PDF 仅保留本地，不随 Git 仓库提供；文件位置见 [本地演示材料说明](../artifacts/presentation/README.md)。下文质量检查指原交付版本，不包含后续用户编辑。
+
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
-**紧急上台请用 [五分钟速查](demo-quickstart.md)：2 分钟三页 PPT + 3 分钟网页，现场只发一笔正常单，故障展示先前 c985df51 验收订单。** 当前按“供需价值、Monad双向价值、使用流程”制作 [v2 PPT](../artifacts/presentation/InferPool-pitch-v2.pptx) / [v2 PDF](../artifacts/presentation/InferPool-pitch-v2.pdf)，PPT/PDF 3页全部逐页检查通过；旧版保留。下方完整脚本保留作准备参考，不据此临场再做 SSH 故障注入。
+**紧急上台请用 [五分钟速查](demo-quickstart.md)：2 分钟三页 PPT + 3 分钟网页，现场只发一笔正常单，故障展示先前 c985df51 验收订单。** 当前按“供需价值、Monad双向价值、使用流程”制作 本地 v2 PPT（`InferPool-pitch-v2.pptx`） / 本地 v2 PDF（`InferPool-pitch-v2.pdf`），PPT/PDF 3页全部逐页检查通过；旧版保留。下方完整脚本保留作准备参考，不据此临场再做 SSH 故障注入。
 
 准备日期：2026-09-05，Asia/Shanghai。以下是 **5 分钟正式演示 / 3 分钟压缩脚本**，不是已录视频或已完成现场排演。当前 [公网 MON 版](https://demo.example.com) 已通过 API 34 批 SSE/结算，以及独立买家 Chrome Para B 的 .1 MON 存款、.05/24h 授权、正常收费 .0001658 MON 与卖家故障零费两单；六笔交易及跨钱包余额独立 RPC 核对。浏览器观察处理完成和账单，未采集逐帧增长证据，不能借用 API SSE 证明浏览器逐帧效果。MOJO [项目 #385](https://mojo.devnads.com/projects/385) 已提交待审核，下一步五分钟排演及录屏后备；最新范围见 [进度](progress.md)。
 

@@ -1,13 +1,13 @@
 # InferPool 三页演示
 
-本轮仓库清理已将两版 PPT 的演示域名改为“项目演示”，相关备注删除地址，并重新导出 PDF。六页逐页检查通过，截图、裁切与其他文字保持原样；实际演示地址由仓库外提供。
+按用户最终要求，PPT 及其导出 PDF 只保留本地，不纳入 Git，也不保留在 Git 历史。该目录的忽略规则防止再次误提交；从仓库新克隆不会包含演示文件。当前用户编辑中的文件不由本轮修改，以下检查记录仅指之前交付时的版本。
 
 **约 2 分钟讲解 + 3 分钟网页演示。** 按 [五分钟速查](../../docs/demo-quickstart.md) 操作，现场只发一笔正常请求，故障展示先前已确认订单。
 
 当前按用户纠正制作 v2：
 
-- [InferPool-pitch-v2.pptx](InferPool-pitch-v2.pptx) / [InferPool-pitch-v2.pdf](InferPool-pitch-v2.pdf)：**PPT/PDF 3页全部逐页检查通过；中文无溢出，末页全宽账单区的两笔订单、0费用与.001释放可读**。
-- 旧版 [PPT](InferPool-pitch.pptx) / [PDF](InferPool-pitch.pdf) 保留；旧版已检查3页，不能将此检查结果当成v2通过。
+- 本地 `InferPool-pitch-v2.pptx` / `InferPool-pitch-v2.pdf`：**交付时的 PPT/PDF 3页全部逐页检查通过；中文无溢出，末页全宽账单区的两笔订单、0费用与.001释放可读**。
+- 本地旧版 `InferPool-pitch.pptx` / `InferPool-pitch.pdf` 保留；旧版交付时已检查3页，不能将此检查结果当成v2通过。
 
 v2 三页依次讲：闲置推理能力与按需买家的供需价值；Monad 提供结算/预算/记录/钱包工具，InferPool 计划带来应用/Agent推理API与支付场景；卖家接入与买家使用流程。Token 是用量单位，不是库存；低价和减少闲置未做实价/利用率验证，不声称任意第三方额度转售或已有生态合作。
 

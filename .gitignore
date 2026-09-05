@@ -12,3 +12,9 @@ coverage/
 contracts/cache/
 contracts/out/
 contracts/lib/
+# Presentation decks and exports are local-only; do not publish them to Git.
+artifacts/presentation/*.ppt
+artifacts/presentation/*.pptx
+artifacts/presentation/*.pptm
+artifacts/presentation/*.pdf
+artifacts/presentation/.~*

@@ -12,7 +12,7 @@ InferPool 是黑客松中的 AI 推理市场：卖家独立运行 Mock 节点，
 | 买家如何接卖家、钱如何流动、计费和 API 如何工作 | [架构、计费与协议](architecture-and-protocol.md) |
 | 如何启动、配置钱包、复现测试、检查部署 | [运行与部署手册](runbook.md) |
 | 常驻 Router、静态前端及反向代理如何准备 | [公网部署与交接记录](../deploy/README.md)（页面与常驻卖家已验收） |
-| 上台照读：2 分钟 PPT + 3 分钟网页，只发 1 单 | [五分钟速查](demo-quickstart.md) · [v2 PPT](../artifacts/presentation/InferPool-pitch-v2.pptx) · [v2 PDF](../artifacts/presentation/InferPool-pitch-v2.pdf)（3页全部检查通过） |
+| 上台照读：2 分钟 PPT + 3 分钟网页，只发 1 单 | [五分钟速查](demo-quickstart.md) · 本地 v2 PPT（`InferPool-pitch-v2.pptx`） · 本地 v2 PDF（`InferPool-pitch-v2.pdf`）（只保留本地，不随仓库提供） |
 | 完整演示准备、历史证据与限制 | [演示指南](demo-guide.md) |
 | 中英文项目文案、成果证据和提交回执 | [比赛提交材料](hackathon-submission.md) |
 | LOGO 与项目说明预览图、如何重新生成 | [提交图形素材](../artifacts/submission/README.md) |
