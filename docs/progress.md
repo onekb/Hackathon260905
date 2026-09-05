@@ -10,13 +10,15 @@
 
 **脱敏与历史标签说明：** 仓库中的 `demo.example.com` 是地址脱敏占位，不是新网址或新验收结果。下文旧 Git SHA、服务器 release 名及当时产物摘要作为历史证据标签保留，不能当作重写后的提交 SHA；回执仅替换域名展示，不改链上地址、交易哈希、金额或验收结论。
 
-**原生 MON 版已上线 [https://demo.example.com](https://demo.example.com)。** 远端 current 指向 `/srv/inferpool/releases/a78470a`，Linux npm ci 成功；公网 `/config`、`/v1/models` 均 200，返回新市场 `0x142a4904307244Bed0cECD72dE8329A253333182`、MON/18。卖家 A 报价 v1 为 .3/.03/.375/.8 MON 每百万模拟单位，最低预留 .000001、normal、在线 2 槽。公网一单已验证 34 批 SSE 增量、链上锁款/结算、幂等重放及 Key 撤销，费用 .0001285 MON。Chrome Para B 已完成 .1 MON 存款、.05/24h 授权及正常/卖家故障两单，六笔交易经独立 RPC 核对；正常收费 .0001658 MON、故障零费，B 与卖家 A 不同钱包。浏览器观察到处理完成和账单，未采集逐帧增长证据；34 批 SSE 属于前序 API 的独立验收。
+**当前原生 MON 服务已更新至 fc646d8。** 远端 current 指向 `/srv/inferpool/releases/fc646d8`，Linux npm ci 成功；公网 `/`、`/health`、`/config`、`/v1/models` 均 200，MON/18 与新市场一致，卖家 A 为 normal、在线 2 槽、报价 v1 未变。主页产物哈希在构建机、服务器和公网一致。本轮 Chrome B 单笔请求完成与链上结算已验证，未捕捉到部分文字，公网逐帧展示仍未验证。
+
+**前序交易验收：** 原生公网 API 一单已验证 34 批 SSE 增量、链上锁款/结算、幂等重放及 Key 撤销，费用 .0001285 MON。Chrome Para B 已完成 .1 MON 存款、.05/24h 授权及正常/卖家故障两单，六笔交易经独立 RPC 核对；正常收费 .0001658 MON、故障零费，B 与卖家 A 不同钱包。当时浏览器观察到处理完成和账单，未采集逐帧增长证据；34 批 SSE 属于前序 API 的独立验收。
 
 [D17](requirements-and-decisions.md#d17--正式产品仅-mon旧-dusd-完整剥离并私有归档) 已完成数据切换：旧 15 单与凭证整账本保留私有备份，新 `router-mon-state.json` 初始没有旧 orders/credentials，只有 15 条 buyer + createdAt 最小 admissionHistory；固定 epoch 和限额不变，不兑换、销毁或代提旧链上资金。Para 钱包不变，需新平台签名会话与 MON Key。
 
-本版根 **91/91**、类型检查、Foundry **41/41**、前端最终 **8/8**、Web 类型/lint/公网构建通过。原生合约已验证 2/2，同钱包直接合约小额 smoke 8 笔回执成功，正常费 .000110 MON、卖家失败 0、提款 .001 MON。此前多钱包、浏览器六场景、旧 API 与截图属于 **dUSD 历史归档**，不能改标成新版 MON 验收。最新 B 可用 .0998342、授权剩 .0498342 MON，A 可用 .0091658 MON，锁款均 0；MOJO 项目 [#385](https://mojo.devnads.com/projects/385) 已提交，状态**待审核**；不代表资格或审核通过。
+当前修复根 **97/97**、Web **13/13**、根/Web 类型检查、Web lint/公网构建通过；原生合约前序 Foundry **41/41** 保留，本轮未改合约。原生合约已验证 2/2，同钱包直接合约小额 smoke 8 笔回执成功，正常费 .000110 MON、卖家失败 0、提款 .001 MON。此前多钱包、浏览器六场景、旧 API 与截图属于 **dUSD 历史归档**，不能改标成新版 MON 验收。前序两单验收时 B 可用 .0998342、授权剩 .0498342 MON，A 可用 .0091658 MON，锁款均 0；MOJO 项目 [#385](https://mojo.devnads.com/projects/385) 已提交，状态**待审核**；不代表资格或审核通过。
 
-首次切换仅重启 Router 时被 Provider 长连接拖住；根受控停止/启动 Provider 后恢复，没有强杀。未来切换脚本已改为同时重启两服务，该脚本更新尚不改变当前运行 a78470a 的业务代码。
+首次切换仅重启 Router 时被 Provider 长连接拖住；根受控停止/启动 Provider 后恢复，没有强杀。未来切换脚本已改为同时重启两服务，该维护脚本属于首次资产迁移历史；本次 fc646d8 是保留原生账本的常规升级。
 
 ### 前序流式展示诊断（2026-09-05，Asia/Shanghai）
 
@@ -24,25 +26,31 @@
 
 线上只读核对 app.ts、engine.ts 与 Provider 源码 SHA 和本地一致；normal 输出为 80ms/4 字、约 4 秒，首个 SSE 事件需先等链上锁款。可见 OpenResty `gzip_types` 没有 `*` 或 `text/event-stream`，未见忽略 `X-Accel-Buffering` 的配置，尚无明确全文缓冲证据。另已复现同一卖家并发两单时，provider-hub 的 WebSocket 全局串行队列等待结算会延迟另一单 chunk/heartbeat；**尚未修复，也未证明是此次单请求症状的原因**。本轮仅诊断与记录，不改线上配置、源码或本地演示文件；实际域名继续按 D18 脱敏。
 
-### 流式修复本地完成，待部署（2026-09-05，Asia/Shanghai）
+### 流式修复已部署，网页单笔结算已验、逐帧未采证（2026-09-05，Asia/Shanghai）
 
 用户随后询问“怎么处理好呢，能修复吗”，已授权修复与发布。后端 [provider-hub](../server/src/provider-hub.ts) 保持认证串行，业务事件分发不再等待链上结算；Engine 原有逐 `requestId` 队列继续保序。新增 [6 项回归](../server/test/provider-hub.test.ts) 先在旧实现复现失败，再通过真实本地 WS → HTTP/SSE 验证：订单 A 结算 pending 时，同卖家的订单 B 仍可增量输出、响应心跳并独立完成，也覆盖认证中断线与异步错误。
 
 前端 [快照合并](../web/lib/order-snapshot.ts) 阻止同毫秒或缺少时间戳的旧轮询结果缩短输出、把 running 回退到 locking，并提示正在提交/确认链上预算。新增 5 项加既有 8 项共 **13/13** 通过；根全量 **97/97**、根/Web 类型检查、Web lint 通过。公网 webpack 静态构建成功，产物 68 文件，新预算等待提示已在 bundle 中核对：首次沿用本地 Router origin 被守卫正确拒绝，随后仅用进程级真实 HTTPS origin 覆盖后成功，没有修改 env 文件。SSE 协议及代理配置未改。
 
-这些是本地完成证据，**新修复尚未发布，用户该次公网现象仍未逐帧复现**。线上只读快照为 4 单、0 未决、history 15，固定 epoch 未变；此前 3 单的浏览器验收快照保留。待受控发布后再核对运行代码、前端产物与实际线上状态，不把旧版流式验收当作此次修复上线证明。
+修复已作为 **fc646d8** 发布。新 release 的 Linux npm ci 成功（775 packages，约 20 秒）；发布包 SHA256 为 `8fdca897d2a732ac0d9bbd8c995ad6a8fc448312212c4052f13ba4bd022c2871`，index SHA256 为 `4c82e528c9ef56bd119aeaa5580055ce32414310ecac3b4359f027d254d74e4c`，本地/服务器/公网一致。双服务受控停止、启动完成；停前停后零未决，4 单原记录与凭证、history 15、固定 epoch 均保留，env 字节哈希未变、账本权限 0600。私有备份为 `/srv/inferpool/state/backups/streaming-20260905T094402Z`；钱包会话 valid/active，到期仍为 `2026-09-12T06:33:39.043Z`。没有修改代理、TLS 或 env。
 
-只读发布审查确认 [switch-native.py](../deploy/switch-native.py) 是一次性旧资产迁移脚本，当前已有原生账本，不适用于本轮常规代码升级。发布需保留当前账本、凭证、配额历史及固定 epoch，先核对在途与不明交易、私有备份，再受控停止 Router/Provider、切换完整 release。暂停配置只在启动读取；回退代码也不能用旧账本覆盖期间的新记录。本轮文档未执行部署，D18 脱敏和本地演示文件保护继续生效。
+公网首页、健康、配置和模型均 200，新市场 MON/18、A normal/2 槽正常。Chrome B 刷新已发布页面，以原钱包例行签名平台登录，没有更改存款或授权；只发一笔预算 **.001 MON**、默认提示词、max_tokens 512 的请求。DOM 先显示“正在提交与确认预算”，最后显示 187 字和“生成完成”，账单为“链上已确认”。短输出期间的采样**没有捕捉到部分文字，因此公网逐帧展示仍未验证**；本地并发 WS/SSE 测试及前序 API 增量证据不能替代这一缺口。
+
+前端账单参考：在“请求账单”选择 `317077c8-9340-4bc3-a742-ca64091e27c6`。用量为普通输入 54、缓存读/写 0、输出 187，费用 **.0001658 MON**，释放 **.0008342 MON**。公共 RPC 独立核对 [锁款交易](https://testnet.monadscan.com/tx/0xf775e005bc37e60339899ecca787c34ba132f64649a05469ad24da3efd0a9363)（区块 59873204）与 [结算交易](https://testnet.monadscan.com/tx/0x871f161b898b8c85171f8c90a16526a60af744ef440ac23f9db8fb8da081555c)（区块 59873249）均 success，from 为 Router、to 为新市场、订单 ID 哈希匹配；getOrder 为 state 2/outcome 0，charged 165800000000000 wei、budget 1000000000000000 wei，用量一致。本条是新增单笔验证，不改前序 JSON 或截图。
+
+最终只读快照：fc646d8、双服务 active、**5 单/0 未决/history 15**，epoch 不变；约 17:47（Asia/Shanghai）本场剩 **4 次**、B 当日剩 **1 次**。保留现场演示额度，不因发布重置次数；本轮验收记录归档于本节。
+
+只读发布审查确认 [switch-native.py](../deploy/switch-native.py) 是一次性旧资产迁移脚本，当前已有原生账本，不适用于本轮常规代码升级。发布需保留当前账本、凭证、配额历史及固定 epoch，先核对在途与不明交易、私有备份，再受控停止 Router/Provider、切换完整 release。暂停配置只在启动读取；回退代码也不能用旧账本覆盖期间的新记录。本次由主 agent 执行上述常规升级，D18 脱敏和本地演示文件保护继续生效。
 
 ## 分项状态
 
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库版本 | 域名及演示文件历史清理版 794139c 已通过 SSH 推送 | GitHub 独立新克隆和本地均核对 23 提交/643 对象，域名及 PPT/PDF 路径/对象零命中；服务器仍使用当时 release 标签 a78470a，完成回执文档另行归档 |
+| 仓库版本 | 域名及演示文件历史清理版 794139c 已通过 SSH 推送 | GitHub 独立新克隆和本地均核对 23 提交/643 对象，域名及 PPT/PDF 路径/对象零命中；当前修复代码 fc646d8 已提交并部署；清理统计属于当时检查点 |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
 | Router | 远端 systemd 已启用并运行，健康检查通过 | 原本机 Router 已停止；单个 Linux Router 监听回环 8788，公网 /health、/config、/v1/models 200；A 的 WSS 认证通过；原生公网 API/SSE 一单已核对，浏览器 B 正常/故障付款与独立对账通过，逐帧 SSE 未采证 |
-| 流式修复 | 本地完成，待部署 | 根 97/97、Web 13/13、根/Web 类型检查、Web lint 和公网静态构建通过；跨订单事件分发不等待另一单结算，旧轮询不回退已展示进度；线上仍为前序 release |
+| 流式修复 | fc646d8 已上线，网页单笔完成及结算已验 | 根 97/97、Web 13/13、类型/lint/公开构建通过；317077c8 的预算等待提示、最终输出/账单及两笔回执已核对；未捕捉部分文字，公网逐帧展示未验 |
 | 独立卖家 | 四种身份已实现，浏览器认证/下线/重连通过 | Provider 全量 34/34 与根类型检查通过；B 已实际接收两笔 API 订单并结算 |
 | 本地端到端 | 已通过 | 两个不同钱包卖家，API/WS/真实 Anvil 交易；独立进程演示已运行 |
 | 原生 MON 合约 smoke | 8 笔真实测试网交易全部 success | 报价、存 .01、授权 .005/24h、正常/卖家失败两单、提 .001；正常费 .000110 MON、卖家失败 0、最终无锁款。A 同钱包兼任买家/卖家/Router |
@@ -57,9 +65,9 @@
 | 旧 dUSD 买家资金及请求 | 浏览器操作与独立链上回读通过 | 领取 1,000、存入 10 dUSD，授权 5 dUSD / 24 小时；六种目标场景、两次额外尝试共八单完整对账；主动取消成功 |
 | 前序浏览器 API Key 生命周期 | 创建、离开后隐藏明文与撤销通过 | 临时 Key 未复制或保存，切页后只剩 preview，撤销后显示已撤销；没有用这把 Key 发出 API 请求 |
 | 演示 Router Gas | 前序官方免费补给 1 测试 MON，回执核对通过 | 补给时余额从 0.171218074 增至 1.171218074 MON；这是历史快照，之后市场交易 Gas 另计，演示前重读；不改变买家余额或授权 |
-| 公网 MON Demo | a78470a 已上线，配置与模型接口通过 | /config、/v1/models 200，MON/18 与新地址正确，A .3/.03/.375/.8、最低 .000001、v1/2 槽在线；API/SSE 一单通过；Chrome B 存款/授权、正常收费与故障零费两单通过；逐帧 SSE 未采证 |
+| 公网 MON Demo | fc646d8 已上线，配置与模型接口通过 | /config、/v1/models 200，MON/18 与新地址正确，A .3/.03/.375/.8、最低 .000001、v1/2 槽在线；API/SSE 一单通过；Chrome B 存款/授权、正常收费与故障零费两单通过；逐帧 SSE 未采证 |
 | 公网新单限额 / 代理信任 | 源码与专项通过，远端已启动固定 epoch 配置 | 新增 12 项已纳入根测试；Linux 配置解析检查通过。默认未配置时关闭，当前远端配置已随 Router 启动；公网实际拒单行为尚未验收 |
-| 单端口 Web / API | 当前根 91/91 通过，Router/Provider active | 公网原生请求收到 34 批 SSE 增量，锁款/结算回执 success，重放无重复收费；未知 API/页面及 /.env 的 404 检查保留。浏览器 B 两单与独立 RPC 通过，逐帧 SSE 未采证 |
+| 单端口 Web / API | 当前根 97/97 通过，Router/Provider active | 公网原生请求收到 34 批 SSE 增量，锁款/结算回执 success，重放无重复收费；未知 API/页面及 /.env 的 404 检查保留。浏览器 B 两单与独立 RPC 通过，逐帧 SSE 未采证 |
 | 原账本迁移 | 已停旧、私有备份、复制和哈希核对 | 停止前后 14 条安全：13 confirmed、1 lock_failed/unsubmitted；旧本机 8788 不再监听。远端 ledger 的 SHA256 一致、inferpool 持有、mode 600；未复制 Mac 登录或 session |
 | 比赛要求 / MOJO | 项目 [#385](https://mojo.devnads.com/projects/385) 已提交，待审核 | 活动16 Monad Blitz@惠州、InferPool队伍与队长回读正确；Demo/GitHub、3图和正文完整。未投票，未新声明编码窗口合规；前序资格自查保留 |
 | 比赛演示材料 | 脚本/简介、LOGO、说明图、三张成交 MON 截图、两张前序 MON 与三张 dUSD 历史图已准备 | 当前优先 native-normal-bill.jpg 与 native-bills-comparison.jpg，故障详情可作第三张；三张原始 JPEG 已目视检查。前序零余额 MON 图片与旧 dUSD 图片仅历史，未录制视频，详情见 [素材说明](../artifacts/submission/README.md) |
@@ -94,7 +102,7 @@ Chrome 公网 Para B 已实际重新签名平台登录；新市场/报价、账�
 
 ### 远端部署准备检查点
 
-**当前发布：** current → `/srv/inferpool/releases/a78470a`，npm ci exit 0。私有备份目录 `/srv/inferpool/state/backups/native-20260905T073750Z` 保留旧 15 单；新活跃文件为 `/srv/inferpool/state/router-mon-state.json`，只导入 15 条最小配额历史，不迁旧凭证。固定接单起点 `2026-09-05T06:22:02Z` 不变。
+**当前发布：** current → `/srv/inferpool/releases/fc646d8`，npm ci exit 0。本轮 streaming 私有备份保留原生账本与权限；前序 `backups/native-20260905T073750Z` 仍保留旧 15 单。活跃文件仍为 `/srv/inferpool/state/router-mon-state.json`，固定接单起点 `2026-09-05T06:22:02Z` 和 15 条最小配额历史不变，本轮没有重做资产迁移。
 
 **以下为首次 dUSD 部署的归档检查点，非当前 release：** 当时选定 `/srv/inferpool/releases/319c6b9`，`/srv/inferpool/current` 指向该 release，源码与公开产物由 root 持有、服务用户只读；私有账本/Alchemy/env 目录按独立权限准备。原本机 Router 已停止且 8788 不再监听，14 条原账本完成私有备份、迁移和 SHA256 核对；远端 Router 已 enable --now 并运行，回环与公网 /health 均 200。固定接单起点为 `2026-09-05T06:22:02Z`，重启时保持不变。
 
@@ -305,11 +313,11 @@ Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成
 
 ## 下一步
 
-Git 当前文件、历史与本地旧对象清理已完成，本页记录最终重写的验证检查点。新克隆不含本地演示文件，用户编辑版本未重新审阅。已有旧副本须重新克隆或受控迁移，不要直接 merge/push 回新历史；本轮不重新部署或进行链上操作。
+Git 当前文件、历史与本地旧对象清理已完成，本页记录最终重写的验证检查点。新克隆不含本地演示文件，用户编辑版本未重新审阅。已有旧副本须重新克隆或受控迁移，不要直接 merge/push 回新历史；该清理阶段未重新部署或进行链上操作；此后 fc646d8 修复发布及一笔验收另见上节。
 
 独立买家 MON 网页验收与 MOJO 正式提交已完成，项目 [#385](https://mojo.devnads.com/projects/385) 正在等待主办方审核。下一步按 [五分钟正式脚本](demo-guide.md) 排演并准备短录屏后备；当前没有成片，不代主办方审核或投票。
 
-优先使用本轮正常账单与两单对照截图；演示前重读余额、授权有效期和限额，保持卖家 normal。最近只读快照全局剩 6 次、B 当日剩 3 次，保留现场演示次数，不重置 epoch 或扩大额度。浏览器逐帧 SSE 未采证，前序 API 的 34 批增量单独说明。
+优先使用本轮正常账单与两单对照截图；演示前重读余额、授权有效期和限额，保持卖家 normal。本次修复验收后的只读快照全局剩 4 次、B 当日剩 1 次，保留现场演示次数，不重置 epoch 或扩大额度。浏览器逐帧 SSE 未采证，前序 API 的 34 批增量单独说明。
 
 TEE、质押惩罚和真实模型仍按首版范围延后。钱包切换、浏览器断连/幂等与其他资金控制交互属于后续可靠性验收，不扩大本轮范围；Alchemy 无交易引用异常的具体根因仍未知，保留已确认失败与恢复证据。
 

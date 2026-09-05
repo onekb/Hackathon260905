@@ -1,6 +1,6 @@
 # 架构、计费与协议
 
-本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网 a78470a 已切换为 MON/18，D17 要求旧 dUSD 只留私有整账本备份和公开回执存档，退出活跃产品。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
+本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网 fc646d8 运行 MON/18，D17 要求旧 dUSD 只留私有整账本备份和公开回执存档，退出活跃产品。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
 
 ## 请求如何连接
 
@@ -33,7 +33,7 @@ sequenceDiagram
 
 ### 流式消息与界面状态
 
-本地修复已完成、尚待部署：Provider Hub 串行完成认证及消息准入，已认证业务事件分发不等待链上结算。Engine 继续按 `requestId` 串行处理片段和终态，保证同一订单顺序；另一订单等待结算时，不阻塞该连接的心跳与其他订单输出。认证期间断线会终止接入，异步业务错误仍有明确处理。依据为 [Hub](../server/src/provider-hub.ts) 和 [6 项回归](../server/test/provider-hub.test.ts)，其中真实本地 WS → HTTP/SSE 覆盖两单并发。
+修复已随 fc646d8 部署，公开接口回读通过，网页单笔完成及链上结算已验，但公网逐帧展示未采证：Provider Hub 串行完成认证及消息准入，已认证业务事件分发不等待链上结算。Engine 继续按 `requestId` 串行处理片段和终态，保证同一订单顺序；另一订单等待结算时，不阻塞该连接的心跳与其他订单输出。认证期间断线会终止接入，异步业务错误仍有明确处理。依据为 [Hub](../server/src/provider-hub.ts) 和 [6 项回归](../server/test/provider-hub.test.ts)，其中真实本地 WS → HTTP/SSE 覆盖两单并发。
 
 Web 同时接收 SSE 和轮询快照，[合并规则](../web/lib/order-snapshot.ts) 保留已确认账单及终态，拒绝输出长度/计量减少、running 回退 locking 和明确更旧的快照；即使时间戳相同或缺失，也不允许旧轮询撤回已展示输出。链上预算提交与确认阶段单独提示，首个 SSE 事件仍需等待锁款；本轮未改 SSE 协议或代理设置。测试与线上状态分开记录在[进度](progress.md)。
 
