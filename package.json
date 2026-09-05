@@ -1,0 +1,47 @@
+{
+  "name": "inferpool",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "provider",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev:router": "node --import tsx server/src/index.ts",
+    "dev:provider": "node --import tsx provider/src/main.ts",
+    "dev:web": "npm run dev --workspace web",
+    "build:web": "npm run build --workspace web",
+    "demo": "node --import tsx scripts/demo.ts",
+    "demo:request": "node --import tsx scripts/demo-request.ts",
+    "setup:local": "node --import tsx scripts/setup-local.ts",
+    "setup:contracts": "node scripts/install-contract-deps.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test server/test/*.test.ts provider/test/*.test.ts",
+    "test:contracts": "forge test --root contracts",
+    "test:evm": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
+    "test:integration": "node --import tsx --test tests/integration.test.ts",
+    "postinstall": "node node_modules/@getpara/react-sdk-lite/dist/cli/cli.mjs",
+    "setup:monad": "node --import tsx scripts/setup-monad.ts",
+    "test:monad": "node --import tsx scripts/smoke-monad.ts",
+    "test:api:monad": "node --import tsx scripts/smoke-api-monad.ts",
+    "export:abi": "node scripts/export-abi.mjs"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "viem": "^2.56.3",
+    "ws": "^8.21.3",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.4.1",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.23.13",
+    "typescript": "~5.9.3"
+  }
+}

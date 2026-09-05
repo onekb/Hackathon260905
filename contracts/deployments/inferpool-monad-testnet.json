@@ -1,0 +1,112 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "factory": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
+  "deployer": "0xac801eec099c65a605b809b98a09a62674614a08",
+  "router": "0xac801eec099c65a605b809b98a09a62674614a08",
+  "contracts": {
+    "DemoUSD": {
+      "address": "0x62701D69bD213e8F63c28465528931de208cE06E",
+      "gasEstimate": "619726",
+      "estimateWithTenPercentBuffer": "681698",
+      "gasPriceWei": "102000000000",
+      "estimatedCostWei": "69533196000000000",
+      "balanceBeforeWei": "988435342000000000",
+      "gasLimitControl": "Alchemy session CLI manages final gas parameters; this is a preflight estimate, not an enforced gas limit.",
+      "transactionHash": "0x24e44596a80f80aa2aa925cf292583a51637bd8765d539b1a7785dbf703d38e5",
+      "executionMode": "eoa-direct",
+      "submittedAt": "2026-09-05T03:40:52.257Z",
+      "blockNumber": "59802322",
+      "receiptStatus": "success",
+      "gasUsed": "619726",
+      "gasLimit": "619726",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "63212052000000000",
+      "contract": "src/DemoUSD.sol:DemoUSD",
+      "salt": "0xac801eec099c65a605b809b98a09a62674614a0801d5d6d117717050d673ce6c",
+      "guardedSalt": "0xc5deb38bcdc639aca05a82c0d7d3704953683394c86b17f007be917e665b34bb",
+      "initCodeHash": "0x746427b8a57bdc993c1a4c2be54f51970a02b7a2adb545a8599f2e5d50ef15d8",
+      "runtimeBytecodeMatchesOutsideImmutableReferences": true,
+      "runtimeBytecodeHash": "0x28c5b8df4bf8dc58be61fb1e9a27aee39fd10e127cec9a514cebf4cd7fd1505b",
+      "readBack": {
+        "name": "Demo USD - Test Asset Only",
+        "symbol": "dUSD",
+        "decimals": 6,
+        "demoOnly": true,
+        "cap": "1000000000000000"
+      },
+      "explorerUrl": "https://testnet.monadscan.com/address/0x62701D69bD213e8F63c28465528931de208cE06E",
+      "verification": {
+        "success": true,
+        "verified": 2,
+        "total": 2,
+        "results": {
+          "monadvision": {
+            "status": "success",
+            "message": "Verified with perfect match",
+            "url": "https://testnet.monadvision.com/address/0x62701D69bD213e8F63c28465528931de208cE06E"
+          },
+          "monadscan": {
+            "status": "success",
+            "message": "Pass - Verified",
+            "guid": "hh4byadtivxia3n73bjb2dhnujihx2favuvlfu5prjef3kziz2",
+            "url": "https://testnet.monadscan.com/address/0x62701D69bD213e8F63c28465528931de208cE06E"
+          }
+        }
+      },
+      "sourceVerification": "verified"
+    },
+    "InferenceMarket": {
+      "address": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "gasEstimate": "1974218",
+      "estimateWithTenPercentBuffer": "2171639",
+      "gasPriceWei": "102000000000",
+      "estimatedCostWei": "221507178000000000",
+      "balanceBeforeWei": "925223290000000000",
+      "gasLimitControl": "Alchemy session CLI manages final gas parameters; this is a preflight estimate, not an enforced gas limit.",
+      "transactionHash": "0x879e7b0b2398bf96acd7c8f0235f167265d49817abd016ff14a33f3b22809a53",
+      "executionMode": "eoa-direct",
+      "submittedAt": "2026-09-05T03:40:59.758Z",
+      "blockNumber": "59802346",
+      "receiptStatus": "success",
+      "gasUsed": "1974218",
+      "gasLimit": "1974218",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "201370236000000000",
+      "contract": "src/InferenceMarket.sol:InferenceMarket",
+      "salt": "0xac801eec099c65a605b809b98a09a62674614a0801b391d8b4ddca1a0e5bbbff",
+      "guardedSalt": "0x620e7fb27ec7886d58d1c434a1e6e4595c97e7f0c509a67e4d6a9cc759ea02bc",
+      "initCodeHash": "0x120e426818571efadcfd3a82c3abc70862fbf61dda42e6f24bc5ff743c6daebe",
+      "runtimeBytecodeMatchesOutsideImmutableReferences": true,
+      "runtimeBytecodeHash": "0x76ef649216ed50a8c5f7f875d41f81adb197022d003c02fe3addcbd978e08728",
+      "readBack": {
+        "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+        "router": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "maxOrderDuration": "3600"
+      },
+      "explorerUrl": "https://testnet.monadscan.com/address/0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+      "verification": {
+        "success": true,
+        "verified": 2,
+        "total": 2,
+        "results": {
+          "monadvision": {
+            "status": "success",
+            "message": "Verified with perfect match",
+            "url": "https://testnet.monadvision.com/address/0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568"
+          },
+          "monadscan": {
+            "status": "success",
+            "message": "Pass - Verified",
+            "guid": "54dbxu1fifgwmhfwm7x2raxwkiz2ljk18wwcnjv2kzlp7wnnz7",
+            "url": "https://testnet.monadscan.com/address/0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568"
+          }
+        }
+      },
+      "sourceVerification": "verified"
+    }
+  },
+  "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+  "market": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568"
+}

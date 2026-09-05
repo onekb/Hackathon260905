@@ -1,0 +1,20 @@
+# InferPool 项目文档
+
+InferPool 是黑客松中的 AI 推理市场：卖家独立运行 Mock 节点，买家通过网页或统一 API 使用服务，Monad 测试网合约负责报价、资金托管、预算锁定和结算。平台负责链外路由、模拟计量及故障判责。
+
+**当前：业务合约已部署并完成源码验证；本地双卖家链路、测试网合约与实际 API 烟测通过；Web 构建与 lint 通过，浏览器钱包交互仍待验证，尚无公网 Demo。** 测试网 API 使用同一钱包与独立 Provider 进程。状态详情及后续变更以 [开发进度与证据](progress.md) 为准。
+
+| 想了解什么 | 阅读位置 |
+| --- | --- |
+| 用户要做什么、首版不做什么、为何这么决定 | [需求与决策记录](requirements-and-decisions.md) |
+| 买家如何接卖家、钱如何流动、计费和 API 如何工作 | [架构、计费与协议](architecture-and-protocol.md) |
+| 如何启动、配置钱包、复现测试、检查部署 | [运行与部署手册](runbook.md) |
+| 已经做完哪些、证据在哪里、还差什么 | [开发进度与证据](progress.md) |
+| 讨论如何演变、后续对话新增了什么 | [对话与里程碑日志](conversation-log.md) |
+| 后续 agent 如何持续维护这些资料 | [根 AGENTS.md](../AGENTS.md) |
+
+仓库入口见 [README](../README.md)。[MVP_SPEC.md](../MVP_SPEC.md) 是完整需求基线，当前实现完成度集中记录在本目录的进度页。组件细节见 [买家 Web](../web/README.md)、[Router](../server/README.md)、[卖家节点](../provider/README.md) 与 [合约](../contracts/README.md)；[部署记录](../contracts/deployments/inferpool-monad-testnet.json) 是链上地址和回执依据。
+
+文档遵循三层区分：用户确认的目标、已采用的工程决定、通过证据验证的实现状态。需求不是完成声明，测试网交易不是独立多卖家验收，源码写完也不是浏览器流程已通过。
+
+本目录于 **2026-09-05（Asia/Shanghai）** 建立。更早讨论按已有消息、规格和文件证据补记，不虚构原始共享聊天中没有读取到的内容。后续每轮有实质变化时同步对应主题与日志；当前没有定时维护任务。

@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+dist/
+.next/
+.env
+.env.*
+!.env.example
+.local/
+*.log
+coverage/
+contracts/cache/
+contracts/out/
+contracts/lib/

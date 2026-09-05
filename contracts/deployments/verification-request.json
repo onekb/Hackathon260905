@@ -1,0 +1,128 @@
+{
+  "chainId": 10143,
+  "contractAddress": "0x3634ee592376332E19603bD3edFFC0446b4F2ed8",
+  "contractName": "src/Counter.sol:Counter",
+  "compilerVersion": "v0.8.28+commit.7893614a",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/Counter.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.28;\n\n/// @notice A public counter for testing deployment and app integration.\ncontract Counter {\n    uint256 public number;\n\n    event Incremented(address indexed caller, uint256 number);\n\n    function increment() external {\n        number += 1;\n        emit Incremented(msg.sender, number);\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.bytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "cancun",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "foundryMetadata": {
+    "compiler": {
+      "version": "0.8.28+commit.7893614a"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "caller",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "number",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "Incremented",
+          "anonymous": false
+        },
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "increment"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "number",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/Counter.sol": "Counter"
+      },
+      "evmVersion": "cancun",
+      "libraries": {}
+    },
+    "sources": {
+      "src/Counter.sol": {
+        "keccak256": "0x50a07dde93ebe9145438f5e2fbf5ec5ae36972435105ca1c23141bba0d0debb1",
+        "urls": [
+          "bzz-raw://dd52af4819f4ec55f007d421655f4bf8675fd0e6bbaa907b770776f40a15ddca",
+          "dweb:/ipfs/Qme9AmqGQXgaZQxJvaUEQno9oP1HxJnJm7gM7R6NCxCKQv"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  }
+}

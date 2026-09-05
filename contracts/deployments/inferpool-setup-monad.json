@@ -1,0 +1,108 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+  "market": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+  "scope": "Single existing session wallet; test assets only; no new private key generated",
+  "transactions": {
+    "faucet": {
+      "function": "faucet",
+      "gasEstimate": "110512",
+      "gasLimitControl": "Alchemy CLI estimates the final gas limit; no unsupported override is supplied.",
+      "transactionHash": "0x706ad0f3c5eb90902e5f652142045b8b9808e65be356cbb59f91669f57ee2455",
+      "blockNumber": "59803015",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x62701d69bd213e8f63c28465528931de208ce06e",
+      "gasLimit": "110512",
+      "gasUsed": "110512",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "11272224000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x706ad0f3c5eb90902e5f652142045b8b9808e65be356cbb59f91669f57ee2455"
+    },
+    "approve": {
+      "function": "approve",
+      "gasEstimate": "52930",
+      "gasLimitControl": "Alchemy CLI estimates the final gas limit; no unsupported override is supplied.",
+      "transactionHash": "0xa6579e916cacb9cd247c0d3afc3b711db882c5cfb8dabcc263492f87cdcdc199",
+      "blockNumber": "59803036",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x62701d69bd213e8f63c28465528931de208ce06e",
+      "gasLimit": "52930",
+      "gasUsed": "52930",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "5398860000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xa6579e916cacb9cd247c0d3afc3b711db882c5cfb8dabcc263492f87cdcdc199"
+    },
+    "deposit": {
+      "function": "deposit",
+      "gasEstimate": "148046",
+      "gasLimitControl": "Alchemy CLI estimates the final gas limit; no unsupported override is supplied.",
+      "transactionHash": "0xa15f3fc9dd200cfa40a562201cc9584d1864a9f946a3cd1047d98a8557e33c49",
+      "blockNumber": "59803061",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+      "gasLimit": "148046",
+      "gasUsed": "148046",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "15100692000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xa15f3fc9dd200cfa40a562201cc9584d1864a9f946a3cd1047d98a8557e33c49"
+    },
+    "authorizeRouter": {
+      "function": "authorizeRouter",
+      "gasEstimate": "98937",
+      "gasLimitControl": "Alchemy CLI estimates the final gas limit; no unsupported override is supplied.",
+      "transactionHash": "0xf5b3be962055e23cae8d81c58402d05c26971af6a5c3525120c210d0db1cbc8b",
+      "blockNumber": "59803087",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+      "gasLimit": "98937",
+      "gasUsed": "98937",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "10091574000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xf5b3be962055e23cae8d81c58402d05c26971af6a5c3525120c210d0db1cbc8b"
+    },
+    "upsertQuote": {
+      "function": "upsertQuote",
+      "gasEstimate": "217249",
+      "gasLimitControl": "Alchemy CLI estimates the final gas limit; no unsupported override is supplied.",
+      "transactionHash": "0xcfaec620cee414b23f7ea2437e853ab904afb3eab92c0ec9580374fee38e427f",
+      "blockNumber": "59803106",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+      "gasLimit": "217249",
+      "gasUsed": "217249",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "22159398000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xcfaec620cee414b23f7ea2437e853ab904afb3eab92c0ec9580374fee38e427f"
+    }
+  },
+  "updatedAt": "2026-09-05T03:46:11.255Z",
+  "readBack": {
+    "walletTokenBalance": "990.000000",
+    "escrowAvailable": "10.000000",
+    "hasClaimed": true,
+    "grantId": "1",
+    "grant": {
+      "totalLimit": "10000000",
+      "spent": "11000",
+      "locked": "0",
+      "expiresAt": "1788666281",
+      "revoked": false
+    },
+    "quote": {
+      "input": "30.000000",
+      "cacheRead": "3.000000",
+      "cacheWrite": "37.500000",
+      "output": "80.000000",
+      "minReserve": "0.000100",
+      "version": "1"
+    },
+    "nativeBalanceWei": "572246170000000000"
+  }
+}

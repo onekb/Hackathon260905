@@ -1,0 +1,222 @@
+# 运行与部署手册
+
+下面区分本地复现、既有 Monad 合约和公网发布。部署地址见 [进度](progress.md)；执行状态不由本手册中的命令存在与否证明。
+
+## 本地双卖家演示
+
+需要 Node.js ≥ 22.13、npm、Foundry 的 `forge` 和 `anvil`。从仓库根目录执行：
+
+```bash
+npm ci
+npm run setup:contracts
+forge build --root contracts
+npm run demo
+```
+
+依赖安装脚本固定 OpenZeppelin 5.4.0 与 forge-std 1.9.7 的归档摘要，说明见 [DEPENDENCIES.md](../contracts/DEPENDENCIES.md)。脚本保护已有依赖目录，不覆盖本地修改。
+
+`demo` 启动或复用本地 chain ID `31337` 的 Anvil，部署一组新合约，准备买家余额/授权与两组不同钱包报价，然后启动 Router、两个独立卖家进程并生成本地 API Key。
+
+| 服务 | 地址 |
+| --- | --- |
+| Anvil RPC | `http://127.0.0.1:18545` |
+| 本地 Router | `http://127.0.0.1:8787` |
+| 卖家一控制台 | `http://127.0.0.1:8791` |
+| 卖家二控制台 | `http://127.0.0.1:8792` |
+
+显示 `Local demo ready` 后，在另一个终端运行：
+
+```bash
+npm run demo:request
+npm run demo:request -- --cache
+```
+
+重复缓存命令可观察首次写入、再次读取。切换卖家一为 `fail-mid` 再发新请求，观察部分输出后整单零费用。SSE 断开不取消；取消接口使用响应中订单 ID。
+
+`.local/deployment.json` 保存本次本地地址；`.local/demo-credentials.json` 保存本地演示凭证，脚本自动读取，不需要打印。`Ctrl+C` 停止本脚本启动的进程，复用的已有 Anvil 保留。重新运行会部署新地址，不要沿用旧环境文件。演示使用公开的 Anvil 测试身份，仅用于本地链。
+
+## 既有 Monad 测试网
+
+手动运行的全部变量见根 [.env.example](../.env.example) 和 [Router README](../server/README.md)。程序不自动读取这个模板；使用本机环境文件显式导出配置，实际 `.env`、`.local/` 和含凭证的 RPC 地址不提交。
+
+当前业务合约已经部署，复用时不要重新部署 Counter 或把 Counter 地址当市场。公开 RPC 为 `https://testnet-rpc.monad.xyz`，chain ID 必须是 `10143`；地址与回执以 [inferpool-monad-testnet.json](../contracts/deployments/inferpool-monad-testnet.json) 为准。
+
+Router 使用现有 Alchemy session 签名，session 地址必须与市场 `router()` 一致。本次已完成授权；仅首次或过期时由用户完成：
+
+```bash
+alchemy auth
+alchemy wallet connect --mode session
+```
+
+不向 Router 注入私钥，也不把会话文件或终端认证输出复制进文档。卖家 Alchemy session 适配目前明确支持 CLI `0.24.0`，升级后需重新验证兼容性。
+
+已存在的部署配套脚本：
+
+```bash
+npm run setup:monad
+npm run test:monad
+```
+
+这两个脚本可能发送真实测试网交易并消耗测试 MON，作用范围不是通用账户部署器。`setup-monad.ts` 固定核对已授权 Router 地址、已部署 token/market：一次水龙头、最高补足首次 `10 dUSD` 存款、`10 dUSD`/一天消费授权和 `mock-reasoner` 报价。已经做过首次存款后不会默默补充后续消耗。`smoke-monad.ts` 用固定订单 ID 检查正常收费与卖家失败，重复执行优先读取已有状态；到期未结算订单需要回收，不会绕过截止时间。
+
+脚本的测试买家、卖家和 Router 是同一 session 钱包，**不是独立多卖家场景**。五笔设置交易与四笔锁款/结算交易的证据分别在 [setup](../contracts/deployments/inferpool-setup-monad.json) 与 [smoke](../contracts/deployments/inferpool-smoke-monad.json)。
+
+启动测试网 Router 时，可加载设置脚本生成的本地环境文件，然后显式覆盖本次运行端口与 Origin：
+
+```bash
+set -a
+source .local/monad-router.env
+set +a
+export HOST=127.0.0.1
+export PORT=8788
+export ROUTER_PUBLIC_URL=http://127.0.0.1:8788
+export ALLOWED_ORIGINS=http://127.0.0.1:3000,http://localhost:3000
+npm run dev:router
+```
+
+环境文件生成时默认 URL 为 `8787`；使用 `8788` 是为了与本地双卖家演示并存，必须同时覆盖 `PORT` 与 `ROUTER_PUBLIC_URL`。`ROUTER_STATE_PATH` 应保持一个固定绝对路径、由一个进程独占。不同链/不同市场不能混用订单状态文件。
+
+在另一终端启动已报价的 session 卖家：
+
+```bash
+npm run dev:provider -- --alchemy-session --router ws://127.0.0.1:8788/provider --id seller-monad --name "Monad 卖家" --port 8793 --min-reserve 0.0001
+```
+
+Alchemy session、`PROVIDER_PRIVATE_KEY`、临时钱包三者互斥。控制台地址为 `http://127.0.0.1:8793`。只连接到平台还不代表有订单成交；需要检查 `/health`、`/v1/models` 和后续链上账单。
+
+### 增加第二卖家时保留 Router 会话
+
+当前 Router 和 `seller-monad` 依赖同一现有 Alchemy session。对 CLI 0.24.0 的只读调查确认：`--instance-name` 只是审批中显示的 CLI 实例标签，不是钱包地址或钱包选择器；官方 [Wallets and signing 说明](https://www.alchemy.com/docs/alchemy-cli#wallets-and-signing) 也如此定义。在原配置中重新连接 session 会先撤销已有 session，不能通过直接 `--force` 重连来增加第二卖家，否则可能中断 Router 签名与在途订单结算。
+
+`ALCHEMY_CONFIG` 的值是**配置文件路径**，例如另一个目录中的 `.local/alchemy-seller-b/config.json`，不是目录本身。session 固定存放在该文件父目录的 `wallet-session.json`；因此只在同一目录换配置文件名不能隔离 session。仅让第二个 Provider 进程继承这个独立路径，不要全局 export 影响 Router，也不要复制旧会话作为“新钱包”。
+
+目录隔离仍不保证产生第二个 EOA：当前 CLI 没有钱包 ID 选择参数；钱包创建和会话批准在 [Agent Wallets Dashboard 流程](https://www.alchemy.com/docs/agent-wallets) 完成。需要用户在 Dashboard 创建/选择并批准目标钱包，再读取返回地址确认它不同于现有卖家；当前账户是否能直接选另一个 EOA 尚未实测，不能只凭新实例名称作保证。
+
+本机 `@alchemy/cli@0.24.0` 的证据位于包内 `dist/`：`index.js` 的 `registerWallets`（约 3575 行）列出 connect 参数，`runSessionConnect`（约 3030 行）先撤销旧 session 再清除并创建新请求；`chunk-JWQ557LG.js` 的 `configPath/configDir`（约 114 行）决定文件路径及父目录，`chunk-3KKE4OWO.js` 的 `sessionPath`（约 1714 行）决定 session 文件。升级 CLI 后需重新核对，不能沿用这些内部模块位置。
+
+第二卖家验收需同时满足：不同钱包地址、自己的链上报价、独立进程与认证连接、能被单独指定请求。换 `provider_id`、实例名称或启动另一个进程都不够。本次仅做只读调查，没有切换钱包、重连/撤销 session、发起交易或新增第二卖家。当前先推进 Para 独立买家与已有卖家的流程；买卖双方不同不能称为“双卖家”。
+
+### 实际 API 到测试网结算验收
+
+既有设置完成、Alchemy 0.24 EVM session 有效、测试网 Router 正常、`seller-monad` 独立进程处于 `normal` 在线状态时运行：
+
+```bash
+npm run test:api:monad
+```
+
+默认 `SMOKE_ROUTER_URL=http://127.0.0.1:8788`、`SMOKE_PROVIDER_URL=http://127.0.0.1:8793`；仅接受回环 HTTP 地址。脚本以受限买家挑战签名登录，创建临时 API Key，发起 `0.10 dUSD` 预算的正常请求，再核对独立 Provider 历史、账单、链上订单与回执，验证幂等重试，最后撤销 Key 并检查 `401`。
+
+这是实际测试网操作，首次请求消耗测试 MON 和按用量计算的 dUSD。脚本使用固定幂等 Key，重跑查询同一订单，不自动新建收费请求；若公开证据还在但 Router 状态丢失，会拒绝替代请求。保留状态和证据文件。买家、卖家和 Router 使用同一现有 session 钱包，不能替代浏览器或多钱包验收。结果只记录公开证据到 [inferpool-smoke-api-monad.json](../contracts/deployments/inferpool-smoke-api-monad.json)，不保存认证值。
+
+## 买家 Web 与 Para
+
+Web 默认连接 `http://127.0.0.1:8788`。本机 `web/.env.local` 已配置前端所需的公开 Para Key 并被 Git 忽略；新机器需由自己的 Para 项目配置以下变量，不复制登录凭证：
+
+```dotenv
+NEXT_PUBLIC_ROUTER_URL=http://127.0.0.1:8788
+NEXT_PUBLIC_PARA_API_KEY=<自己的前端公开Key>
+```
+
+从根目录启动：
+
+```bash
+npm run dev:web
+```
+
+预览 `http://127.0.0.1:3000`。运行本地 Anvil 网页时要把 Router URL 改为 `8787` 并重启 Next；先确认 Router `/config` 返回目标链和正确合约地址。Para 使用邮箱内嵌 EVM 钱包，SDK 当前配置为 `Environment.BETA`，公开 Key 应匹配该环境；当前无外部钱包/WC 接入要求。前端配置、界面已编写不等于完成登录、资金操作或钱包签名验收。
+
+五个页面见 [Web README](../web/README.md)。Mac 解锁后的冷刷新、市场报价和邮箱弹窗已实测正常。本次用户未看到应用内浏览器的弹窗，已改在 **Chrome 的 InferPool 专用标签** 继续，并将其置前确认；邮箱/验证码应在该 Chrome 页面完成。完整资金与请求流程仍待验证，网络较慢提示不等于登录成功；不要在聊天中发送验证码。
+
+本次用户已完成 Para CLI 登录，且授权 agent 代建 InferPool FREE 组织与项目；不需要重复开户。未来首次配置可以从 `para whoami`、`para keys list` 检查上下文，只有需要用户登录时才交由用户操作。Key 的“公开/私密”依据 SDK 与 CLI 字段定义，不能从名字猜测；不要输出私密 Key。
+
+### 新买家邮箱钱包的第一次请求
+
+Para CLI 的开发者登录、浏览器邮箱钱包、Router 平台会话和链上消费授权是不同状态。新的邮箱钱包不会继承既有 Alchemy session 的测试 MON、dUSD、存款或授权。`setup:monad` 与 `test:api:monad` 仅针对已有 session 钱包，不会替新邮箱钱包开户或充值；普通买家不需要安装 Alchemy/Para CLI。
+
+1. **确认环境。** 页面显示 `Monad Testnet`，Router 使用 `8788` 且有可接单节点。点击“连接钱包”，按 Para 弹窗完成邮箱验证并等待钱包地址出现；重新使用时选择原来的钱包身份。
+2. **准备 Gas。** 从钱包账户信息取得完整 EVM 地址（`0x` 加 40 个十六进制字符）；顶部缩写含 `…`，不能直接填入水龙头。向 [Monad 官方水龙头](https://faucet.monad.xyz/) 提供这个新买家地址，领取测试 MON。该官网入口在 2026-09-05 已核对，输入的是收款地址，不是私钥。也可以由已有测试 MON 的钱包在 Monad 测试网向该地址转入 Gas；本步骤不要求购买主网资产。
+3. **平台登录。** 钱包就绪后点击“签名登录”。这是链外身份签名，不是代币转账，也不消耗链上 Gas。只连接邮箱钱包不会自动获得 Router 的 API 权限；刷新网页或切换钱包后可能需重新签名。
+4. **领取 dUSD。** 到“钱包与授权”点“刷新余额”，确认“测试 MON”足以支付预计 Gas，再点“领取 1,000 测试 dUSD”。每钱包仅可领取一次；此领取本身也是链上交易，零 MON 时不能靠 dUSD 支付 Gas。
+5. **存款与授权。** “批准并存款”先执行精确金额的 `approve`，再执行 `deposit`，等待两笔交易各自确认。默认存款 `10 dUSD`；随后设置独立消费授权，界面默认 `5 dUSD`、`24` 小时（可填 1–24 小时）。存款不会自动授予消费权，授权也不会把钱包代币自动存入合约。
+6. **发起请求。** “推理市场”选择节点或自动匹配，设置 `0.10 dUSD` 等单次预算并运行。买家的可用托管余额和剩余消费授权都至少要覆盖整笔预算；卖家最低预留及输入预算检查也要通过。请求锁款和结算的 Gas 由 Router 钱包支付。
+7. **核对并保留账单。** 等待“链上已确认”及结算交易，保存完整请求 UUID。预计账单、SSE 结束或文字生成完成都不等于结算已确认。剩余预算返回可用托管余额；需要回钱包时再执行提款。
+
+若存款只有 `approve` 成功、`deposit` 失败，代币仍在买家钱包，界面会说明批准完成而存款未完成；检查 Gas、余额和钱包身份后再处理，不把批准回执当作存款回执。Gas 不足时先补测试 MON，不反复点击领取或存款。
+
+### 用自己的 API Key 调用
+
+在“API 接入”完成平台签名登录，再在有效消费授权下生成 Key。明文只展示一次，保存到自己的秘密管理工具或本机进程环境；离开页面后不能从列表恢复。页面生成的 Key 默认最长七天，实际期限不晚于创建时消费授权的到期时间。
+
+在本机终端可先隐藏输入 Key，再运行示例；`read` 后粘贴自己的 Key 并回车，终端不会回显它：
+
+```bash
+read -r -s INFERPOOL_API_KEY
+export INFERPOOL_API_KEY
+curl -N http://127.0.0.1:8788/v1/chat/completions \
+  -H "Authorization: Bearer ${INFERPOOL_API_KEY}" \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: first-monad-request-001' \
+  --data '{"model":"mock-reasoner","messages":[{"role":"user","content":"解释本次预算如何结算"}],"max_spend":"0.10","max_tokens":512,"stream":true,"cache":false}'
+```
+
+同一请求因网络故障重试时，保留 Key、幂等 Key 和请求参数；发起新的独立请求时换新的幂等 Key。SSE `request` 事件包含订单 ID，也可从 `X-Request-Id` 获取；用 `GET /v1/requests/{id}` 查账单、`POST /v1/requests/{id}/cancel` 显式取消。关闭终端连接不取消订单。用完可在网页撤销 API Key，撤销不会自动取消既有订单或撤销链上授权。
+
+`npm run demo:request` 固定使用本地 `8787`、`seller-1` 和脚本准备的 Anvil 凭证，不能用于这个新买家的 Monad 请求。`test:api:monad` 使用自动清理的临时 Key，不提供可供手动接入的长期 Key。
+
+### Router 离线时回收并提款
+
+这里的“离线”指 Router 不可用，仍需要可访问的前端、Monad RPC、Para 钱包服务、原买家钱包和用于交易的测试 MON。它不是在完全断网或钱包服务不可用时也能操作的承诺。
+
+打开“钱包与授权”并连接原买家钱包，不必先做 Router 平台登录。在“平台离线时取回锁款”粘贴账单完整 UUID 或链上 bytes32 订单 ID，点击“检查并取回超时锁款”。页面直接读取同一区块下的订单与链上时间，核对归属、锁款状态、金额和截止时间。未到期或已经结算/回收会拒绝重复操作；到期后发送 `reclaimExpired`。
+
+回收交易确认后，资金先回到该买家的**可用托管余额**，再用上方“提款”转回钱包；回收和提款是两笔交易。输入其他钱包的订单、切到其他网络或市场都不能取回本单。保存请求 ID 和市场/网络信息有助于平台不可用时定位订单。
+
+## 验证命令
+
+```bash
+npm test
+npm run typecheck
+npm run test:contracts
+npm run build:web
+npm run lint --workspace web
+```
+
+Web 使用独立 TypeScript 配置；根 `typecheck` 不应被当作覆盖了全部 Web。前端修改还应按其配置运行类型、lint 与构建检查，最终浏览器流程另行验证。
+
+最近一次依赖恢复已正式 `npm ci` 成功。根类型检查、最终全量 Node 单测（含买家签名增量）、最新 Next 生产构建和全量 lint 通过，浏览器复验尚未完成；确切结果见 [进度](progress.md)。发生依赖升级或安装变更后，重新审计，勿沿用旧版本的数量。
+
+合约 ABI 更新后运行 `npm run export:abi` 同步 Web 使用的导出；ABI 变化需要同时更新接口文档并重新核对部署版本，不能只改前端副本。
+
+EVM 集成测试要求已经编译合约，并另起本地 Anvil：
+
+```bash
+anvil --host 127.0.0.1 --port 18545
+```
+
+```bash
+npm run test:evm
+```
+
+测试拒绝非回环 RPC 或非 `31337` 链；测试会改变本地链状态，不与现场演示共享测试过程。Node WebSocket/HTTP 测试需要允许监听本机端口。只修改文档时无需重跑这些测试。
+
+## 公网交付前还需要什么
+
+当前无公网发布验收记录。Router 运行环境要支持持续 HTTP/SSE 与 WebSocket 连接，并提供 HTTPS/WSS；设置真实 `ROUTER_PUBLIC_URL` 与精确 `ALLOWED_ORIGINS`。前端的 localhost Router URL 不能服务远程用户，卖家回环控制台也不应当作远程管理站点。
+
+链上部署不等于服务器部署。发布方式、域名和现场演示入口仍按比赛实际要求决定；没有明确要求的外部发布不作为当前开发前置阻塞。
+
+## 常见问题
+
+| 现象 | 检查与处理 |
+| --- | --- |
+| 卖家显示未发布报价 | 钱包、链、市场和 `model` 必须匹配；本地保存报价不会上链 |
+| 有 dUSD 但请求提示余额不足 | 检查是否已存入市场及设置未过期消费授权；钱包余额不等于托管余额 |
+| 新邮箱钱包无法领取 dUSD | 它不继承 Alchemy 演示钱包的 Gas；先为这个完整地址准备 Monad 测试网 MON，再刷新余额 |
+| 钱包已连接但 API 页面仍要求登录 | 点击“签名登录”取得 Router 会话；钱包登录不等于平台会话，平台会话也不等于消费授权 |
+| 浏览器请求 Origin 被拒绝 | 把实际 `127.0.0.1` 或 `localhost` 前端 origin 精确加入配置并重启 Router |
+| 锁款结果不明或结算失败 | 查询同一订单，不换 Key 重发推理；等待 Router 重试或到期直接回收 |
+| Router 失联但资金锁定 | 使用订单 UUID 对应的 bytes32 ID，在链上截止时间后由买家 `reclaimExpired`，再提款 |
+| Para doctor 报缺少完整 Provider/外部钱包 | 当前 Lite 内嵌方案存在静态规则误报；结合源码、类型和实际流程判断，不能宣称 doctor 全部通过 |
+| Lite 首次加载仍出现 Solana connector 错误 | 必须在首次渲染和 SDK 构造阶段同步约束空外部钱包配置；延迟设置可能保留默认全部钱包。当前源码已修并通过解析器断言，仍需冷刷新验证 |
+| 移除旧 SDK 时 npm 回滚报 `from undefined` | 本次通过只含 manifests 的干净临时目录重建 lock 后再正式 `npm ci` 恢复；保护现有配置和未提交工作，不盲目删改项目文件 |
+| 刚建立会话却不能签名 | 核对钱包是否正确、EVM 会话是否有效、权限和 CLI 版本；不静默切到另一个身份 |

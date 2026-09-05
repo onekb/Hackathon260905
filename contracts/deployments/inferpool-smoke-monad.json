@@ -1,0 +1,279 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+  "market": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+  "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "model": "mock-reasoner",
+  "mockInference": true,
+  "scope": "Real Monad testnet contract smoke test. Buyer, seller and router are the SAME existing session wallet. This is not proof of two independent seller nodes or a complete UI flow.",
+  "scenarios": {
+    "success": {
+      "requestId": "inferpool-monad-smoke-v1-success",
+      "onchainRequestId": "0x6e7e5d78b6c425e40ed78cb9627ff56db9b7defedf454bb09624e907b6d0b397",
+      "outcome": 0,
+      "budget": "0.100000",
+      "usage": {
+        "input": 100,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 100
+      },
+      "quote": {
+        "input": "30.000000",
+        "cacheRead": "3.000000",
+        "cacheWrite": "37.500000",
+        "output": "80.000000",
+        "minReserve": "0.000100",
+        "version": "1"
+      },
+      "deadline": 1788580512,
+      "before": {
+        "available": "10000000",
+        "totalLocked": "0",
+        "account": {
+          "available": "10.000000",
+          "authorized": "10.000000",
+          "authorizationExpiresAt": 1788666281
+        }
+      },
+      "reserve": {
+        "transactionHash": "0x3b5fb57d7e798982d34c7ed3af207b2210476a818b7d91b99c749862ee574d3b",
+        "blockNumber": "59803188",
+        "receiptStatus": "success",
+        "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+        "gasLimit": "311147",
+        "gasUsed": "311147",
+        "effectiveGasPrice": "102000000000",
+        "monadGasLimitCostWei": "31736994000000000",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x3b5fb57d7e798982d34c7ed3af207b2210476a818b7d91b99c749862ee574d3b"
+      },
+      "afterReserve": {
+        "order": {
+          "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "reserved": "100000",
+          "charged": "0",
+          "grantId": "1",
+          "deadline": "1788580512",
+          "quoteVersion": "1",
+          "state": 1,
+          "outcome": 0,
+          "prices": {
+            "input": "30000000",
+            "cacheRead": "3000000",
+            "cacheWrite": "37500000",
+            "output": "80000000"
+          },
+          "usage": {
+            "input": "0",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "0"
+          }
+        },
+        "account": {
+          "available": "9.900000",
+          "authorized": "9.900000",
+          "authorizationExpiresAt": 1788666281
+        }
+      },
+      "settle": {
+        "transactionHash": "0xb14998b83934bc3cd4962f6c1024b835397f61f19084c634d56d78528a81f550",
+        "blockNumber": "59803208",
+        "receiptStatus": "success",
+        "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+        "gasLimit": "137628",
+        "gasUsed": "137628",
+        "effectiveGasPrice": "102000000000",
+        "monadGasLimitCostWei": "14038056000000000",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0xb14998b83934bc3cd4962f6c1024b835397f61f19084c634d56d78528a81f550"
+      },
+      "verified": {
+        "chainState": "Settled",
+        "outcome": 0,
+        "charged": "0.011000",
+        "released": "0.089000",
+        "order": {
+          "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "reserved": "100000",
+          "charged": "11000",
+          "grantId": "1",
+          "deadline": "1788580512",
+          "quoteVersion": "1",
+          "state": 2,
+          "outcome": 0,
+          "prices": {
+            "input": "30000000",
+            "cacheRead": "3000000",
+            "cacheWrite": "37500000",
+            "output": "80000000"
+          },
+          "usage": {
+            "input": "100",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "100"
+          }
+        },
+        "availableAfter": "10.000000",
+        "grantAfter": {
+          "totalLimit": "10000000",
+          "spent": "11000",
+          "locked": "0",
+          "expiresAt": "1788666281",
+          "revoked": false
+        },
+        "sameWalletBalanceExplanation": "The buyer and seller are identical for this smoke test, so fees consume spending authorization but are credited back to the same escrow account."
+      }
+    },
+    "seller_failed": {
+      "requestId": "inferpool-monad-smoke-v1-seller_failed",
+      "onchainRequestId": "0xe49867a98faa157b5e6640198571a95203887d1a6ee49ce6b427759e3008a797",
+      "outcome": 3,
+      "budget": "0.100000",
+      "usage": {
+        "input": 100,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 100
+      },
+      "quote": {
+        "input": "30.000000",
+        "cacheRead": "3.000000",
+        "cacheWrite": "37.500000",
+        "output": "80.000000",
+        "minReserve": "0.000100",
+        "version": "1"
+      },
+      "deadline": 1788580527,
+      "before": {
+        "available": "10000000",
+        "totalLocked": "0",
+        "account": {
+          "available": "10.000000",
+          "authorized": "9.989000",
+          "authorizationExpiresAt": 1788666281
+        }
+      },
+      "reserve": {
+        "transactionHash": "0x62f2c2021ed7b52b4caadf36118b610240abc07b35c5b75ce127fa1c071282dc",
+        "blockNumber": "59803232",
+        "receiptStatus": "success",
+        "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+        "gasLimit": "300261",
+        "gasUsed": "300261",
+        "effectiveGasPrice": "102000000000",
+        "monadGasLimitCostWei": "30626622000000000",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x62f2c2021ed7b52b4caadf36118b610240abc07b35c5b75ce127fa1c071282dc"
+      },
+      "afterReserve": {
+        "order": {
+          "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "reserved": "100000",
+          "charged": "0",
+          "grantId": "1",
+          "deadline": "1788580527",
+          "quoteVersion": "1",
+          "state": 1,
+          "outcome": 0,
+          "prices": {
+            "input": "30000000",
+            "cacheRead": "3000000",
+            "cacheWrite": "37500000",
+            "output": "80000000"
+          },
+          "usage": {
+            "input": "0",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "0"
+          }
+        },
+        "account": {
+          "available": "9.900000",
+          "authorized": "9.889000",
+          "authorizationExpiresAt": 1788666281
+        }
+      },
+      "settle": {
+        "transactionHash": "0x041115482810fd1ad311b41fe8be7c471cb3886393f6430889cac2afcee45f28",
+        "blockNumber": "59803254",
+        "receiptStatus": "success",
+        "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+        "gasLimit": "109632",
+        "gasUsed": "109632",
+        "effectiveGasPrice": "102000000000",
+        "monadGasLimitCostWei": "11182464000000000",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x041115482810fd1ad311b41fe8be7c471cb3886393f6430889cac2afcee45f28"
+      },
+      "verified": {
+        "chainState": "Settled",
+        "outcome": 3,
+        "charged": "0.000000",
+        "released": "0.100000",
+        "order": {
+          "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "reserved": "100000",
+          "charged": "0",
+          "grantId": "1",
+          "deadline": "1788580527",
+          "quoteVersion": "1",
+          "state": 2,
+          "outcome": 3,
+          "prices": {
+            "input": "30000000",
+            "cacheRead": "3000000",
+            "cacheWrite": "37500000",
+            "output": "80000000"
+          },
+          "usage": {
+            "input": "100",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "100"
+          }
+        },
+        "availableAfter": "10.000000",
+        "grantAfter": {
+          "totalLimit": "10000000",
+          "spent": "11000",
+          "locked": "0",
+          "expiresAt": "1788666281",
+          "revoked": false
+        },
+        "sameWalletBalanceExplanation": "The buyer and seller are identical for this smoke test, so fees consume spending authorization but are credited back to the same escrow account."
+      }
+    }
+  },
+  "updatedAt": "2026-09-05T03:46:45.851Z",
+  "verifiedAt": "2026-09-05T03:46:44.039Z",
+  "final": {
+    "account": {
+      "available": "10.000000",
+      "authorized": "9.989000",
+      "authorizationExpiresAt": 1788666281
+    },
+    "quote": {
+      "input": "30.000000",
+      "cacheRead": "3.000000",
+      "cacheWrite": "37.500000",
+      "output": "80.000000",
+      "minReserve": "0.000100",
+      "version": "1"
+    },
+    "totalLocked": "0",
+    "nativeBalanceWei": "572246170000000000"
+  }
+}

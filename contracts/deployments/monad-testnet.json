@@ -1,0 +1,37 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "contract": "src/Counter.sol:Counter",
+  "address": "0x3634ee592376332E19603bD3edFFC0446b4F2ed8",
+  "deployer": "0xac801eec099c65a605b809b98a09a62674614a08",
+  "factory": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
+  "salt": "0x0000000000000000000000000000000000000000002026090502410000010001",
+  "guardedSalt": "0xf77c5bac5559a5aa1797559912745f92c5b1273663f5d6c88bc12133134b5606",
+  "transactionHash": "0x2d54144f120340445905cb22f8471b401271135dc29af159a358bce3e1171b0a",
+  "blockNumberHex": "0x3905763",
+  "receiptStatus": "0x1",
+  "gasUsedHex": "0x1bae3",
+  "effectiveGasPriceHex": "0x17bfac7c00",
+  "runtimeBytecodeMatches": true,
+  "initialNumber": 0,
+  "sourceVerification": "verified",
+  "explorerUrl": "https://testnet.monadscan.com/address/0x3634ee592376332E19603bD3edFFC0446b4F2ed8",
+  "verification": {
+    "success": true,
+    "verified": 2,
+    "total": 2,
+    "results": {
+      "monadvision": {
+        "status": "success",
+        "message": "Verified with perfect match",
+        "url": "https://testnet.monadvision.com/address/0x3634ee592376332E19603bD3edFFC0446b4F2ed8"
+      },
+      "monadscan": {
+        "status": "success",
+        "message": "Pass - Verified",
+        "guid": "frqq8yswp41afwsgfnhmihx7hrmrhge16viyiw7iihkeszcetd",
+        "url": "https://testnet.monadscan.com/address/0x3634ee592376332E19603bD3edFFC0446b4F2ed8"
+      }
+    }
+  }
+}

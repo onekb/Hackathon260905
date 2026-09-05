@@ -1,0 +1,162 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+  "market": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+  "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "seller": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "router": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "providerId": "seller-monad",
+  "mockInference": true,
+  "scope": "Real HTTP buyer authentication and API-key request through a separately running Provider, with actual Monad testnet reservation and settlement. Buyer, seller and router use the SAME existing session wallet; this is not a two-independent-wallet or browser UI acceptance test.",
+  "idempotencyKey": "inferpool-monad-api-smoke-v1",
+  "requestBody": {
+    "model": "mock-reasoner",
+    "provider_id": "seller-monad",
+    "messages": [
+      {
+        "role": "user",
+        "content": "API smoke: Monad testnet."
+      }
+    ],
+    "max_tokens": 256,
+    "max_spend": "0.1",
+    "stream": false,
+    "cache": false
+  },
+  "updatedAt": "2026-09-05T04:13:55.395Z",
+  "authentication": {
+    "challengeEndpoint": "/auth/challenge",
+    "verificationEndpoint": "/auth/verify",
+    "buyerChallengeValidated": true,
+    "signatureVerifiedByRouter": true,
+    "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "verifiedAt": "2026-09-05T04:13:36.946Z"
+  },
+  "temporaryApiKey": {
+    "created": true,
+    "revoked": true,
+    "expiresAt": 1788666281000,
+    "rejectedAfterRevocation": true,
+    "revokedAt": "2026-09-05T04:13:55.395Z"
+  },
+  "requestId": "8cfd3165-7b24-43d7-8692-74593624c561",
+  "onchainRequestId": "0x5fe597f36f2d90db404660e0ba324daf048d187b0cfc1f3be4804ac22ee7a7b4",
+  "providerExecution": {
+    "observedAt": "2026-09-05T04:13:54.352Z",
+    "providerId": "seller-monad",
+    "model": "mock-reasoner",
+    "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "walletMode": "alchemy-session",
+    "run": {
+      "requestId": "8cfd3165-7b24-43d7-8692-74593624c561",
+      "mode": "normal",
+      "status": "completed",
+      "startedAt": "2026-09-05T04:13:44.633Z",
+      "outputTokens": 188,
+      "cache": "none",
+      "usage": {
+        "input": 55,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 188
+      },
+      "endedAt": "2026-09-05T04:13:48.479Z"
+    }
+  },
+  "bill": {
+    "requestId": "8cfd3165-7b24-43d7-8692-74593624c561",
+    "providerId": "seller-monad",
+    "status": "completed",
+    "settlement": "confirmed",
+    "billConfirmed": true,
+    "budget": "0.100000",
+    "charge": "0.016690",
+    "released": "0.083310",
+    "usage": {
+      "input": 55,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 188
+    },
+    "quote": {
+      "input": "30.000000",
+      "cacheRead": "3.000000",
+      "cacheWrite": "37.500000",
+      "output": "80.000000",
+      "minReserve": "0.000100",
+      "version": "1"
+    },
+    "cacheMode": "none",
+    "mock": true,
+    "output": "【模拟推理 / Mock】\n已收到：API smoke: Monad testnet.\n\n这是独立卖家节点生成的固定演示响应，没有调用真实 AI 模型。\n本次未使用模拟缓存。\n\n平台将按 Unicode 字符单位模拟用量、执行预算控制，并记录本次账单。卖家故障整单推理费为零；买家主动取消按已计量用量结算。\n\n你可以在卖家本地控制台切换故障模式，再发起新请求观察不同结算结果。",
+    "createdAt": 1788581619424,
+    "updatedAt": 1788581633444
+  },
+  "receipts": {
+    "reserve": {
+      "transactionHash": "0xb507b6cbbe9288616b4105260567c3fc8289e6c500fc039292fbbd44f0ef3d99",
+      "blockNumber": "59808690",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+      "gasLimit": "300261",
+      "gasUsed": "300261",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "30626622000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xb507b6cbbe9288616b4105260567c3fc8289e6c500fc039292fbbd44f0ef3d99"
+    },
+    "settle": {
+      "transactionHash": "0xc2727d096b9b2634be26139bfcb27c4cb11bf72858d01c4837a0b27291195f84",
+      "blockNumber": "59808721",
+      "receiptStatus": "success",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+      "gasLimit": "129596",
+      "gasUsed": "129596",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "13218792000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xc2727d096b9b2634be26139bfcb27c4cb11bf72858d01c4837a0b27291195f84"
+    }
+  },
+  "onchainOrder": {
+    "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+    "reserved": "100000",
+    "charged": "16690",
+    "grantId": "1",
+    "deadline": "1788581919",
+    "quoteVersion": "1",
+    "state": 2,
+    "outcome": 0,
+    "prices": {
+      "input": "30000000",
+      "cacheRead": "3000000",
+      "cacheWrite": "37500000",
+      "output": "80000000"
+    },
+    "usage": {
+      "input": "55",
+      "cacheRead": "0",
+      "cacheWrite": "0",
+      "output": "188"
+    }
+  },
+  "accountAfter": {
+    "wallet": "0xac801eec099c65a605b809b98a09a62674614a08",
+    "credential_type": "api-key",
+    "available": "10.000000",
+    "authorized": "9.972310",
+    "authorizationExpiresAt": 1788666281,
+    "chain_mode": "monad-testnet"
+  },
+  "idempotencyVerified": {
+    "sameRequestId": true,
+    "sameReservationTransaction": true,
+    "sameSettlementTransaction": true,
+    "noSecondInferenceCharge": true
+  },
+  "sameWalletBalanceExplanation": "Fees consume buyer spending authorization but are credited back as seller earnings to the same escrow account. This does not demonstrate independent buyer/seller ownership.",
+  "verifiedAt": "2026-09-05T04:13:55.384Z"
+}
