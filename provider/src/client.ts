@@ -54,7 +54,7 @@ export class ProviderClient {
       pricingMatchesEffective: this.effectivePricing !== null && Object.keys(this.pricing).every((key) => {
         const normalize = (value: string) => {
           const [whole, fraction = ''] = value.split('.');
-          return BigInt(whole!) * 1000000n + BigInt(fraction.padEnd(6, '0'));
+          return BigInt(whole!) * 1000000000000000000n + BigInt(fraction.padEnd(18, '0'));
         };
         return normalize(this.pricing[key as keyof Pricing]) === normalize(this.effectivePricing![key as keyof Pricing]);
       }),
@@ -191,6 +191,7 @@ export class ProviderClient {
     }
     if (message.type === 'authenticated') {
       if (this.state !== 'authenticating') throw new Error('Unexpected authentication');
+      if (message.asset_symbol !== 'MON' || message.asset_decimals !== 18 || typeof message.market_address !== 'string') throw new Error('Router 未确认原生 MON 市场，拒绝将旧资产报价显示为 MON');
       if (message.quote !== undefined) {
         const quote = validatePricing(message.quote);
         const version = (message.quote as Record<string, unknown>).version;

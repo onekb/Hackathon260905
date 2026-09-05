@@ -7,6 +7,7 @@ import { Engine, type Order, type Provider, type RequestInput } from '../src/eng
 import { MemoryChain } from '../src/chain.js';
 import { Store } from '../src/store.js';
 import { parseDemoAdmission, parseTrustProxy, type DemoAdmission } from '../src/runtime-config.js';
+import { decimal, units } from '../src/money.js';
 
 const A='0x1111111111111111111111111111111111111111';
 const B='0x2222222222222222222222222222222222222222';
@@ -56,7 +57,7 @@ test('wallet and global concurrency checks serialize competing new requests befo
     assert.equal(wallet.filter(result=>result.status==='fulfilled').length,1);assert.equal(s.chain.orders.size,1);
     const global=await Promise.allSettled([s.engine.create(B,request),s.engine.create(C,request)]);
     assert.equal(global.filter(result=>result.status==='fulfilled').length,1);assert.equal(s.chain.orders.size,2);
-    assert.equal((await s.chain.getAccount(C)).available,'100.000000');
+    assert.equal((await s.chain.getAccount(C)).available,decimal(units('100')));
   }finally{s.close();}
 });
 
@@ -107,7 +108,7 @@ test('a failed reservation attempt counts, and uncertain funding retains wallet 
       const order=await s.engine.create(A,request,`failure-${index}`);assert.equal(order.status,'reservation_unknown');
       await assert.rejects(s.engine.create(A,request,`while-unknown-${index}`),rejected(429));
       order.deadline=Math.floor(Date.now()/1000)-1;await s.engine.retrySettlements();
-      assert.equal(order.status,'lock_failed');assert.equal(order.charge,'0.000000');
+      assert.equal(order.status,'lock_failed');assert.equal(order.charge,decimal(0n));
     }
     await assert.rejects(s.engine.create(A,request,'seventh'),rejected(429));assert.equal(Object.keys(s.store.state.orders).length,6);assert.equal(s.chain.orders.size,0);
   }finally{s.close();}

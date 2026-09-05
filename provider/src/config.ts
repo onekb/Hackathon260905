@@ -26,15 +26,15 @@ export function walletUiOrigin(value: string): string {
   return url.origin;
 }
 
-export const usage = `InferPool 独立 Mock 卖家节点\n\n用法：npm run dev:provider -- --alchemy-session [选项]\n\n身份四选一：\n  --alchemy-session        使用当前 Alchemy CLI 会话，不需要钱包原始私钥\n  --ephemeral-wallet       生成仅本进程使用的临时演示钱包\n  --browser-wallet 0x…     通过指定网页钱包签署一次卖家身份挑战\n  --wallet-ui http://127.0.0.1:3000  网页钱包的固定 origin（与 browser-wallet 配套）\n  PROVIDER_PRIVATE_KEY     从本地环境变量读取钱包私钥\n四种身份模式互斥，不自动回退。不要在命令行参数中传私钥。\n\n选项：\n  --router ws://127.0.0.1:8787/provider\n  --id seller-a --name "卖家 A" --model mock-reasoner\n  --port 8791 --capacity 2 --interval-ms 80 --chunk-size 4\n  --mode normal|timeout|fail-before|fail-mid|cache-hit\n  --input-price 30 --cache-read-price 3 --cache-write-price 37.5\n  --output-price 80 --min-reserve 0.01\n\n单价均为每百万模拟 Token 的 DemoUSD。最低金额是预留要求，不是最低消费。\n远程平台必须使用 wss://；本地控制台仅监听 127.0.0.1。`;
+export const usage = `InferPool 独立 Mock 卖家节点\n\n用法：npm run dev:provider -- --alchemy-session [选项]\n\n身份四选一：\n  --alchemy-session        使用当前 Alchemy CLI 会话，不需要钱包原始私钥\n  --ephemeral-wallet       生成仅本进程使用的临时演示钱包\n  --browser-wallet 0x…     通过指定网页钱包签署一次卖家身份挑战\n  --wallet-ui http://127.0.0.1:3000  网页钱包的固定 origin（与 browser-wallet 配套）\n  PROVIDER_PRIVATE_KEY     从本地环境变量读取钱包私钥\n四种身份模式互斥，不自动回退。不要在命令行参数中传私钥。\n\n选项：\n  --router ws://127.0.0.1:8787/provider\n  --id seller-a --name "卖家 A" --model mock-reasoner\n  --port 8791 --capacity 2 --interval-ms 80 --chunk-size 4\n  --mode normal|timeout|fail-before|fail-mid|cache-hit\n  --input-price 0.3 --cache-read-price 0.03 --cache-write-price 0.375\n  --output-price 0.8 --min-reserve 0.000001\n\n单价均为每百万模拟 Token 的 MON。最低金额是预留要求，不是最低消费。\n远程平台必须使用 wss://；本地控制台仅监听 127.0.0.1。`;
 
 export function validatePricing(value: unknown): Pricing {
   if (!value || typeof value !== 'object') throw new Error('报价必须是对象');
   const result = {} as Pricing;
   for (const key of ['input', 'cacheRead', 'cacheWrite', 'output', 'minReserve'] as const) {
     const price = (value as Record<string, unknown>)[key];
-    if (typeof price !== 'string' || !/^\d{1,9}(\.\d{1,6})?$/.test(price)) {
-      throw new Error('报价必须是非负十进制字符串，最多 6 位小数');
+    if (typeof price !== 'string' || !/^\d{1,9}(\.\d{1,18})?$/.test(price)) {
+      throw new Error('报价必须是非负十进制字符串，最多 18 位小数');
     }
     result[key] = price;
   }
@@ -87,11 +87,11 @@ export function parseConfig(args: string[], env: NodeJS.ProcessEnv): ProviderCon
     mode: mode as MockMode,
     ephemeral, alchemySession, browserWallet, walletUi,
     pricing: validatePricing({
-      input: read('--input-price', 'PROVIDER_INPUT_PRICE', '30'),
-      cacheRead: read('--cache-read-price', 'PROVIDER_CACHE_READ_PRICE', '3'),
-      cacheWrite: read('--cache-write-price', 'PROVIDER_CACHE_WRITE_PRICE', '37.5'),
-      output: read('--output-price', 'PROVIDER_OUTPUT_PRICE', '80'),
-      minReserve: read('--min-reserve', 'PROVIDER_MIN_RESERVE', '0.01'),
+      input: read('--input-price', 'PROVIDER_INPUT_PRICE', '0.3'),
+      cacheRead: read('--cache-read-price', 'PROVIDER_CACHE_READ_PRICE', '0.03'),
+      cacheWrite: read('--cache-write-price', 'PROVIDER_CACHE_WRITE_PRICE', '0.375'),
+      output: read('--output-price', 'PROVIDER_OUTPUT_PRICE', '0.8'),
+      minReserve: read('--min-reserve', 'PROVIDER_MIN_RESERVE', '0.000001'),
     }),
   };
 }

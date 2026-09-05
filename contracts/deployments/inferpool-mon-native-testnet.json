@@ -1,0 +1,70 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "factory": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
+  "deployer": "0xac801eec099c65a605b809b98a09a62674614a08",
+  "router": "0xac801eec099c65a605b809b98a09a62674614a08",
+  "contracts": {
+    "InferenceMarket": {
+      "address": "0x142a4904307244Bed0cECD72dE8329A253333182",
+      "gasEstimate": "1931461",
+      "estimateWithTenPercentBuffer": "2124607",
+      "gasPriceWei": "102000000000",
+      "estimatedCostWei": "216709914000000000",
+      "balanceBeforeWei": "100947564612000000000",
+      "gasLimitControl": "Alchemy session CLI manages final gas parameters; this is a preflight estimate, not an enforced gas limit.",
+      "submissionStartedAt": "2026-09-05T07:15:32.420Z",
+      "transactionHash": "0xa6da3bd7812867daddc53999b06263d76754f7ba3bcb718acdb7d3053aa10ed0",
+      "executionMode": "eoa-direct",
+      "submittedAt": "2026-09-05T07:15:36.859Z",
+      "blockNumber": "59844019",
+      "receiptStatus": "success",
+      "gasUsed": "1931461",
+      "gasLimit": "1931461",
+      "effectiveGasPrice": "102000000000",
+      "monadGasLimitCostWei": "197009022000000000",
+      "contract": "src/InferenceMarket.sol:InferenceMarket",
+      "salt": "0xac801eec099c65a605b809b98a09a62674614a08013f74fdd12ed00697c6dc91",
+      "guardedSalt": "0xcb37456157b29b822f4b40b3af1a5071b3c145e2191ba0eb3f779c5b25b8a19f",
+      "initCodeHash": "0x36971184a8228f0bbb94e3fdec576b469043eb35b7a2baa07c33e57a701ed0c5",
+      "runtimeBytecodeMatchesOutsideImmutableReferences": true,
+      "runtimeBytecodeHash": "0x5ed37e356c1034e222ea0a6cca27962b2a8d40f8ff064326c8b268dc2a272973",
+      "readBack": {
+        "router": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "native": true,
+        "symbol": "MON",
+        "decimals": 18,
+        "maxOrderDuration": "3600"
+      },
+      "explorerUrl": "https://testnet.monadscan.com/address/0x142a4904307244Bed0cECD72dE8329A253333182",
+      "verification": {
+        "success": true,
+        "verified": 2,
+        "total": 2,
+        "results": {
+          "monadvision": {
+            "status": "success",
+            "message": "Verified with perfect match",
+            "url": "https://testnet.monadvision.com/address/0x142a4904307244Bed0cECD72dE8329A253333182"
+          },
+          "monadscan": {
+            "status": "success",
+            "message": "Pass - Verified",
+            "guid": "dgcnictctcbhcelkym8fjxazzegszqwgvclieftzi813qqusfa",
+            "url": "https://testnet.monadscan.com/address/0x142a4904307244Bed0cECD72dE8329A253333182"
+          }
+        }
+      },
+      "sourceVerification": "verified"
+    }
+  },
+  "market": "0x142a4904307244Bed0cECD72dE8329A253333182",
+  "asset": {
+    "symbol": "MON",
+    "decimals": 18,
+    "native": true
+  },
+  "legacyMarket": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+  "legacyToken": "0x62701D69bD213e8F63c28465528931de208cE06E"
+}

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { getAddress, type Hex } from 'viem';
 import { opaqueId } from '../server/src/evm-chain.js';
-import { decimal, fee, units, type Usage } from '../server/src/money.js';
+import { decimal, fee, units, type Usage } from './legacy-money.js';
 import { monadContext, model, prices, minReserve, readJson, saveJson, receiptEvidence } from './setup-monad.js';
 
 const evidencePath=new URL('../contracts/deployments/inferpool-smoke-monad.json',import.meta.url);

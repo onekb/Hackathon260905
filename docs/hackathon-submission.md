@@ -2,7 +2,7 @@
 
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
-版本：2026-09-05，Asia/Shanghai。**提交文案待填表；应用已上线 https://demo.example.com，尚未提交比赛。** 已读取 Monad Blitz 官方参赛、演示与提交要求。正式演示为每队 5 分钟，3 分钟仅作压缩备用；LOGO、预览图、简介、可用预览链接和 GitHub 链接为提交必需项。以下介绍按实际表单裁剪，不把整页规则和证据粘入项目简介。
+版本：2026-09-05，Asia/Shanghai。**提交文案待填表；应用已上线 https://demo.example.com，尚未提交比赛。** 已读取 Monad Blitz 官方参赛、演示与提交要求。原生 MON 新市场及同钱包 8 笔实链交易已通过，公网此时仍旧 dUSD 版、准备切换；历史截图和多钱包验收不改资产。正式演示为每队 5 分钟，3 分钟仅作压缩备用；LOGO、预览图、简介、可用预览链接和 GitHub 链接为提交必需项。以下介绍按实际表单裁剪，不把整页规则和证据粘入项目简介。
 
 ## 已核实的比赛要求
 
@@ -62,6 +62,14 @@
 
 本轮公网只读复查确认迁移后第 15 条订单在 14:47:56–14:48:20（Asia/Shanghai）完成：B → A，预算 0.1、费用 0.014160、释放 0.085840 dUSD，成功回执与链上订单一致。来源仍未确认，本轮 agents 未发单；只能说明远端后端及链上成功，不代表由本轮 agent 完成浏览器/SSE 端到端验收。详见 [进度](progress.md#活动要求复查与新增远端订单)，单独记录，不混入先前测试集。
 
+### MON 活动水龙头与 dUSD 的区别
+
+[Monad Gas 文档](https://docs.monad.xyz/developer-essentials/gas-pricing) 明确交易费用使用 MON 支付；本项目所用 MON 是测试网原生 Gas 资产。dUSD 是 InferPool 在同一测试网（chain ID 10143）部署的 DemoUSD ERC-20，用于演示服务计费。dUSD 没有现金价值或美元储备，也不会自动兑换 MON；领取 MON 不会自动增加 dUSD、托管余额或应用请求次数额度。
+
+开发记录显示使用官方 agent 水龙头分别给买家和 Router 补充过 1 MON，见 [浏览器链上证据](../contracts/deployments/inferpool-smoke-browser-monad.json) 的 `transactions.faucet_native` 与 `routerFunding`。前轮澄清时尚未使用 MOJO 100 MON 活动水龙头；用户随后明确授权迁移与领取，现已给原 Router 领取 100 MON 并核对成功回执，见 [迁移资金记录](progress.md#原生-mon-迁移水龙头与本地验证)。这不表示已查询用户在开发记录之外的领取行为。
+
+已读取的 [活动规则](https://monad-foundation.notion.site/7546367594f2835ba564814eae664af9) 要求应用部署运行于 Monad，未见要求所有业务付款必须使用原生 MON，或必须领取该活动水龙头的条款。这是本轮规则阅读范围内的判断，不是整体参赛资格保证。前轮仅说明资产区别；后续 D16 授权的 100 MON 领取现已完成，但没有增加 dUSD 或应用请求额度，原生支付新版仍在实施。
+
 ## 可直接填写的精简介绍
 
 **中文：** InferPool 是部署于 Monad 测试网的 AI 推理市场原型。独立卖家分别设置输入、输出和缓存价格，买家通过网页或 API 指定卖家或自动比价，并为每次请求设置预算。合约先锁款、按实际用量结算、释放余款；卖家故障整单推理费为零。我们已验证两个不同钱包卖家的选择和跨钱包结算，链上回执与账单、余额相互核对。关键实现包括无需导出私钥的网页钱包节点认证，以及锁款结果不明时保留原订单、避免重复派单。本次推理和计量为 Mock，钱包与资金交易是真实测试网操作；平台仍负责链外计量和判责。
@@ -82,13 +90,13 @@
 
 ### 我们构建了什么
 
-买家通过邮箱钱包登录网页，领取测试 dUSD、存入托管合约并设置金额与期限明确的消费授权。每笔请求先锁定预算，再由独立卖家进程返回流式输出，最后按用量结算、释放剩余预算。卖家故障整单推理费为零；买家主动取消支付生效前的实际用量。开发者也可通过 API Key 调用同一个市场。
+新版买家通过邮箱钱包登录网页，存入原生测试 MON 并设置金额与期限明确的消费授权，无需 ERC-20 approve。旧 dUSD 资金和授权保留在独立旧合约中。每笔请求先锁定预算，再由独立卖家进程返回流式输出，最后按用量结算、释放剩余预算。卖家故障整单推理费为零；买家主动取消支付生效前的实际用量。开发者也可通过 API Key 调用同一个市场。
 
 本次原型的 AI 输出、Token 计量和缓存均为 Mock；钱包签名、链上报价、预算锁定、结算和余额变动是真实的 Monad 测试网操作。DemoUSD 是自建测试代币，不代表美元或真实收入。
 
 ### Web3 与 Monad 如何发挥作用
 
-Monad 测试网承载两个业务合约：DemoUSD 提供演示资产，InferenceMarket 保存卖家报价、买家托管余额、限额消费授权和每笔订单。Router 只能在授权和预算内锁款，并按订单固定报价结算；余额所有者保留提款权，买家可在订单过期后直接回收锁款。API Key 不拥有提款权，也不能扩大链上授权。
+新版 Monad 测试网 InferenceMarket 使用原生 MON，保存报价、托管、限额授权和订单；旧 DemoUSD 与 dUSD 市场保留历史资金和提款入口。Router 只能在授权和预算内锁款，并按订单固定报价结算；余额所有者保留提款权，买家可在订单过期后直接回收锁款。API Key 不拥有提款权，也不能扩大链上授权。
 
 我们用真实测试网交易展示这些资金规则，而不是把结果只记录在平台数据库里。首版仍信任 Router 的链外计量与故障判定，合约不验证模型身份、输出质量或用量真实性。没有宣称去中心化推理验证，也未开展 Monad 吞吐或成本对比基准。
 
@@ -96,7 +104,7 @@ Monad 测试网承载两个业务合约：DemoUSD 提供演示资产，Inference
 
 业务合约已部署并完成源码验证。两个不同钱包的卖家以不同报价运行独立进程，指定卖家、短输入自动选 B、长输入自动选 A 及网页手动选择覆盖自动估价均已验收。跨钱包结算已独立核对回执、订单、用量、双方余额与授权变化；其中自动选 A 的 API 场景买卖双方同为 A，未将其包装成第三个独立钱包。
 
-前序浏览器完成正常、卖家故障、金额预算上限、缓存写入/读取与主动取消六种目标场景。真实锁款异常及一次受限恢复也保留在公开证据中。双卖家阶段根 Node 64 项、Foundry 38 项、Web 类型检查、lint 和生产构建通过；限额/代理阶段 76/76 已通过并完成审阅，新增单端口静态服务 6 项后最新根 82/82 与类型检查通过。应用已部署到 https://demo.example.com，页面、配置、常驻 A 的 WSS 和 Para 弹窗入口通过；新增远端订单后端/链上结算已核对，但来源未知；新域名登录与浏览器/SSE 交互仍未验，完整范围与限制在仓库文档中持续维护。
+前序浏览器完成正常、卖家故障、金额预算上限、缓存写入/读取与主动取消六种目标场景。真实锁款异常及一次受限恢复也保留在公开证据中。双卖家阶段根 Node 64 项、Foundry 38 项、Web 类型检查、lint 和生产构建通过；限额/代理阶段 76/76 已通过并完成审阅，单端口阶段根 82/82 通过；原生迁移后最新根 91/91、新合约 43/43 与 Web 检查通过。原生新市场已部署/验证，8 笔同钱包合约交易正常收费 .000110 MON、失败零费并成功提款；公网仍待切换，独立买卖/SSE/浏览器 MON 验收未完成。应用已部署到 https://demo.example.com，页面、配置、常驻 A 的 WSS 和 Para 弹窗入口通过；新增远端订单后端/链上结算已核对，但来源未知；新域名登录与浏览器/SSE 交互仍未验，完整范围与限制在仓库文档中持续维护。
 
 ## English submission copy
 
@@ -104,11 +112,11 @@ Monad 测试网承载两个业务合约：DemoUSD 提供演示资产，Inference
 
 Inference buyers need to compare input, output and cache prices while controlling the cost and failure policy of each request. InferPool brings these choices into one marketplace. Sellers publish separate prices; buyers select a seller or use estimated-cost matching, set a per-request spending cap, and receive streamed results through a web app or unified API.
 
-Buyers use an embedded email wallet, deposit demo tokens and grant a limited spending allowance. The marketplace reserves each request's budget before dispatch. Settlement charges measured usage and releases the remainder. Seller failures waive the entire inference fee; an explicit buyer cancellation pays for usage accepted before cancellation takes effect. Spent blockchain gas is not refunded.
+The native-MON version uses an embedded email wallet, payable MON deposits and a separate limited spending grant, without ERC-20 approval. Legacy dUSD balances and grants remain in their original contract. The marketplace reserves each request's budget before dispatch. Settlement charges measured usage and releases the remainder. Seller failures waive the entire inference fee; an explicit buyer cancellation pays for usage accepted before cancellation takes effect. Spent blockchain gas is not refunded.
 
 ### What is on Monad
 
-Two contracts run on Monad Testnet: DemoUSD supplies the test asset, and InferenceMarket manages seller quotes, escrow balances, bounded spending grants, reservations and settlement. API keys cannot withdraw funds or enlarge a grant. Buyers can reclaim expired reservations directly through the contract.
+The new InferenceMarket on Monad Testnet uses native MON for seller quotes, escrow, bounded spending grants, reservations and settlement. Legacy DemoUSD and its market remain separate for historical funds and withdrawals. API keys cannot withdraw funds or enlarge a grant. Buyers can reclaim expired reservations directly through the contract.
 
 Inference output, token metering and cache behavior are mocked for this hackathon prototype. Wallet signatures, quotes, escrow transactions and settlement are real testnet operations. The Router remains trusted for off-chain metering and fault attribution; the contracts do not verify model identity, output quality or the truth of reported usage. dUSD is a custom test token, not a dollar-backed asset. We make no measured throughput or cost-comparison claim about Monad.
 
@@ -116,7 +124,7 @@ Inference output, token metering and cache behavior are mocked for this hackatho
 
 Two independent seller processes with different wallets and on-chain prices completed explicit selection and automatic matching scenarios. A separate browser request demonstrated a manual seller choice overriding the cheaper automatic candidate. Cross-wallet receipts, orders, usage, balances and spending grants were independently reconciled. One automatic-routing case used the same wallet as buyer and seller; this overlap is documented.
 
-Earlier browser acceptance covered normal completion, seller failure, spending caps, cache write/read and explicit cancellation. An uncertain reservation, its confirmed zero-fee failure and one guarded retry are preserved rather than omitted. The two-seller phase passed 64 root Node tests, 38 contract tests, Web type checks, lint and production build. The optional admission/proxy phase passed 76 root tests and review. Six shared-port static/API/WS/SSE tests bring the latest root suite to 82 passing tests, with type checks also passing. The public application is now available at https://demo.example.com: page/config checks, seller A WSS authentication and the login modal passed. A new post-migration order was independently reconciled on the remote backend and chain, but its client origin is unknown. This does not establish browser login or incremental SSE delivery on the new origin; earlier interactive acceptance used the localhost frontend.
+Earlier browser acceptance covered normal completion, seller failure, spending caps, cache write/read and explicit cancellation. An uncertain reservation, its confirmed zero-fee failure and one guarded retry are preserved rather than omitted. The two-seller phase passed 64 root Node tests, 38 contract tests, Web type checks, lint and production build. The optional admission/proxy phase passed 76 root tests and review. The shared-port phase passed 82 tests; native migration now passes 91 root tests, 43 contract tests and Web checks. The deployed native market passed eight same-wallet setup/settlement/withdrawal transactions, with normal charge .000110 MON and seller failure zero; independent-wallet and browser/SSE MON acceptance are not established. The public application is now available at https://demo.example.com: page/config checks, seller A WSS authentication and the login modal passed. A new post-migration order was independently reconciled on the remote backend and chain, but its client origin is unknown. This does not establish browser login or incremental SSE delivery on the new origin; earlier interactive acceptance used the localhost frontend.
 
 ## 架构与实现索引
 
@@ -142,7 +150,8 @@ Earlier browser acceptance covered normal completion, seller failure, spending c
 | 两卖家 API 指定与自动匹配 | [市场证据](../contracts/deployments/inferpool-smoke-market-monad.json) 的 `cases` / `aggregate` | 三笔成功单，授权增量 `0.041120 dUSD`；跨钱包 A → B `0.023340`，A 自身费用回流 `0.017780` |
 | 网页手动覆盖自动匹配 | 同一市场证据的 `webManualOverride` | 独立第四单 B → A `0.016580 dUSD`；点击依据来自浏览器/账本观察，合约不保存 manual/auto 标记 |
 | 原锁款异常与恢复 | 市场证据的 `failedAttempts` | 原单零费用、到期链上无订单后，显式执行唯一一次受限重试；不等于 Alchemy 异常根因已经修复 |
-| 测试与 UI 验证 | [进度](progress.md#验证记录与覆盖边界) | 双卖家阶段根 Node 64 项；限额/代理阶段 76/76 通过并审阅，单端口阶段最新 82/82 与类型检查通过；不重复累加专项，静态导出不等于公网验收 |
+| 原生 MON 合约与同钱包交易 | [新部署](../contracts/deployments/inferpool-mon-native-testnet.json) / [8 笔实链证据](../contracts/deployments/inferpool-native-monad-smoke.json) | 验证 2/2、正常 .000110 MON、卖家失败 0、提款 .001，最终无锁款；不证明独立钱包或公网界面 |
+| 测试与 UI 验证 | [进度](progress.md#验证记录与覆盖边界) | 原生迁移根 91/91、合约 43/43、Web 检查通过；旧阶段计数不累加，旧 dUSD UI 证据不改标 MON |
 
 ## 已完成的图形素材与真实截图
 
@@ -165,7 +174,7 @@ Earlier browser acceptance covered normal completion, seller failure, spending c
 | 项目名 | InferPool |
 | 代码仓库 | [onekb/Hackathon260905](https://github.com/onekb/Hackathon260905)；单端口提交 `319c6b9` 已通过 SSH 推送至 origin/main，具体版本以 Git 记录为准 |
 | 网络 | Monad Testnet，chain ID `10143` |
-| 主合约 | `0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568` |
+| 主合约 | 新原生 MON：`0x142a4904307244Bed0cECD72dE8329A253333182`；公网仍待切换，旧 dUSD 地址与历史另存 |
 | 公网 Demo | [https://demo.example.com](https://demo.example.com) 已可访问；Linux 钱包已批准，原账本已安全迁移、Router 已 enable/start；用户 HTTPS 代理下 /health 200，早期 502 已解决。公网页面、配置、常驻 A 的 WSS 与 Para 弹窗入口已通过；B 卖家离线；新增远端订单的后端/链上成功已核对，但来源未知，新域名钱包登录与浏览器/SSE 交互未验 |
 | LOGO（官方说明要求） | 原创 PNG / SVG 已完成并检查；实际表单未见独立输入，尚未上传比赛 |
 | 项目截图（表单必需） | 公网访客市场 JPEG 作封面；历史本机账单/双卖家市场保留来源说明，说明图可作辅助，全部已保存并检查；尚未上传比赛 |

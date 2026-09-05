@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
 import { setTimeout as delay } from 'node:timers/promises';
-import { createPublicClient, createWalletClient, getAddress, http, keccak256, stringToHex, type Abi, type Address, type Hex } from 'viem';
+import { createPublicClient, createWalletClient, formatEther, getAddress, http, keccak256, stringToHex, type Abi, type Address, type Hex } from 'viem';
 import { foundry, monadTestnet } from 'viem/chains';
 import type { ChainAdapter, ChainAccount, ChainOrder, LockInput, SettleInput } from './chain.js';
 import { decimal, fee, units, type Quote } from './money.js';
@@ -59,15 +59,16 @@ export class AlchemySessionSender {
   }
   private readonly wait: (ms: number) => Promise<void>;
   private readonly statusAttempts: number;
-  async send(functionName: string, args: readonly unknown[]): Promise<Hex> {
+  async send(functionName: string, args: readonly unknown[], value = 0n): Promise<Hex> {
+    if (value < 0n) throw new Error('Native value cannot be negative');
     const serialized = JSON.stringify(args, (_k, v) => typeof v === 'bigint' ? v.toString() : v);
-    const key = `${functionName}:${serialized}`;
+    const key = `${functionName}:${serialized}:${value}`;
     // If a prior CLI invocation returned an operation reference, never submit that call a second time.
     const prior = this.references.get(key);
     if (prior) return this.resolveReference(prior);
     let result: AlchemyResult | undefined;
     try {
-      const { stdout } = await this.run(['--json', '--no-interactive', '-n', 'monad-testnet', 'evm', 'contract', 'call', this.market, functionName, '--args', serialized, '--abi', JSON.stringify(this.abi), '--signer', 'session'], 120_000);
+      const { stdout } = await this.run(['--json', '--no-interactive', '-n', 'monad-testnet', 'evm', 'contract', 'call', this.market, functionName, '--args', serialized, '--abi', JSON.stringify(this.abi), '--signer', 'session', ...(value ? ['--value', formatEther(value)] : [])], 120_000);
       result = parseAlchemyJson(stdout);
     } catch (error: unknown) {
       // Do not expose child-process messages, stdout or stderr: those can contain account/session details.
@@ -151,6 +152,10 @@ export class EvmChain implements ChainAdapter {
     if (!(await this.client.getCode({ address: this.market }))) throw new Error('Market contract is not deployed at the configured address');
     const router = await this.client.readContract({ address: this.market, abi: this.abi, functionName: 'router' }) as Address;
     if (getAddress(router) !== this.router) throw new Error('Configured router does not match the contract signer');
+    const [native, symbol, decimals] = await Promise.all([
+      this.read('IS_NATIVE_ASSET', []), this.read('ASSET_SYMBOL', []), this.read('ASSET_DECIMALS', []),
+    ]);
+    if (native !== true || symbol !== 'MON' || Number(decimals) !== 18) throw new Error('Configured market is not the native MON market; refusing to reinterpret ERC-20 balances');
     if (this.mode === 'monad-testnet') {
       let stdout: string;
       try { ({ stdout } = await exec('alchemy', ['--json', '--no-interactive', 'wallet', 'status'], { timeout: 15_000 })); }
@@ -171,7 +176,7 @@ export class EvmChain implements ChainAdapter {
       this.read('balances', [address]) as Promise<bigint>,
       this.read('activeGrantId', [address]) as Promise<bigint>,
     ]);
-    if (id === 0n) return { available: decimal(balance), authorized: '0.000000', authorizationExpiresAt: 0 };
+    if (id === 0n) return { available: decimal(balance), authorized: decimal(0n), authorizationExpiresAt: 0 };
     const grant = await this.read('getGrant', [address, id]) as Grant;
     const expiresAt = Number(grant.expiresAt);
     const remaining = grant.totalLimit - grant.spent - grant.locked;

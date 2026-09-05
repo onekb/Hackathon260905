@@ -38,12 +38,12 @@ try {
   const fixture = await deployFixture();
   mkdirSync('.local', { recursive: true, mode: 0o700 });
   const statePath = resolve('.local', `router-${fixture.market}.json`);
-  const config = { chainMode: 'anvil', chainId: 31337, rpcUrl, token: fixture.token, market: fixture.market, router: fixture.router, buyer: fixture.buyer, sellerA: fixture.sellerA, sellerB: fixture.sellerB, model: fixture.model, statePath };
+  const config = { chainMode: 'anvil', chainId: 31337, rpcUrl, asset: {symbol: 'MON', decimals: 18}, market: fixture.market, router: fixture.router, buyer: fixture.buyer, sellerA: fixture.sellerA, sellerB: fixture.sellerB, model: fixture.model, statePath };
   writeFileSync('.local/deployment.json', JSON.stringify(config, null, 2), { mode: 0o600 });
-  launch(process.execPath, ['--import', 'tsx', 'server/src/index.ts'], { CHAIN_MODE: 'anvil', RPC_URL: rpcUrl, MARKET_ADDRESS: fixture.market, TOKEN_ADDRESS: fixture.token, ROUTER_ADDRESS: fixture.router, ROUTER_PUBLIC_URL: 'http://127.0.0.1:8787', ROUTER_STATE_PATH: statePath });
+  launch(process.execPath, ['--import', 'tsx', 'server/src/index.ts'], { CHAIN_MODE: 'anvil', RPC_URL: rpcUrl, MARKET_ADDRESS: fixture.market, ROUTER_ADDRESS: fixture.router, ROUTER_PUBLIC_URL: 'http://127.0.0.1:8787', ROUTER_STATE_PATH: statePath });
   await waitFor(async () => { const response = await fetch('http://127.0.0.1:8787/health'); if (!response.ok) throw new Error('Router unavailable'); return response; });
   for (const [i, index] of [2, 3].entries()) {
-    launch(process.execPath, ['--import', 'tsx', 'provider/src/main.ts', '--router', 'ws://127.0.0.1:8787/provider', '--id', `seller-${i + 1}`, '--name', `演示卖家 ${i + 1}`, '--port', String(8791 + i), '--min-reserve', '0.0001', '--output-price', i ? '100' : '80'], { PROVIDER_PRIVATE_KEY: localPrivateKey(index) });
+    launch(process.execPath, ['--import', 'tsx', 'provider/src/main.ts', '--router', 'ws://127.0.0.1:8787/provider', '--id', `seller-${i + 1}`, '--name', `演示卖家 ${i + 1}`, '--port', String(8791 + i), '--input-price', '30', '--cache-read-price', '3', '--cache-write-price', '37.5', '--min-reserve', '0.0001', '--output-price', i ? '100' : '80'], { PROVIDER_PRIVATE_KEY: localPrivateKey(index) });
   }
   await waitFor(async () => { const body = await (await fetch('http://127.0.0.1:8787/health')).json() as any; if (body.providers !== 2) throw new Error('Sellers are connecting'); return body; });
   const post = async (path: string, body: unknown, token?: string) => {

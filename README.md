@@ -4,9 +4,9 @@
 
 用于黑客松演示的 AI 推理市场：独立卖家主动连接平台，买家通过网页或统一 API 发起请求，由 Monad 测试网合约托管预算、按用量结算并释放余额。
 
-所有 AI 输出、Token 和缓存效果都是 **Mock**。DemoUSD 是自建测试代币，不是官方 USDC，也不代表真实美元资产。平台负责链外计量与判责，合约约束资金权限和预算，不证明模型真实性。
+所有 AI 输出、Token 和缓存效果都是 **Mock**。当前源码以原生测试 MON 托管和计费，旧 DemoUSD（dUSD）只保留历史资产与提款；二者不自动兑换，测试资产不代表美元或真实收入。平台负责链外计量与判责，合约约束资金权限和预算，不证明模型真实性。
 
-业务合约已部署并验证源码，浏览器六种目标场景、Monad 双卖家指定/自动匹配及网页手动选择均已对账，原失败与恢复留证。应用已部署到 [demo.example.com](https://demo.example.com)：公网页面、配置和常驻卖家 A 的 WSS 认证通过；用户负责 HTTPS 代理。新域名钱包登录、真实 SSE 请求与结算尚未验收，B 当前离线；完整范围见 [开发进度](docs/progress.md)。
+新 [原生 MON 市场](https://testnet.monadscan.com/address/0x142a4904307244Bed0cECD72dE8329A253333182) 已部署并完成双浏览器源码验证，根 91 项测试通过，同钱包小额实链验收 8 笔交易通过。[公网应用](https://demo.example.com) 此时仍运行旧 dUSD 版，尚未切换新源码。此前浏览器、双卖家和结算证据全部保留为旧版记录；当前范围见 [开发进度](docs/progress.md)。
 
 ## 本地快速开始
 
@@ -19,7 +19,7 @@ forge build --root contracts
 npm run demo
 ```
 
-脚本启动或复用本地 Anvil（chain ID `31337`），部署测试合约，准备买家余额与授权，并启动 Router 和两个不同钱包的独立卖家进程。
+脚本启动或复用本地 Anvil（chain ID `31337`），部署原生 MON 测试合约，准备买家托管余额与授权，并启动 Router 和两个不同钱包的独立卖家进程。
 
 | 服务 | 本机地址 |
 | --- | --- |
@@ -62,7 +62,7 @@ npm run dev:web
 
 | 目录 | 内容 |
 | --- | --- |
-| [contracts/](contracts/README.md) | DemoUSD、InferenceMarket、Solidity 测试及部署回执 |
+| [contracts/](contracts/README.md) | 原生 MON 市场、旧 DemoUSD、Solidity 测试与部署回执 |
 | [server/](server/README.md) | Router、认证、API、计量、持久化和链适配 |
 | [provider/](provider/README.md) | 独立 Mock 卖家、本地控制台、身份及连接协议 |
 | [web/](web/README.md) | 市场、账单、钱包、API 接入和卖家页面 |

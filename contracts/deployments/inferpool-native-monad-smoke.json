@@ -1,0 +1,350 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "market": "0x142a4904307244Bed0cECD72dE8329A253333182",
+  "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "asset": {
+    "symbol": "MON",
+    "decimals": 18,
+    "native": true
+  },
+  "scope": "One existing session wallet acts as Router, buyer and seller. Setup deposits 0.01 test MON, grants at most 0.005 MON for 24 hours, and withdraws 0.001 MON after two bounded contract scenarios. This is not independent-wallet or browser proof.",
+  "actions": {
+    "quote": {
+      "startedAt": "2026-09-05T07:16:28.445Z",
+      "functionName": "upsertQuote",
+      "args": [
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        {
+          "input": "300000000000000000",
+          "cacheRead": "30000000000000000",
+          "cacheWrite": "375000000000000000",
+          "output": "800000000000000000"
+        },
+        "1000000000000",
+        true
+      ],
+      "valueWei": "0",
+      "gasEstimate": "217406",
+      "transactionHash": "0xeafebd63531479694f5f421a89408fd597f7df0c63259a29dd9e31145e7b0641",
+      "receiptStatus": "success",
+      "blockNumber": "59844202",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "217406",
+      "gasUsed": "217406",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "22175412000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xeafebd63531479694f5f421a89408fd597f7df0c63259a29dd9e31145e7b0641"
+    },
+    "deposit": {
+      "startedAt": "2026-09-05T07:16:34.134Z",
+      "functionName": "deposit",
+      "args": [],
+      "valueWei": "10000000000000000",
+      "gasEstimate": "81996",
+      "transactionHash": "0x61d087ee645f1c8fe42e9fd66629fe8ceca591b34f66f24b75682f48171ba41b",
+      "receiptStatus": "success",
+      "blockNumber": "59844220",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "81996",
+      "gasUsed": "81996",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "8363592000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x61d087ee645f1c8fe42e9fd66629fe8ceca591b34f66f24b75682f48171ba41b"
+    },
+    "grant": {
+      "startedAt": "2026-09-05T07:16:39.896Z",
+      "functionName": "authorizeRouter",
+      "args": [
+        "5000000000000000",
+        "1788678998"
+      ],
+      "valueWei": "0",
+      "gasEstimate": "99084",
+      "transactionHash": "0xb2015d100ceaa9efd157de9a9a66cc295e5b40501db80fd0b422b76c1118df3e",
+      "receiptStatus": "success",
+      "blockNumber": "59844235",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "99084",
+      "gasUsed": "99084",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "10106568000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xb2015d100ceaa9efd157de9a9a66cc295e5b40501db80fd0b422b76c1118df3e"
+    },
+    "reserve_success": {
+      "startedAt": "2026-09-05T07:16:47.848Z",
+      "functionName": "reserve",
+      "args": [
+        "0x334b92c138441091bc55d26fcaed95db8e3af7039e91abe87195de0f4e9ec922",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "1000000000000000",
+        "1788593206",
+        "1"
+      ],
+      "valueWei": "0",
+      "gasEstimate": "300298",
+      "transactionHash": "0x3cd331e372ba82ac0f2b2defa0e3ef715374bf5ed71ce87e32a24edcee2d005f",
+      "receiptStatus": "success",
+      "blockNumber": "59844264",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "300298",
+      "gasUsed": "300298",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "30630396000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x3cd331e372ba82ac0f2b2defa0e3ef715374bf5ed71ce87e32a24edcee2d005f"
+    },
+    "settle_success": {
+      "startedAt": "2026-09-05T07:16:53.458Z",
+      "functionName": "settle",
+      "args": [
+        "0x334b92c138441091bc55d26fcaed95db8e3af7039e91abe87195de0f4e9ec922",
+        {
+          "input": "100",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "100"
+        },
+        0
+      ],
+      "valueWei": "0",
+      "gasEstimate": "129618",
+      "transactionHash": "0xb282caddd789a83e2ac89350952520cc3d0796b93a404b346d2f9cf6fc57b8a6",
+      "receiptStatus": "success",
+      "blockNumber": "59844281",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "129618",
+      "gasUsed": "129618",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "13221036000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0xb282caddd789a83e2ac89350952520cc3d0796b93a404b346d2f9cf6fc57b8a6"
+    },
+    "reserve_seller_failed": {
+      "startedAt": "2026-09-05T07:17:00.692Z",
+      "functionName": "reserve",
+      "args": [
+        "0x5607419a5ebf604489ed34680e0bfa5df4bc240d6ca81c21cf7dc5aced6d088a",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "1000000000000000",
+        "1788593218",
+        "1"
+      ],
+      "valueWei": "0",
+      "gasEstimate": "300298",
+      "transactionHash": "0x2fffb7d2676457bc87df4c85d7360b56dcbac0bc983665e4a2f3c90cb4141063",
+      "receiptStatus": "success",
+      "blockNumber": "59844304",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "300298",
+      "gasUsed": "300298",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "30630396000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x2fffb7d2676457bc87df4c85d7360b56dcbac0bc983665e4a2f3c90cb4141063"
+    },
+    "settle_seller_failed": {
+      "startedAt": "2026-09-05T07:17:06.781Z",
+      "functionName": "settle",
+      "args": [
+        "0x5607419a5ebf604489ed34680e0bfa5df4bc240d6ca81c21cf7dc5aced6d088a",
+        {
+          "input": "100",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "100"
+        },
+        3
+      ],
+      "valueWei": "0",
+      "gasEstimate": "120497",
+      "transactionHash": "0x3dd1813e1908f5fa0a7fcfe096bb6265be2d1665303543405249db011598b1fa",
+      "receiptStatus": "success",
+      "blockNumber": "59844322",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "120497",
+      "gasUsed": "120497",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "12290694000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x3dd1813e1908f5fa0a7fcfe096bb6265be2d1665303543405249db011598b1fa"
+    },
+    "withdraw": {
+      "startedAt": "2026-09-05T07:17:12.923Z",
+      "functionName": "withdraw",
+      "args": [
+        "1000000000000000"
+      ],
+      "valueWei": "0",
+      "gasEstimate": "55241",
+      "transactionHash": "0x2c76e347e95d8927bae98cec38037ad65e4c5205a615ed59ffa778994fe89da7",
+      "receiptStatus": "success",
+      "blockNumber": "59844342",
+      "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+      "to": "0x142a4904307244bed0cecd72de8329a253333182",
+      "gasLimit": "55241",
+      "gasUsed": "55241",
+      "effectiveGasPrice": "102000000000",
+      "gasCostWei": "5634582000000000",
+      "explorerUrl": "https://testnet.monadscan.com/tx/0x2c76e347e95d8927bae98cec38037ad65e4c5205a615ed59ffa778994fe89da7"
+    }
+  },
+  "scenarios": {
+    "success": {
+      "id": "inferpool-native-mon-v2-success",
+      "requestId": "0x334b92c138441091bc55d26fcaed95db8e3af7039e91abe87195de0f4e9ec922",
+      "budget": "0.001",
+      "usage": {
+        "input": 100,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 100
+      },
+      "outcome": 0,
+      "availableBefore": "10000000000000000",
+      "deadline": 1788593206,
+      "verified": {
+        "chargedMON": "0.000110000000000000",
+        "releasedMON": "0.000890000000000000",
+        "state": "settled",
+        "order": {
+          "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "reserved": "1000000000000000",
+          "charged": "110000000000000",
+          "grantId": "1",
+          "deadline": "1788593206",
+          "quoteVersion": "1",
+          "state": 2,
+          "outcome": 0,
+          "prices": {
+            "input": "300000000000000000",
+            "cacheRead": "30000000000000000",
+            "cacheWrite": "375000000000000000",
+            "output": "800000000000000000"
+          },
+          "usage": {
+            "input": "100",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "100"
+          }
+        }
+      }
+    },
+    "seller_failed": {
+      "id": "inferpool-native-mon-v2-seller_failed",
+      "requestId": "0x5607419a5ebf604489ed34680e0bfa5df4bc240d6ca81c21cf7dc5aced6d088a",
+      "budget": "0.001",
+      "usage": {
+        "input": 100,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 100
+      },
+      "outcome": 3,
+      "availableBefore": "10000000000000000",
+      "deadline": 1788593218,
+      "verified": {
+        "chargedMON": "0.000000000000000000",
+        "releasedMON": "0.001000000000000000",
+        "state": "settled",
+        "order": {
+          "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "reserved": "1000000000000000",
+          "charged": "0",
+          "grantId": "1",
+          "deadline": "1788593218",
+          "quoteVersion": "1",
+          "state": 2,
+          "outcome": 3,
+          "prices": {
+            "input": "300000000000000000",
+            "cacheRead": "30000000000000000",
+            "cacheWrite": "375000000000000000",
+            "output": "800000000000000000"
+          },
+          "usage": {
+            "input": "100",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "100"
+          }
+        }
+      }
+    }
+  },
+  "updatedAt": "2026-09-05T07:17:22.203Z",
+  "grantExpiresAt": 1788678998,
+  "setupVerifiedAt": "2026-09-05T07:16:44.232Z",
+  "setup": {
+    "account": {
+      "available": "0.010000000000000000",
+      "authorized": "0.005000000000000000",
+      "authorizationExpiresAt": 1788678998
+    },
+    "nativeWalletMON": "100.699910018000000000",
+    "marketBalanceWei": "10000000000000000",
+    "totalEscrowedWei": "10000000000000000",
+    "totalLockedWei": "0",
+    "quote": {
+      "input": "0.300000000000000000",
+      "cacheRead": "0.030000000000000000",
+      "cacheWrite": "0.375000000000000000",
+      "output": "0.800000000000000000",
+      "minReserve": "0.000001000000000000",
+      "version": "1"
+    }
+  },
+  "withdrawBefore": {
+    "wallet": "100613137496000000000",
+    "market": "10000000000000000",
+    "escrow": "10000000000000000",
+    "total": "10000000000000000"
+  },
+  "withdrawVerified": {
+    "amountMON": "0.001",
+    "before": {
+      "wallet": "100613137496000000000",
+      "market": "10000000000000000",
+      "escrow": "10000000000000000",
+      "total": "10000000000000000"
+    },
+    "after": {
+      "wallet": "100608502914000000000",
+      "market": "9000000000000000",
+      "escrow": "9000000000000000",
+      "total": "9000000000000000"
+    }
+  },
+  "smokeVerifiedAt": "2026-09-05T07:17:19.811Z",
+  "final": {
+    "account": {
+      "available": "0.009000000000000000",
+      "authorized": "0.004890000000000000",
+      "authorizationExpiresAt": 1788678998
+    },
+    "nativeWalletMON": "100.608502914000000000",
+    "marketBalanceWei": "9000000000000000",
+    "totalEscrowedWei": "9000000000000000",
+    "totalLockedWei": "0",
+    "quote": {
+      "input": "0.300000000000000000",
+      "cacheRead": "0.030000000000000000",
+      "cacheWrite": "0.375000000000000000",
+      "output": "0.800000000000000000",
+      "minReserve": "0.000001000000000000",
+      "version": "1"
+    }
+  }
+}

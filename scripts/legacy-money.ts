@@ -1,17 +1,14 @@
-export const ASSET_DECIMALS = 18;
-export const ASSET_SCALE = 10n ** BigInt(ASSET_DECIMALS);
-export const TOKENS_PER_MILLION = 1_000_000n;
+export const SCALE = 1_000_000n;
 export interface Quote { input: string; cacheRead: string; cacheWrite: string; output: string; minReserve: string; version?: string }
 export interface Usage { input: number; cacheRead: number; cacheWrite: number; output: number }
 export const emptyUsage = (): Usage => ({input: 0, cacheRead: 0, cacheWrite: 0, output: 0});
 export function units(value: string): bigint {
-  if (!/^(0|[1-9]\d*)(\.\d{1,18})?$/.test(value)) throw new Error('MON amount must be a nonnegative decimal string with at most 18 places');
+  if (!/^(0|[1-9]\d*)(\.\d{1,6})?$/.test(value)) throw new Error('Amount must be a nonnegative decimal string with at most 6 places');
   const [whole, fraction = ''] = value.split('.');
-  return BigInt(whole) * ASSET_SCALE + BigInt(fraction.padEnd(ASSET_DECIMALS, '0'));
+  return BigInt(whole) * SCALE + BigInt(fraction.padEnd(6, '0'));
 }
 export function decimal(value: bigint): string {
-  if (value < 0n) throw new Error('MON amount cannot be negative');
-  return `${value / ASSET_SCALE}.${(value % ASSET_SCALE).toString().padStart(ASSET_DECIMALS, '0')}`;
+  return `${value / SCALE}.${(value % SCALE).toString().padStart(6, '0')}`;
 }
 export function fee(quote: Quote, usage: Usage): bigint {
   let numerator = 0n;
@@ -19,6 +16,6 @@ export function fee(quote: Quote, usage: Usage): bigint {
     if (!Number.isSafeInteger(usage[key]) || usage[key] < 0) throw new Error('Invalid mock token count');
     numerator += units(quote[key]) * BigInt(usage[key]);
   }
-  return (numerator + TOKENS_PER_MILLION - 1n) / TOKENS_PER_MILLION;
+  return (numerator + SCALE - 1n) / SCALE;
 }
 export const mockTokens = (text: string): number => Array.from(text).length;

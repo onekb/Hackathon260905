@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { getAddress, type Hex } from 'viem';
 import { createAlchemyBuyerSessionAccount } from '../provider/src/signer.js';
 import { opaqueId } from '../server/src/evm-chain.js';
-import { decimal, fee, units } from '../server/src/money.js';
+import { decimal, fee, units } from './legacy-money.js';
 import { expectedSigner, model, monadContext, readJson, receiptEvidence, saveJson } from './setup-monad.js';
 
 type Json = Record<string, any>;

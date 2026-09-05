@@ -3,26 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { verifyMessage } from 'viem';
 import ParaWallet from './para-wallet';
-import { api, ROUTER_URL } from '@/lib/api';
-import { deployedConfig } from '@/lib/contracts';
-import type { MarketConfig, WalletAccess } from '@/lib/types';
+import { ROUTER_URL } from '@/lib/api';
+import { useMarketConfig } from '@/lib/use-market-config';
+import type { WalletAccess } from '@/lib/types';
 import { parseBrowserProviderChallenge, parseBrowserProviderInfo, parseLoopbackOrigin, type BrowserProviderInfo } from '../../shared/browser-wallet';
 
 const routerOrigin = new URL(ROUTER_URL).origin;
 type Phase = 'idle' | 'ready' | 'signing' | 'signed' | 'online' | 'error';
 
 export default function ProviderConnect() {
-  const [config, setConfig] = useState<MarketConfig>(deployedConfig);
-  useEffect(() => {
-    let active = true;
-    void api<MarketConfig>('/config').then(value => {
-      if (![10143, 31337].includes(value.chain_id)) throw new Error('Unsupported chain');
-      if (value.chain_id === 10143 && (value.market_address.toLowerCase() !== deployedConfig.market_address.toLowerCase()
-        || value.token_address.toLowerCase() !== deployedConfig.token_address.toLowerCase())) throw new Error('Contract mismatch');
-      if (active) setConfig(value);
-    }).catch(() => {});
-    return () => { active = false; };
-  }, []);
+  const { config, error } = useMarketConfig();
+  if (!config) return <main className="provider-connect"><p className={error ? 'error' : 'muted'}>{error || '正在读取原生 MON 市场配置…'}</p>{error && <button className="button secondary" onClick={() => window.location.reload()}>重新读取配置</button>}</main>;
   if (!process.env.NEXT_PUBLIC_PARA_API_KEY) return <main className="provider-connect"><p className="error">网页钱包尚未配置，请联系平台维护者。</p></main>;
   return <ParaWallet config={config}>{wallet => <ConnectionSession key={`${config.chain_id}:${wallet.address ?? 'disconnected'}`} wallet={wallet} />}</ParaWallet>;
 }

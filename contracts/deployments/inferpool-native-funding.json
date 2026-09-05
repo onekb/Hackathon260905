@@ -1,0 +1,14 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "source": "MOJO Monad Blitz Huizhou event 16 faucet",
+  "amountMON": "100",
+  "to": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "transactionHash": "0x36e77400b6b44d1fefa6a6f817c5b7b307c0627491e565006a7a38d6349c1cec",
+  "receiptStatus": "success",
+  "blockNumber": 59842233,
+  "valueWei": "100000000000000000000",
+  "routerBalanceAfterMON": "100.947564612",
+  "explorerUrl": "https://testnet.monadscan.com/tx/0x36e77400b6b44d1fefa6a6f817c5b7b307c0627491e565006a7a38d6349c1cec",
+  "evidence": "Activity page reported claimed; independently verified transaction recipient/value, success receipt and Router balance by official RPC. Balance is a historical snapshot; no application quota change."
+}

@@ -2,6 +2,16 @@
 
 The Router authenticates buyers and independent mock providers, reserves each request on the configured chain, meters simulated Unicode tokens, and settles the final four usage categories. Inference and responsibility decisions are centralized. `anvil` and `monad-testnet` adapters use real chain receipts. `memory` is an explicit unit-test helper and creates no transactions.
 
+## Asset and migration boundary
+
+Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; the public service has not yet switched from legacy dUSD. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
+
+Buyers call payable `deposit()` with MON value, then separately `authorizeRouter(limit, expiresAt)`; no ERC-20 approve is required. Withdrawal is a native transfer; settlement credits the seller's internal withdrawable balance. Existing dUSD and its spending grants do not become MON or authorize the new market.
+
+Every order and `/config` identify `market_address`, `asset_symbol` and `asset_decimals`. Bind the store before recovery. Migration requires the exact paired `LEGACY_MARKET_ADDRESS` and `LEGACY_TOKEN_ADDRESS`, no unresolved legacy reservation/settlement, and the original orders/idempotency/createdAt retained. Unknown or inconsistent identities fail startup rather than relabeling money. Cache is cleared on market switch; historical attempts still count toward the unchanged admission epoch. Use a backed-up, controlled migration to a market-specific state file; an empty replacement file would reset history and quotas.
+
+A POST retry with an old dUSD `Idempotency-Key` returns 409 plus its original request ID; it never becomes a new MON charge. Query the old order, and use a new key only for an intentionally new MON request. Current-market recovery/cancel/provider-event handling cannot act on legacy orders. Legacy funds remain withdrawable/reclaimable through their original contract and separate Web controls.
+
 ## Run
 
 After deploying the market and publishing provider quotes:
@@ -54,7 +64,7 @@ Set `DEMO_NEW_ORDERS_ENABLED=false` while keeping admission enabled and the same
 
 - `POST /auth/challenge` with `{ "wallet": "0x..." }` returns a five-minute, one-use message.
 - Sign that exact message with the buyer wallet, then `POST /auth/verify` with `{ "wallet", "nonce", "signature" }`. Its `token` is a one-day bearer session.
-- Deposit tokens and establish a spending grant with the wallet through the market contract. The Router has no withdrawal or grant endpoint.
+- Deposit native MON and establish a separate spending grant with the wallet through the market contract. The Router has no withdrawal or grant endpoint.
 - `GET /account` reads the chain's currently available balance and remaining authorized spend.
 - `POST /api-keys` with a wallet session and `{ "name": "demo" }` returns a `token` shown only once. Keys require an active spending grant and cannot manage other credentials or withdraw money.
 - `GET /api-keys` and `DELETE /api-keys/:id` require a wallet session.
@@ -65,12 +75,12 @@ curl http://localhost:8787/v1/chat/completions \
   -H "Authorization: Bearer $INFERPOOL_API_KEY" \
   -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: unique-example-001' \
-  -d '{"model":"mock-reasoner","messages":[{"role":"user","content":"Hello"}],"max_tokens":200,"max_spend":"0.10","stream":true,"cache":true}'
+  -d '{"model":"mock-reasoner","messages":[{"role":"user","content":"Hello"}],"max_tokens":200,"max_spend":"0.001","stream":true,"cache":true}'
 ```
 
-`provider_id` optionally selects a seller. Otherwise matching uses the predicted total cost, including the requested output limit. `cache:true` enables buyer/seller/model/context-isolated simulated cache; a cache write is recorded only after success. `max_spend` and every rate use decimal strings with at most six decimal places.
+`provider_id` optionally selects a seller. Otherwise matching uses the predicted total cost, including the requested output limit. `cache:true` enables buyer/seller/model/context-isolated simulated cache; a cache write is recorded only after success. `max_spend` and every rate use MON decimal strings with at most 18 decimal places. Rates are per million simulated tokens; combine all four products before rounding up once to one wei. Historical dUSD order strings keep their six-decimal asset identity.
 
-SSE sends OpenAI-shaped text `data` chunks and additional `event: request` snapshots. A snapshot contains the complete current output, so consumers must either replace from snapshots or append text deltas; doing both duplicates the display. The last snapshot includes settlement status, followed by `[DONE]`. Closing an SSE stream never cancels the request. Query `GET /v1/requests/:id`, list `GET /v1/requests`, or explicitly `POST /v1/requests/:id/cancel` with the same buyer's credential. `Idempotency-Key` retries return the same order; changed arguments under the same key return HTTP 409.
+SSE sends OpenAI-shaped text `data` chunks and additional `event: request` snapshots. A snapshot contains the complete current output, so consumers must either replace from snapshots or append text deltas; doing both duplicates the display. The last snapshot includes settlement status, followed by `[DONE]`. Closing an SSE stream never cancels the request. Query `GET /v1/requests/:id`, list `GET /v1/requests`, or explicitly `POST /v1/requests/:id/cancel` with the same buyer's credential. Current-market `Idempotency-Key` retries return the same order; changed arguments or a legacy-market key return HTTP 409. A legacy-key conflict identifies the old request for lookup and does not create a MON request.
 
 `billConfirmed` is true only after the chain state is confirmed. Before that, `charge` and `released` are expected amounts. `reservation_unknown` means the reservation transaction could not be conclusively observed; no inference request is dispatched, and the Router keeps checking and waives fees if the reservation later appears. After an expired reservation, the buyer can reclaim directly through the contract even when the Router is unavailable.
 

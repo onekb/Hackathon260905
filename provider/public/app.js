@@ -43,7 +43,7 @@ function render(next) {
   if (effective) {
     text('effective-input', effective.input); text('effective-cache-read', effective.cacheRead);
     text('effective-cache-write', effective.cacheWrite); text('effective-output', effective.output);
-    text('effective-min-reserve', `${effective.minReserve} DemoUSD`);
+    text('effective-min-reserve', `${effective.minReserve} MON`);
     text('effective-status', `${next.status === 'online' ? '连接时确认' : '最近一次连接记录'}：${new Date(next.effectivePricingVerifiedAt).toLocaleTimeString('zh-CN')}${effective.version ? ` · 版本 ${effective.version}` : ''}。每单仍由平台读取链上有效报价。`);
     text('pricing-match', next.pricingMatchesEffective ? '本地配置与上述报价一致。' : '本地配置与上述报价不同；本地修改尚未通过链上发布生效。');
   } else {

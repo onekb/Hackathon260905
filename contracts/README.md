@@ -1,8 +1,31 @@
 # InferPool 合约
 
-当前业务合约为 `src/DemoUSD.sol` 和 `src/InferenceMarket.sol`：演示代币、链上报价、托管余额、限额授权、订单预留与结算、超时回收。部署和源码验证已完成；地址及交易见 [部署记录](deployments/inferpool-monad-testnet.json)，同钱包初始化与烟测见 `deployments/inferpool-setup-monad.json` 和 `deployments/inferpool-smoke-monad.json`。完整运行方式、信任边界与验收状态见 [项目文档](../docs/README.md)。
+当前 `src/InferenceMarket.sol` 是**原生测试 MON** 市场，构造参数仅 `router`；`deposit()` 接收 `msg.value`，`withdraw(uint256)` 原生转账，`settle` 只记内部可提款收益。资产为 `MON / 18 decimals`，不存在 `token()` 或 ERC-20 approve 流程；每百万计费分母仍为 1e6。提款采用先更新余额再转账、防重入和失败回滚。
 
-依赖安装在仓库根目录执行 `npm run setup:contracts`，编译执行 `forge build --root contracts`，验证执行 `npm run test:contracts`。依赖版本和校验见 [DEPENDENCIES.md](DEPENDENCIES.md)。
+| 版本 | 测试网地址与用途 |
+| --- | --- |
+| 新原生 MON 市场 | `0x142a4904307244Bed0cECD72dE8329A253333182`；[部署/双浏览器验证证据](deployments/inferpool-mon-native-testnet.json) |
+| 旧 dUSD 市场 | `0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568`；保留旧资金/授权/订单/提款，[旧部署证据](deployments/inferpool-monad-testnet.json) |
+| 旧 DemoUSD | `0x62701D69bD213e8F63c28465528931de208cE06E`；自建六位测试 ERC-20，无自动 MON 兑换 |
+
+新合约部署交易 [0xa6da3b…10ed0](https://testnet.monadscan.com/tx/0xa6da3bd7812867daddc53999b06263d76754f7ba3bcb718acdb7d3053aa10ed0) 成功；native/MON/18、router 和运行字节码回读通过，源码验证 2/2。公网服务尚未切换，同钱包小额实链验收已通过，状态见 [进度](../docs/progress.md)。旧 dUSD 交易证据不得改标 MON。
+
+在仓库根目录安装、编译与测试：
+
+```sh
+npm run setup:contracts
+forge build --root contracts
+npm run test:contracts
+```
+
+原生合约本地 43/43 通过，包括拒收回滚、重入保护、资金守恒；依赖版本见 [DEPENDENCIES.md](DEPENDENCIES.md)。当前源码已替换为原生版本，历史 dUSD 脚本需要对应旧版本/旧 ABI，不能拿新 ABI 调用旧市场。
+
+```sh
+node scripts/deploy-mon-native.mjs
+node scripts/deploy-mon-native.mjs --verify-only
+```
+
+默认是只读部署预检；`--verify-only` 复核已有部署并重试源码验证，不新部署。显式 `--deploy` 才部署/恢复新市场并验证。`node --import tsx scripts/native-monad.ts` 默认只读；`--execute --smoke` 才进行受限存款、授权、两单锁款/结算和提款。准确金额、恢复边界及钱包设置见 [运行手册](../docs/runbook.md#原生-mon-测试网当前源码)。
 
 ## 历史 Counter 示例
 
@@ -42,21 +65,6 @@ forge test -vv
 cast call 0x3634ee592376332E19603bD3edFFC0446b4F2ed8 'number()(uint256)' --rpc-url https://testnet-rpc.monad.xyz
 ```
 
-## 钱包连接（首次配置或会话过期时）
+## 钱包与历史记录
 
-用户在终端完成账号设置：
-
-```sh
-nvm use 22.23.2
-npm install -g @alchemy/cli@latest
-alchemy auth
-```
-
-随后在 https://dashboard.alchemy.com/products/agent-wallet/evm-wallet 创建 EVM Agent Wallet 会话，再按 CLI 提示连接：
-
-```sh
-alchemy wallet connect --mode session
-alchemy wallet use session
-```
-
-私钥、助记词和会话令牌不要放入聊天或提交到仓库。会话连接完成后，由代理检查测试网、钱包状态和余额，再部署此合约。
+当前部署使用受限 Alchemy session，地址须与市场固定 Router 相同；首次设置、过期续批和服务器隔离见 [部署手册](../deploy/README.md)。不要为重跑历史 Counter 示例重连或替换当前 Router 的会话，不保存私钥或令牌。

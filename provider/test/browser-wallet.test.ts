@@ -84,7 +84,7 @@ async function fixture(options: { badEnvelope?: boolean } = {}) {
       void verifyMessage({ address: wallet.address, message: c.message, signature: message.signature }).then(valid => {
         if (!valid) return socket.close(4001);
         auths.push(message);
-        socket.send(JSON.stringify({ type: 'authenticated', providerId: 'seller-browser', quote: { input: '30', cacheRead: '3', cacheWrite: '37.5', output: '80', minReserve: '0.0001', version: '1' } }));
+        socket.send(JSON.stringify({ type: 'authenticated', asset_symbol: 'MON', asset_decimals: 18, market_address: 'memory:mon', providerId: 'seller-browser', quote: { input: '30', cacheRead: '3', cacheWrite: '37.5', output: '80', minReserve: '0.0001', version: '1' } }));
       });
     });
     socket.send(JSON.stringify({ type: 'challenge', ...c, ...(options.badEnvelope ? { nonce: 'f'.repeat(48) } : {}) }));

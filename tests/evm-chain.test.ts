@@ -12,7 +12,8 @@ test('real EVM adapter: budget, quote version, cancel, failure, concurrent grant
   const quote = (await chain.getQuote(f.sellerA, f.model))!;
   assert.equal(quote.version, '1');
   const accountBefore = await chain.getAccount(f.buyer);
-  assert.equal(accountBefore.available, '100.000000');
+  assert.equal(accountBefore.available, decimal(units('100')));
+  assert.equal(await f.client.getBalance({ address: f.market }), units('100'));
   const lock = (id: string, budget = '1', deadline = Math.floor(Date.now() / 1000) + 120) => chain.lock({ id, buyer: f.buyer, seller: f.sellerA, model: f.model, budget, quote, deadline });
   const cancelId = randomUUID();
   const locked = await lock(cancelId);
@@ -39,7 +40,7 @@ test('real EVM adapter: budget, quote version, cancel, failure, concurrent grant
 
   const snapId = randomUUID();
   await lock(snapId);
-  await f.write(2, 'upsertQuote', [f.modelId, { ...f.prices, output: 900_000_000n }, 100n, true]);
+  await f.write(2, 'upsertQuote', [f.modelId, { ...f.prices, output: units('900') }, units('0.0001'), true]);
   await assert.rejects(lock(randomUUID()));
   await chain.settle({ id: snapId, usage, outcome: 0, charge: charged });
   assert.equal((await chain.getOrder(snapId)).charge, charged);
@@ -56,5 +57,16 @@ test('real EVM adapter: budget, quote version, cancel, failure, concurrent grant
   assert.equal((await chain.getOrder(reclaimedId)).state, 'refunded');
   await assert.rejects(chain.settle({ id: reclaimedId, usage, outcome: 0, charge: decimal(fee(nextQuote, usage)) }));
   const remaining = await chain.getAccount(f.buyer);
-  assert.equal(units(remaining.available), 100_000_000n - units(charged) * 2n);
+  assert.equal(units(remaining.available), units('100') - units(charged) * 2n);
+  // Settlement transfers only internal credit. The seller withdraws native MON separately.
+  assert.equal(await f.client.getBalance({ address: f.market }), units('100'));
+  const sellerCredit = units((await chain.getAccount(f.sellerA)).available);
+  assert.equal(sellerCredit, units(charged) * 2n);
+  const sellerWalletBefore = await f.client.getBalance({ address: f.sellerA });
+  const withdrawal = await f.write(2, 'withdraw', [sellerCredit]);
+  const sellerWalletAfter = await f.client.getBalance({ address: f.sellerA });
+  assert.equal(sellerWalletAfter - sellerWalletBefore, sellerCredit - withdrawal.gasUsed * withdrawal.effectiveGasPrice);
+  assert.equal((await chain.getAccount(f.sellerA)).available, decimal(0n));
+  assert.equal(await f.client.getBalance({ address: f.market }), units('100') - sellerCredit);
+  assert.equal(await f.client.readContract({ address: f.market, abi: f.abi, functionName: 'totalEscrowed' }), units('100') - sellerCredit);
 });

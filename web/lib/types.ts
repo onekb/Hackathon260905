@@ -2,16 +2,22 @@ import type { Address, Hex } from 'viem';
 
 export type PriceKey = 'input' | 'cacheRead' | 'cacheWrite' | 'output';
 export type Quote = Record<PriceKey, string> & { minReserve: string; version?: string };
-export interface MarketConfig { chain_id: number; chain_mode: string; market_address: Address; token_address: Address; mock_inference: boolean }
+export interface MarketConfig {
+  chain_id: number; chain_mode: string; market_address: Address; mock_inference: boolean;
+  asset_symbol: 'MON'; asset_decimals: 18;
+  legacy_market_address?: Address; legacy_token_address?: Address; legacy_asset_symbol?: 'dUSD';
+}
+export type ContractTarget = 'market' | 'legacy-market' | 'legacy-token';
 export interface WalletAccess {
   address?: Address;
   connect: () => void;
   signMessage: (message: string) => Promise<Hex>;
-  sendContract: (target: 'market' | 'token', functionName: string, args?: readonly unknown[]) => Promise<Hex>;
+  sendContract: (target: ContractTarget, functionName: string, args?: readonly unknown[], options?: { value?: bigint }) => Promise<Hex>;
 }
 export interface AccountInfo { wallet: string; available: string; authorized: string; authorizationExpiresAt: number; chain_mode: string }
 export interface Seller { id: string; provider_id: string; provider_name: string; seller: string; quote: Quote; online: boolean; available_slots: number; mode: string }
 export interface Order {
+  asset_symbol: 'MON' | 'dUSD'; asset_decimals: 18 | 6; market_address: Address;
   id: string; buyer: string; providerId: string; seller: string; model: string; budget: string; quote: Quote;
   usage: Record<PriceKey, number>; maxTokens: number; output: string; status: string;
   settlement: string; billConfirmed: boolean; reason?: string; charge: string; released: string;

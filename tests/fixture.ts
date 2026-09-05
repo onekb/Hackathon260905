@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createPublicClient, createWalletClient, http, keccak256, stringToHex, toHex, type Abi, type Address, type Hex } from 'viem';
 import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
 import { foundry } from 'viem/chains';
+import { units } from '../server/src/money.js';
 
 // Public Anvil fixture mnemonic. These accounts are ONLY for localhost chain 31337.
 const ANVIL_FIXTURE = 'test test test test test test test test test test test junk';
@@ -26,24 +27,19 @@ export async function deployFixture() {
     if (value.status !== 'success') throw new Error('Fixture transaction reverted');
     return value;
   };
-  const tokenArtifact = artifact('DemoUSD');
   const marketArtifact = artifact('InferenceMarket');
-  const token = (await receipt(await wallets[0]!.deployContract({ abi: tokenArtifact.abi, bytecode: tokenArtifact.bytecode.object }))).contractAddress!;
-  const market = (await receipt(await wallets[0]!.deployContract({ abi: marketArtifact.abi, bytecode: marketArtifact.bytecode.object, args: [token, router] }))).contractAddress!;
-  const write = async (index: number, functionName: string, args: readonly unknown[] = [], isToken = false) => {
-    const target = isToken ? token : market;
-    const abi = isToken ? tokenArtifact.abi : marketArtifact.abi;
-    return receipt(await wallets[index]!.writeContract({ address: target, abi, functionName, args }));
+  const market = (await receipt(await wallets[0]!.deployContract({ abi: marketArtifact.abi, bytecode: marketArtifact.bytecode.object, args: [router] }))).contractAddress!;
+  const write = async (index: number, functionName: string, args: readonly unknown[] = [], value = 0n) => {
+    return receipt(await wallets[index]!.writeContract({ address: market, abi: marketArtifact.abi, functionName, args, value }));
   };
-  await write(1, 'faucet', [], true);
-  await write(1, 'approve', [market, 100_000_000n], true);
-  await write(1, 'deposit', [100_000_000n]);
+  // Anvil funds public fixture accounts with native currency; deposit carries MON as msg.value.
+  await write(1, 'deposit', [], units('100'));
   const block = await client.getBlock();
-  await write(1, 'authorizeRouter', [100_000_000n, block.timestamp + 86400n]);
-  const prices = { input: 30_000_000n, cacheRead: 3_000_000n, cacheWrite: 37_500_000n, output: 80_000_000n };
+  await write(1, 'authorizeRouter', [units('100'), block.timestamp + 86400n]);
+  const prices = { input: units('30'), cacheRead: units('3'), cacheWrite: units('37.5'), output: units('80') };
   const model = 'mock-reasoner';
   const modelId = keccak256(stringToHex(model));
-  await write(2, 'upsertQuote', [modelId, prices, 100n, true]);
-  await write(3, 'upsertQuote', [modelId, { ...prices, output: 100_000_000n }, 100n, true]);
-  return { client, accounts, wallets, router, buyer, sellerA, sellerB, outsider, token, market, abi: marketArtifact.abi, tokenAbi: tokenArtifact.abi, model, modelId, prices, write, receipt };
+  await write(2, 'upsertQuote', [modelId, prices, units('0.0001'), true]);
+  await write(3, 'upsertQuote', [modelId, { ...prices, output: units('100') }, units('0.0001'), true]);
+  return { client, accounts, wallets, router, buyer, sellerA, sellerB, outsider, market, abi: marketArtifact.abi, model, modelId, prices, write, receipt };
 }

@@ -21,6 +21,14 @@ test('unexpected from, network, mode or status cannot masquerade as a confirmed 
   for(const change of [{from:market},{to:router},{network:'monad-mainnet'},{executionMode:'smart-wallet'},{status:'submitted'},{function:'withdraw'}])assert.throws(()=>validateAlchemyCall({...confirmed,...change},{market,router,functionName:'settle'}));
   assert.throws(()=>validateAlchemyCall({debug:{transactionHash:hash}},{market,router,functionName:'settle'}));
 });
+test('payable native deposits pass an exact human-readable MON value, not wei or a token approval',async()=>{
+  let invoked:readonly string[]=[];
+  const sender=new AlchemySessionSender(market,router,abi,{run:async args=>{invoked=args;return output({...confirmed,function:'deposit'});}});
+  await sender.send('deposit',[],10_000_000_000_000_001n);
+  assert.equal(invoked[invoked.indexOf('--value')+1],'0.010000000000000001');
+  assert.equal(invoked[invoked.indexOf('--args')+1],'[]');
+  await assert.rejects(sender.send('deposit',[],-1n),/negative/);
+});
 test('only documented operation-reference fields are interpreted as transaction IDs',()=>{
   assert.deepEqual(alchemyReference({txHash:hash,callId:null,status:'success'}),{txHash:hash,status:'success'});
   assert.deepEqual(alchemyReference({error:{data:{callId:'call-example',status:'pending'}}}),{callId:'call-example',status:'pending'});

@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-/// @notice Test-asset escrow for a marketplace whose router is trusted to meter usage and assign fault.
+/// @notice Native MON escrow for a marketplace whose router is trusted to meter usage and assign fault.
 /// @dev The chain enforces prices, budgets, grants and refunds. It cannot verify model identity or usage.
 ///      Requests and responses MUST stay off chain; IDs must be opaque, non-content-derived values.
 contract InferenceMarket is ReentrancyGuard {
-    using SafeERC20 for IERC20;
-
+    bool public constant IS_NATIVE_ASSET = true;
+    string public constant ASSET_SYMBOL = "MON";
+    uint8 public constant ASSET_DECIMALS = 18;
     uint256 public constant TOKENS_PER_MILLION = 1_000_000;
     uint64 public constant MAX_ORDER_DURATION = 1 hours;
 
@@ -31,7 +30,7 @@ contract InferenceMarket is ReentrancyGuard {
         Reclaimed
     }
 
-    /// @dev Each rate is denominated in 6-decimal token units per million inference tokens.
+    /// @dev Each rate is denominated in wei (1 MON = 1e18 wei) per million inference tokens.
     struct Prices {
         uint256 input;
         uint256 cacheRead;
@@ -82,7 +81,6 @@ contract InferenceMarket is ReentrancyGuard {
         Usage usage;
     }
 
-    IERC20 public immutable token;
     address public immutable router;
     mapping(address account => uint256) public balances;
     mapping(address buyer => uint256) public activeGrantId;
@@ -96,8 +94,6 @@ contract InferenceMarket is ReentrancyGuard {
 
     error InvalidAddress();
     error InvalidAmount();
-    error InvalidTokenDecimals();
-    error UnsupportedTokenTransfer();
     error Unauthorized();
     error InvalidModelId();
     error InvalidRequestId();
@@ -153,10 +149,8 @@ contract InferenceMarket is ReentrancyGuard {
         _;
     }
 
-    constructor(address token_, address router_) {
-        if (token_ == address(0) || router_ == address(0) || token_.code.length == 0) revert InvalidAddress();
-        if (IERC20Metadata(token_).decimals() != 6) revert InvalidTokenDecimals();
-        token = IERC20(token_);
+    constructor(address router_) {
+        if (router_ == address(0)) revert InvalidAddress();
         router = router_;
     }
 
@@ -193,11 +187,12 @@ contract InferenceMarket is ReentrancyGuard {
         return _orders[requestId];
     }
 
-    function deposit(uint256 amount) external nonReentrant {
+    /// @notice Credit only the native MON explicitly attached to this deposit call.
+    /// @dev No receive/fallback: accidental plain transfers revert. Forced native funds
+    ///      cannot create liabilities, so address(this).balance may exceed totalEscrowed.
+    function deposit() external payable nonReentrant {
+        uint256 amount = msg.value;
         if (amount == 0) revert InvalidAmount();
-        uint256 beforeBalance = token.balanceOf(address(this));
-        token.safeTransferFrom(msg.sender, address(this), amount);
-        if (token.balanceOf(address(this)) - beforeBalance != amount) revert UnsupportedTokenTransfer();
         balances[msg.sender] += amount;
         totalEscrowed += amount;
         emit Deposited(msg.sender, amount);
@@ -209,7 +204,7 @@ contract InferenceMarket is ReentrancyGuard {
         if (balances[msg.sender] < amount) revert InsufficientBalance();
         balances[msg.sender] -= amount;
         totalEscrowed -= amount;
-        token.safeTransfer(msg.sender, amount);
+        Address.sendValue(payable(msg.sender), amount);
         emit Withdrawn(msg.sender, amount);
     }
 

@@ -11,7 +11,7 @@ import { createApp } from '../server/src/app.js';
 import { attachProviderHub } from '../server/src/provider-hub.js';
 import { ProviderClient } from '../provider/src/client.js';
 import { parseConfig } from '../provider/src/config.js';
-import { units } from '../server/src/money.js';
+import { decimal, units } from '../server/src/money.js';
 import { deployFixture, rpcUrl } from './fixture.js';
 
 async function eventually(predicate: () => boolean, timeout = 5000) {
@@ -55,6 +55,9 @@ test('HTTP API + two signed outbound seller connections + real EVM settlement', 
     const completed = await json('/v1/chat/completions', body, key.token, { 'Idempotency-Key': idem });
     assert.equal(completed.request.status, 'completed');
     assert.equal(completed.request.settlement, 'confirmed');
+    assert.equal(completed.request.asset_symbol, 'MON');
+    assert.equal(completed.request.asset_decimals, 18);
+    assert.equal(completed.request.market_address.toLowerCase(), f.market.toLowerCase());
     assert.ok(units(completed.request.charge) > 0n);
     assert.match(completed.request.settlementTx, /^0x[0-9a-f]{64}$/i);
     const balance = (await chain.getAccount(f.buyer)).available;
@@ -70,8 +73,8 @@ test('HTTP API + two signed outbound seller connections + real EVM settlement', 
     const failed = await json('/v1/chat/completions', body, key.token);
     assert.equal(failed.request.status, 'seller_failed');
     assert.ok(failed.request.usage.output > 0);
-    assert.equal(failed.request.charge, '0.000000');
-    assert.equal(failed.request.released, '0.100000');
+    assert.equal(failed.request.charge, decimal(0n));
+    assert.equal(failed.request.released, decimal(units('0.1')));
     assert.equal((await chain.getAccount(f.buyer)).available, beforeFailure);
 
     nodes[0]!.setMode('normal');
@@ -90,7 +93,7 @@ test('HTTP API + two signed outbound seller connections + real EVM settlement', 
 
     const capped = await json('/v1/chat/completions', { ...body, max_spend: '0.004' }, key.token);
     assert.equal(capped.request.status, 'budget_capped');
-    assert.ok(units(capped.request.charge) <= 4000n);
+    assert.ok(units(capped.request.charge) <= units('0.004'));
     const warm = await json('/v1/chat/completions', { ...body, cache: true }, key.token);
     const hit = await json('/v1/chat/completions', { ...body, cache: true }, key.token);
     assert.ok(warm.request.usage.cacheWrite > 0);
@@ -104,7 +107,7 @@ test('HTTP API + two signed outbound seller connections + real EVM settlement', 
     await eventually(() => engine.providers.get('seller-1')?.mode === 'timeout');
     const timedOut = await json('/v1/chat/completions', body, key.token);
     assert.equal(timedOut.request.status, 'seller_failed');
-    assert.equal(timedOut.request.charge, '0.000000');
+    assert.equal(timedOut.request.charge, decimal(0n));
     const forbidden = await fetch(origin + '/v1/requests/' + completed.id);
     assert.equal(forbidden.status, 401);
     const keysForbidden = await fetch(origin + '/api-keys', { headers: { Authorization: `Bearer ${key.token}` } });

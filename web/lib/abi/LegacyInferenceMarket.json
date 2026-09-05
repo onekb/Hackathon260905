@@ -3,51 +3,17 @@
     "type": "constructor",
     "inputs": [
       {
+        "name": "token_",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
         "name": "router_",
         "type": "address",
         "internalType": "address"
       }
     ],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "ASSET_DECIMALS",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "ASSET_SYMBOL",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "string",
-        "internalType": "string"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "IS_NATIVE_ASSET",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -208,9 +174,15 @@
   {
     "type": "function",
     "name": "deposit",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "outputs": [],
-    "stateMutability": "payable"
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -665,6 +637,19 @@
   },
   {
     "type": "function",
+    "name": "token",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IERC20"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "totalEscrowed",
     "inputs": [],
     "outputs": [
@@ -1068,11 +1053,6 @@
   },
   {
     "type": "error",
-    "name": "FailedCall",
-    "inputs": []
-  },
-  {
-    "type": "error",
     "name": "GrantLimitExceeded",
     "inputs": []
   },
@@ -1080,22 +1060,6 @@
     "type": "error",
     "name": "GrantUnavailable",
     "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "InsufficientBalance",
-    "inputs": [
-      {
-        "name": "balance",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "needed",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
   },
   {
     "type": "error",
@@ -1134,6 +1098,11 @@
   },
   {
     "type": "error",
+    "name": "InvalidTokenDecimals",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "OrderNotExpired",
     "inputs": []
   },
@@ -1164,12 +1133,28 @@
   },
   {
     "type": "error",
+    "name": "SafeERC20FailedOperation",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "SettlementExpired",
     "inputs": []
   },
   {
     "type": "error",
     "name": "Unauthorized",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "UnsupportedTokenTransfer",
     "inputs": []
   }
 ]

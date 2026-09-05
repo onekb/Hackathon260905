@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { decodeFunctionData, getAddress, type Hex } from 'viem';
 import { opaqueId } from '../server/src/evm-chain.js';
-import { decimal, fee, units } from '../server/src/money.js';
+import { decimal, fee, units } from './legacy-money.js';
 import { expectedSigner, model, monadContext, readJson, receiptEvidence, saveJson } from './setup-monad.js';
 
 // Read-only receipt/ledger verification for the operator-observed browser manual-selection case.

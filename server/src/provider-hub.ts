@@ -31,7 +31,7 @@ export function attachProviderHub(server:Server,engine:Engine,domain:string) {
         provider={id:auth.provider.id,wallet:auth.address.toLowerCase(),name:auth.provider.name??auth.provider.id,model:auth.provider.modelId,quote,capacity:auth.provider.capacity,busy:0,mode:auth.provider.mode??'normal',mock:true,send};
         await engine.addProvider(provider);
         if(socket.readyState!==WebSocket.OPEN){await engine.removeProvider(provider.id,provider);return;}
-        send({type:'authenticated',providerId:provider.id,quote,mock:true});return;
+        send({type:'authenticated',providerId:provider.id,quote,mock:true,...engine.marketIdentity});return;
       }
       if(event.type==='heartbeat'){
         lastHeartbeat=Date.now();

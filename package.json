@@ -26,11 +26,12 @@
     "test:evm": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "test:integration": "node --import tsx --test tests/integration.test.ts",
     "postinstall": "node node_modules/@getpara/react-sdk-lite/dist/cli/cli.mjs",
-    "setup:monad": "node --import tsx scripts/setup-monad.ts",
-    "test:monad": "node --import tsx scripts/smoke-monad.ts",
-    "test:api:monad": "node --import tsx scripts/smoke-api-monad.ts",
+    "setup:monad": "node --import tsx scripts/native-monad.ts --execute",
+    "test:monad": "node --import tsx scripts/native-monad.ts --execute --smoke",
+    "test:api:monad": "node --import tsx scripts/smoke-native-api.ts --execute",
     "test:market:monad": "node --import tsx scripts/smoke-market-monad.ts",
-    "export:abi": "node scripts/export-abi.mjs"
+    "export:abi": "node scripts/export-abi.mjs",
+    "deploy:monad": "node scripts/deploy-mon-native.mjs"
   },
   "dependencies": {
     "express": "^5.2.1",

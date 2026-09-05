@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPublicClient, formatUnits, http, keccak256, parseUnits, stringToHex, type Hex } from 'viem';
+import { createPublicClient, formatUnits, http, keccak256, stringToHex, type Hex } from 'viem';
+import { parseAmount } from '../lib/assets';
 import { short, txUrl } from '../lib/api';
 import { chainFor, marketAbi, rpcFor } from '../lib/contracts';
 import type { MarketConfig, PriceKey, WalletAccess } from '../lib/types';
@@ -11,7 +12,7 @@ interface ChainQuote { prices: Record<PriceKey, bigint>; minReserve: bigint; ver
 type QuoteForm = Record<PriceKey | 'minReserve', string>;
 const MODEL = 'mock-reasoner';
 const MODEL_ID = keccak256(stringToHex(MODEL));
-const DEFAULT_FORM: QuoteForm = { input: '2', cacheRead: '0.5', cacheWrite: '3', output: '8', minReserve: '0.1' };
+const DEFAULT_FORM: QuoteForm = { input: '0.3', cacheRead: '0.03', cacheWrite: '0.375', output: '0.8', minReserve: '0.000001' };
 const PRICE_FIELDS: { key: PriceKey; label: string; description: string }[] = [
   { key: 'input', label: '普通输入', description: '未计入缓存读取或写入的输入。' },
   { key: 'cacheRead', label: '缓存读取', description: '本次命中的模拟缓存输入。' },
@@ -19,12 +20,7 @@ const PRICE_FIELDS: { key: PriceKey; label: string; description: string }[] = [
   { key: 'output', label: '生成输出', description: '节点交付的模拟输出 Token。' },
 ];
 
-function rate(value: string, label: string): bigint {
-  if (!/^(0|[1-9]\d*)(\.\d{1,6})?$/.test(value.trim())) throw new Error(`${label}请输入非负金额，最多保留 6 位小数。`);
-  const units = parseUnits(value.trim(), 6);
-  if (units > 2n ** 256n - 1n) throw new Error(`${label}超过合约允许的金额范围。`);
-  return units;
-}
+const rate = (value: string, label: string) => parseAmount(value, 18, label, true);
 
 function errorMessage(error: unknown): string { return error instanceof Error ? error.message : '操作未完成，请检查钱包提示后重试。'; }
 
@@ -52,9 +48,9 @@ export function SellerPanel({ wallet, config, onRefresh }: SellerPanelProps) {
     setReadError('');
     if (hydratedOwner.current !== ownerKey) {
       setForm(quote.version > 0n ? {
-        input: formatUnits(quote.prices.input, 6), cacheRead: formatUnits(quote.prices.cacheRead, 6),
-        cacheWrite: formatUnits(quote.prices.cacheWrite, 6), output: formatUnits(quote.prices.output, 6),
-        minReserve: formatUnits(quote.minReserve, 6),
+        input: formatUnits(quote.prices.input, 18), cacheRead: formatUnits(quote.prices.cacheRead, 18),
+        cacheWrite: formatUnits(quote.prices.cacheWrite, 18), output: formatUnits(quote.prices.output, 18),
+        minReserve: formatUnits(quote.minReserve, 18),
       } : { ...DEFAULT_FORM });
       hydratedOwner.current = ownerKey;
     }
@@ -92,10 +88,10 @@ export function SellerPanel({ wallet, config, onRefresh }: SellerPanelProps) {
         <div><p className="eyebrow">PROVIDER QUOTE</p><h2 id="seller-title">发布卖家报价</h2></div>
         <span className={displayedQuote?.active ? 'success' : 'muted'}>{displayedQuote ? displayedQuote.version === 0n ? '尚未挂牌' : displayedQuote.active ? `已启用 · v${displayedQuote.version}` : `已停用 · v${displayedQuote.version}` : '等待读取'}</span>
       </div>
-      <p className="muted">模型 <strong>{MODEL}</strong> · 全部推理及缓存效果均为 Mock。四项单价使用 dUSD / 百万模拟 Token，最多 6 位小数。</p>
+      <p className="muted">模型 <strong>{MODEL}</strong> · 全部推理及缓存效果均为 Mock。四项单价使用 MON / 百万模拟 Token，最多 18 位小数。</p>
       {!wallet.address && <button className="button" type="button" onClick={wallet.connect}>连接卖家钱包</button>}
       <p className="muted">报价所有者与收款钱包：<code>{short(wallet.address)}</code></p>
-      {displayedQuote && displayedQuote.version > 0n && <div className="form-grid quote-summary">{PRICE_FIELDS.map(({ key, label }) => <div className="field" key={key}><span className="muted">当前链上 · {label}</span><strong>{formatUnits(displayedQuote.prices[key], 6)}</strong></div>)}<div className="field"><span className="muted">当前最低预留</span><strong>{formatUnits(displayedQuote.minReserve, 6)} dUSD</strong></div></div>}
+      {displayedQuote && displayedQuote.version > 0n && <div className="form-grid quote-summary">{PRICE_FIELDS.map(({ key, label }) => <div className="field" key={key}><span className="muted">当前链上 · {label}</span><strong>{formatUnits(displayedQuote.prices[key], 18)}</strong></div>)}<div className="field"><span className="muted">当前最低预留</span><strong>{formatUnits(displayedQuote.minReserve, 18)} MON</strong></div></div>}
       <form onSubmit={(event) => { event.preventDefault(); void run('等待报价发布确认…', async () => {
         const prices = {
           input: rate(form.input, '普通输入单价'), cacheRead: rate(form.cacheRead, '缓存读取单价'),
@@ -109,8 +105,8 @@ export function SellerPanel({ wallet, config, onRefresh }: SellerPanelProps) {
         <fieldset disabled={disabled}>
           <legend>编辑报价</legend>
           <div className="form-grid">
-            {PRICE_FIELDS.map(({ key, label, description }) => <label className="field" htmlFor={`seller-${key}`} key={key}>{label}（dUSD / 百万 Token）<input id={`seller-${key}`} inputMode="decimal" autoComplete="off" value={form[key]} onChange={(event) => setForm((previous) => ({ ...previous, [key]: event.target.value }))} aria-describedby={`seller-${key}-help`} required /><small id={`seller-${key}-help`} className="muted">{description}</small></label>)}
-            <label className="field" htmlFor="seller-min-reserve">单次最低预留金额（dUSD）<input id="seller-min-reserve" inputMode="decimal" autoComplete="off" value={form.minReserve} onChange={(event) => setForm((previous) => ({ ...previous, minReserve: event.target.value }))} aria-describedby="seller-min-help" required /><small id="seller-min-help" className="muted">这是开始请求的最低锁款要求，最终仍按实际用量收费。</small></label>
+            {PRICE_FIELDS.map(({ key, label, description }) => <label className="field" htmlFor={`seller-${key}`} key={key}>{label}（MON / 百万 Token）<input id={`seller-${key}`} inputMode="decimal" autoComplete="off" value={form[key]} onChange={(event) => setForm((previous) => ({ ...previous, [key]: event.target.value }))} aria-describedby={`seller-${key}-help`} required /><small id={`seller-${key}-help`} className="muted">{description}</small></label>)}
+            <label className="field" htmlFor="seller-min-reserve">单次最低预留金额（MON）<input id="seller-min-reserve" inputMode="decimal" autoComplete="off" value={form.minReserve} onChange={(event) => setForm((previous) => ({ ...previous, minReserve: event.target.value }))} aria-describedby="seller-min-help" required /><small id="seller-min-help" className="muted">这是开始请求的最低锁款要求，最终仍按实际用量收费。</small></label>
           </div>
           <button className="button" type="submit">{displayedQuote && displayedQuote.version > 0n ? '更新并启用报价' : '发布并启用报价'}</button>
         </fieldset>

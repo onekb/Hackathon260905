@@ -1,6 +1,6 @@
 # 架构、计费与协议
 
-本文件描述当前实现的约定；完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
+本文件描述当前**原生 MON 源码**的约定；新市场已部署，公网尚未切换，旧 dUSD 历史单按原资产保留。完成度见 [进度](progress.md)。底层接口细节同时见 [Router README](../server/README.md) 与 [卖家 README](../provider/README.md)。
 
 ## 请求如何连接
 
@@ -29,14 +29,14 @@ sequenceDiagram
 | Web | 模型选择、流式体验、账单、钱包资金操作、卖家报价和 API 管理界面 | [web/components](../web/components/) |
 | Router | 买家和卖家认证、报价读取、匹配、计量、预算、责任、持久化与重试 | [server/src](../server/src/) |
 | Provider | 独立身份、主动长连接、Mock 响应、故障模式、本地控制台 | [provider/src](../provider/src/) |
-| DemoUSD | 六位精度、自建测试代币、每钱包一次水龙头 | [DemoUSD.sol](../contracts/src/DemoUSD.sol) |
-| InferenceMarket | 报价、托管余额、消费授权、锁款、结算、回收及提款 | [InferenceMarket.sol](../contracts/src/InferenceMarket.sol) |
+| DemoUSD（旧版） | 六位精度历史测试代币，不兑换 MON；仅旧资产操作 | [DemoUSD.sol](../contracts/src/DemoUSD.sol) |
+| InferenceMarket（原生 MON） | 18 位 wei，payable 存款、报价、授权、锁款、结算、回收及原生提款 | [InferenceMarket.sol](../contracts/src/InferenceMarket.sol) |
 
 ## 资金与权限
 
-买家先通过代币 `approve` 和市场 `deposit` 存入 dUSD，再调用 `authorizeRouter(totalLimit, expiresAt)` 设置消费授权。代币转入许可与 Router 消费授权是两种不同操作。API Key 只代表调用身份，不会增加授权、签交易或获得提款权。
+买家调用 payable `deposit()`，通过 `msg.value` 存入原生 MON，再调用 `authorizeRouter(totalLimit, expiresAt)` 设置独立消费授权；不再需要 ERC-20 approve。Router 只能使用合约内获授权的托管余额，不能直接从钱包任意扣 MON。买家存款/授权/提款仍需预留链上 Gas。API Key 只代表调用身份，不会增加授权、签交易或获得提款权。
 
-锁款占用买家的可用余额和对应授权额度。结算把实际费用记入卖家合约余额，剩余金额还给买家的可用余额；卖家自行提款。`revokeRouter` 或授权过期阻止新锁款，已锁订单仍使用原授权和原预算结算。更换授权后，旧在途订单只影响旧授权记录。
+锁款占用买家的可用余额和对应授权额度。结算把实际费用记入卖家合约余额，剩余金额还给买家的可用余额；卖家自行提款。结算不调用卖家收款回退函数，避免拒收阻断结算；原生提款先减内部余额、采用防重入，转账失败完整回滚。`revokeRouter` 或授权过期阻止新锁款，已锁订单仍使用原授权和原预算结算。更换授权后，旧在途订单只影响旧授权记录。
 
 只有固定 Router 地址能 `reserve` 和 `settle`；只有余额所有者能 `withdraw`。每单截止时间到达后，只有该买家能 `reclaimExpired`。合约要求期限前结算、期限到达后回收，二者互斥；已结算或回收的 ID 不能再次扣费。
 
@@ -44,7 +44,7 @@ sequenceDiagram
 
 ## 计价口径
 
-`input`、`cacheRead`、`cacheWrite`、`output` 四项报价均为 **dUSD / 百万模拟 Token**。金额字符串最多六位小数；内部使用整数最小单位 `1 dUSD = 1,000,000` 单位。一个 Unicode 码点等于一个模拟 Token，不是任何真实模型的 tokenizer。
+`input`、`cacheRead`、`cacheWrite`、`output` 四项报价均为 **MON / 百万模拟 Token**。金额字符串最多 18 位小数；内部使用整数 wei，`1 MON = 10^18 wei`。`ASSET_SCALE` 与计费分母 `TOKENS_PER_MILLION = 10^6` 分开，不能随资产精度一起改分母。一个 Unicode 码点等于一个模拟 Token，不是任何真实模型的 tokenizer。
 
 输入数是 `JSON.stringify(messages)` 的 Unicode 码点数，包含角色字段和序列化结构。输出只计算 Router 按序接受的片段字符，不采信卖家自报数量。
 
@@ -53,7 +53,7 @@ sequenceDiagram
 释放金额 = 锁定预算 − 最终费用
 ```
 
-四类乘积相加后统一向上舍入一次。报价 30 / 3 / 37.5 / 80，普通输入 100、输出 100 时，费用为 `0.011000 dUSD`。最低预留只决定能否接单，不抬高实际收费。
+四类乘积相加后统一向上舍入一次。报价 0.3 / 0.03 / 0.375 / 0.8，普通输入 100、输出 100 时，费用为 `0.000110 MON`（110000000000000 wei）。最低预留只决定能否接单，不抬高实际收费。
 
 缓存按买家钱包、卖家钱包与 ID、模型、完整 messages 分隔。成功的缓存写入保留一小时；相同边界内再次请求可读缓存。普通输入、缓存读取、缓存写入互斥。派单前按可能的最高输入单价检查预算，不把预计命中当成预算保证。
 
@@ -69,6 +69,12 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 关闭网页或 SSE 不等于取消。终态事件逐单串行：卖家失败先成立则全免；取消先成立则按当时用量计费，后续断连不改判。推理费减免不退还已经消耗的链上 Gas。
 
+## 新旧市场隔离
+
+当前原生市场为 `0x142a4904307244Bed0cECD72dE8329A253333182`；旧 dUSD 市场和代币见 [部署记录](../contracts/deployments/inferpool-mon-native-testnet.json)。旧市场没有升级入口，旧余额、报价和授权不能自动迁移或兑换。所有订单保留 `market_address`、`asset_symbol`、`asset_decimals`；旧单固定 dUSD/6，新单 MON/18，未知身份拒绝恢复和改标。
+
+启动在恢复签名前先绑定市场。带旧订单的账本必须显式配置旧 market/token，并解决所有旧未结/不明订单；保留原订单、idempotency 和 createdAt，新市场清缓存但不清历史次数。新市场的取消、恢复、结算重试和 Provider 事件不能驱动旧订单。Web 按订单身份选择旧 ABI/合约回收，并提供旧 dUSD 独立余额、提款和撤销授权；配置加载失败仍可访问明确固定的旧资产入口。
+
 ## 状态和恢复
 
 链上订单只有 `None → Reserved → Settled / Reclaimed`。Router 另存业务状态：`locking`、`running`、`completed`、`buyer_cancelled`、`budget_capped`、`seller_failed`、`platform_failed`、`reservation_unknown`、`lock_failed`。
@@ -81,15 +87,15 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 ### 可选演示接单保护
 
-[D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 已实现显式启用的新单限制，默认关闭，尚未应用于原 Monad 进程。开启后，每钱包未结并发 1、每 UTC 日最多 6 次，全局未结并发 2、固定演示起点后共 10 次。次数从全部持久订单派生，锁款失败也计入尝试；参数/余额/准入拒绝不计。锁款不明、pending/failed 结算仍占并发，起点之前的未结单也计入。
+[D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 已实现显式启用的新单限制，未配置时默认关闭；旧公网服务已启用固定 epoch，新版迁移保留计数。开启后，每钱包未结并发 1、每 UTC 日最多 6 次，全局未结并发 2、固定演示起点后共 10 次。次数从全部持久订单派生，锁款失败也计入尝试；参数/余额/准入拒绝不计。锁款不明、pending/failed 结算仍占并发，起点之前的未结单也计入。
 
-创建队列先识别同参数幂等命中，再做新单检查；读账、准确重放、取消和结算/恢复不因配额耗尽停用。暂停新单返回 `503`，超限返回 `429`，请求状态自身的限制保持原样。固定起点和原账本跨重启保留，不能靠换 API Key 或常规重启刷新次数。配置与启动检查见 [运行手册](runbook.md#可选公网请求限额)，这些链外限额不修改合约金额规则，也不证明公网保护已运行。
+创建队列先识别同参数幂等命中，再做新单检查；读账、准确重放、取消和结算/恢复不因配额耗尽停用。暂停新单返回 `503`，超限返回 `429`，请求状态自身的限制保持原样。固定起点和原账本跨重启保留，不能靠换 API Key 或常规重启刷新次数。配置与启动检查见 [运行手册](runbook.md#可选公网请求限额)，这些链外限额不修改合约金额规则，其公网运行与具体拒单验收分开记录。
 
 ## 买家 HTTP API
 
 | 接口 | 权限 | 用途 |
 | --- | --- | --- |
-| `GET /health`、`GET /config` | 公开 | 链模式、合约地址、Mock 标记与在线节点数 |
+| `GET /health`、`GET /config` | 公开 | 链模式、市场/资产身份、旧市场配置、Mock 标记与在线节点数 |
 | `GET /v1/models` | 公开 | 在线卖家、容量与报价 |
 | `POST /auth/challenge` | 公开 | 获取五分钟、单次钱包签名挑战 |
 | `POST /auth/verify` | 有效签名 | 换取一天的 bearer 钱包会话 |
@@ -109,7 +115,7 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
   "model": "mock-reasoner",
   "messages": [{ "role": "user", "content": "演示预算与链上结算" }],
   "max_tokens": 256,
-  "max_spend": "0.10",
+  "max_spend": "0.001",
   "provider_id": "seller-1",
   "stream": true,
   "cache": false
@@ -118,7 +124,7 @@ Router 按实际缓存分类与 `max_tokens` 估算总成本，选择有容量�
 
 `messages` 支持 `system/user/assistant` 的文本消息，一至六十四条；每条最多 32,000 字符。`max_tokens` 一至 8,192，默认 256。`max_spend` 必须是正十进制字符串。`provider_id` 可省略自动匹配。顶层未知字段被拒绝，不承诺完整 OpenAI API 兼容。
 
-使用 `Idempotency-Key`（一至 128 字符）避免重复创建。同钱包、同 Key、同参数返回原订单，换参数返回 `409`；`stream` 不改变订单指纹。新的独立请求要用新 Key。
+使用 `Idempotency-Key`（一至 128 字符）避免重复创建。同钱包、同市场、同 Key、同参数返回原订单，换参数返回 `409`；旧 dUSD Key 在新市场 POST 返回 `409` 和旧请求 ID，只能查询旧单，不能产生新的 MON 扣款。`stream` 不改变订单指纹。新的独立请求要用新 Key。
 
 SSE 有标准形状的文本 `data` 增量和 `event: request` 订单快照，末尾 `[DONE]`。快照的 `output` 已是完整文本；消费者选择替换快照或追加增量，不能两者同时叠加。响应头 `X-Request-Id` 和快照中的 ID 可供断线后查询。最终快照可能仍是待重试的结算失败，不能只凭 `[DONE]` 宣称链上结算完成。
 

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import type { ChainAdapter, Outcome } from './chain.js';
 import { decimal, emptyUsage, fee, mockTokens, units, type Quote, type Usage } from './money.js';
-import { Store } from './store.js';
+import { Store, sameMarket, type MarketIdentity } from './store.js';
 import { DEMO_LIMITS, type DemoAdmission } from './runtime-config.js';
 export interface Message { role: 'system'|'user'|'assistant'; content: string }
 export interface RequestInput { model: string; messages: Message[]; max_tokens: number; max_spend: string; provider_id?: string; cache?: boolean; stream?: boolean }
@@ -10,7 +10,7 @@ export interface Provider {
   id: string; wallet: string; name: string; model: string; quote: Quote; capacity: number; busy: number; mode: string; mock: true;
   send(message: unknown): void;
 }
-export interface Order {
+export interface Order extends MarketIdentity {
   id: string; buyer: string; providerId: string; seller: string; model: string; budget: string; quote: Quote;
   usage: Usage; plannedUsage: Usage; maxTokens: number; output: string; lastSeq: number;
   status: 'locking'|'running'|'completed'|'budget_capped'|'buyer_cancelled'|'seller_failed'|'platform_failed'|'lock_failed'|'reservation_unknown';
@@ -25,7 +25,14 @@ export class Engine extends EventEmitter {
   providers = new Map<string, Provider>();
   private queues = new Map<string, Promise<any>>();
   private timers = new Map<string, NodeJS.Timeout>();
-  constructor(readonly chain: ChainAdapter, readonly store: Store, readonly requestTimeoutMs = 30000, readonly admission?: DemoAdmission) { super(); this.setMaxListeners(0); }
+  readonly marketIdentity: MarketIdentity;
+  constructor(readonly chain: ChainAdapter, readonly store: Store, readonly requestTimeoutMs = 30000, readonly admission?: DemoAdmission) {
+    super(); this.setMaxListeners(0);
+    this.marketIdentity = {market_address:chain.market ?? 'memory:mon',asset_symbol:'MON',asset_decimals:18};
+    if (!store.state.market) store.bindMarket(this.marketIdentity);
+    else if (!sameMarket(store.state.market, this.marketIdentity)) throw new Error('Engine market does not match the bound ledger');
+  }
+  private current(o: Order): boolean { return sameMarket(o, this.marketIdentity); }
   private serial<T>(key: string, fn: () => Promise<T>): Promise<T> {
     const next = (this.queues.get(key) ?? Promise.resolve()).then(fn, fn);
     this.queues.set(key, next);
@@ -49,10 +56,10 @@ export class Engine extends EventEmitter {
     const provider = this.providers.get(id);
     if (!provider || (expected && provider !== expected)) return;
     this.providers.delete(id);
-    await Promise.all(Object.values(this.store.state.orders).filter((o: Order) => o.providerId === id && o.status === 'running').map((o: Order) => this.serial(o.id, () => this.finish(o,3,'Seller disconnected'))));
+    await Promise.all(Object.values(this.store.state.orders).filter((o: Order) => this.current(o) && o.providerId === id && o.status === 'running').map((o: Order) => this.serial(o.id, () => this.finish(o,3,'Seller disconnected'))));
   }
   models(): any[] {
-    return Array.from(this.providers.values()).map(p => ({id:p.model,object:'model',provider_id:p.id,provider_name:p.name,seller:p.wallet,quote:p.quote,online:true,available_slots:Math.max(0,p.capacity-p.busy),mock:true,metering:'Unicode code point = one mock token',mode:p.mode}));
+    return Array.from(this.providers.values()).map(p => ({id:p.model,object:'model',provider_id:p.id,provider_name:p.name,seller:p.wallet,quote:p.quote,online:true,available_slots:Math.max(0,p.capacity-p.busy),mock:true,metering:'Unicode code point = one mock token',mode:p.mode,...this.marketIdentity}));
   }
   private admitNewOrder(buyer:string,now:number):void {
     if(!this.admission)return;
@@ -73,7 +80,15 @@ export class Engine extends EventEmitter {
     return this.serial('create',async () => {
       buyer = buyer.toLowerCase();
       const fingerprint = hash(JSON.stringify({...input,stream:undefined}));
-      const idem = idempotency ? `${buyer}:${idempotency}` : undefined;
+      const idem = idempotency ? `${this.marketIdentity.market_address.toLowerCase()}:${buyer}:${idempotency}` : undefined;
+      if (idempotency) {
+        const suffix = `${buyer}:${idempotency}`;
+        const legacy = Object.entries(this.store.state.idempotency).find(([key, entry]) => {
+          const order = this.store.state.orders[entry.id] as Order | undefined;
+          return order && order.buyer === buyer && !this.current(order) && (key === suffix || key === `${order.market_address.toLowerCase()}:${suffix}`);
+        });
+        if (legacy) throw new HttpError(409, `Idempotency-Key belongs to legacy request ${legacy[1].id}; query that request. A new MON request must use a new key.`);
+      }
       const prior = idem && this.store.state.idempotency[idem];
       if (prior) { if (prior.fingerprint !== fingerprint) throw new HttpError(409,'Idempotency-Key was already used with different request parameters'); return this.get(prior.id,buyer); }
       this.admitNewOrder(buyer,Date.now());
@@ -86,7 +101,7 @@ export class Engine extends EventEmitter {
         const quote = await this.chain.getQuote(p.wallet,p.model);
         if (!quote || budget < units(quote.minReserve)) continue;
         p.quote={...quote};
-        const cacheKey = hash(JSON.stringify([buyer,p.wallet,p.id,p.model,input.messages]));
+        const cacheKey = hash(JSON.stringify([this.marketIdentity.market_address,buyer,p.wallet,p.id,p.model,input.messages]));
         const caching = input.cache === true || p.mode === 'cache-hit';
         const cacheMode = caching ? ((this.store.state.cache[cacheKey] ?? 0) > Date.now() ? 'read' : 'write') : 'none';
         const planned = emptyUsage(); planned[cacheMode === 'read' ? 'cacheRead' : cacheMode === 'write' ? 'cacheWrite' : 'input'] = inputCount;
@@ -105,7 +120,7 @@ export class Engine extends EventEmitter {
       // This entire path is serialized; persisting the order below consumes its attempt before lock.
       const createdAt=Date.now();this.admitNewOrder(buyer,createdAt);
       p.busy++;
-      const o: Order = {id:randomUUID(),buyer,providerId:p.id,seller:p.wallet,model:p.model,budget:decimal(budget),quote:{...quote},usage:emptyUsage(),plannedUsage:planned,maxTokens:input.max_tokens,output:'',lastSeq:-1,status:'locking',settlement:'unsubmitted',charge:'0.000000',released:decimal(budget),deadline:Math.floor(createdAt/1000)+300,createdAt,updatedAt:createdAt,cacheMode,cacheKey,mock:true};
+      const o: Order = {...this.marketIdentity,id:randomUUID(),buyer,providerId:p.id,seller:p.wallet,model:p.model,budget:decimal(budget),quote:{...quote},usage:emptyUsage(),plannedUsage:planned,maxTokens:input.max_tokens,output:'',lastSeq:-1,status:'locking',settlement:'unsubmitted',charge:decimal(0n),released:decimal(budget),deadline:Math.floor(createdAt/1000)+300,createdAt,updatedAt:createdAt,cacheMode,cacheKey,mock:true};
       if (idem) this.store.state.idempotency[idem] = {id:o.id,fingerprint};
       this.save(o);
       try {
@@ -129,7 +144,7 @@ export class Engine extends EventEmitter {
   providerEvent(provider: Provider, event: any): Promise<void> {
     return this.serial(event.requestId,async () => {
       const o=this.store.state.orders[event.requestId] as Order|undefined;
-      if (!o || o.status !== 'running' || o.providerId !== provider.id || o.seller !== provider.wallet || this.providers.get(provider.id)!==provider) return;
+      if (!o || !this.current(o) || o.status !== 'running' || o.providerId !== provider.id || o.seller !== provider.wallet || this.providers.get(provider.id)!==provider) return;
       if (event.type==='started') return;
       if (event.type==='chunk') {
         if (!Number.isSafeInteger(event.seq) || event.seq<0 || typeof event.text!=='string' || event.text.length>65536) { await this.finish(o,3,'Invalid seller chunk'); return; }
@@ -150,9 +165,9 @@ export class Engine extends EventEmitter {
       } else if (event.type==='failed' || event.type==='cancelled') await this.finish(o,3,typeof event.message==='string'?event.message.slice(0,500):'Seller failed');
     });
   }
-  cancel(id: string,buyer: string): Promise<Order> { return this.serial(id,async () => { const o=this.get(id,buyer); if (o.status==='locking') throw new HttpError(409,'Reservation is confirming; retry cancellation after confirmation'); if (!terminal(o)) await this.finish(o,1,'Buyer cancelled'); return o; }); }
+  cancel(id: string,buyer: string): Promise<Order> { return this.serial(id,async () => { const o=this.get(id,buyer); if (!this.current(o)) throw new HttpError(409,'This is a legacy dUSD order; use its original market recovery or withdrawal controls'); if (o.status==='locking') throw new HttpError(409,'Reservation is confirming; retry cancellation after confirmation'); if (!terminal(o)) await this.finish(o,1,'Buyer cancelled'); return o; }); }
   private async finish(o: Order,outcome: Outcome,reason: string): Promise<void> {
-    if (terminal(o)) return;
+    if (!this.current(o) || terminal(o)) return;
     if (o.status==='locking') return;
     const timer=this.timers.get(o.id); if (timer) clearTimeout(timer); this.timers.delete(o.id);
     const p=this.providers.get(o.providerId); if (p) { p.busy=Math.max(0,p.busy-1); if (outcome!==0) { try {p.send({type:'cancel',requestId:o.id,reason});} catch {} } }
@@ -162,11 +177,11 @@ export class Engine extends EventEmitter {
     this.save(o); await this.settle(o);
   }
   private async settle(o: Order): Promise<void> {
-    if (o.outcome===undefined || o.settlement==='confirmed') return;
+    if (!this.current(o) || o.outcome===undefined || o.settlement==='confirmed') return;
     try {
       const existing=await this.chain.getOrder(o.id);
       if(existing.state==='settled'||existing.state==='refunded'){
-        o.charge=existing.state==='refunded'?'0.000000':existing.charge??o.charge;
+        o.charge=existing.state==='refunded'?decimal(0n):existing.charge??o.charge;
         o.released=decimal(units(o.budget)-units(o.charge));o.settlementTx=existing.txHash;o.settlement='confirmed';delete o.settlementError;
         if(existing.state==='refunded')o.reason=`${o.reason??''}; buyer reclaimed expired funds directly on chain`;
       }else{
@@ -178,27 +193,28 @@ export class Engine extends EventEmitter {
     this.save(o);
   }
   private async reconcileReservation(o:Order):Promise<void>{
+    if (!this.current(o)) return;
     try{
       const state=await this.chain.getOrder(o.id);
       if(state.state==='locked'){
-        o.reservationUncertain=false;o.lockTx=state.txHash;o.outcome=4;o.status='platform_failed';o.charge='0.000000';o.released=o.budget;o.reason='Late reservation confirmation; request was never dispatched and all inference fees are waived';o.settlement='pending';this.save(o);await this.settle(o);
+        o.reservationUncertain=false;o.lockTx=state.txHash;o.outcome=4;o.status='platform_failed';o.charge=decimal(0n);o.released=o.budget;o.reason='Late reservation confirmation; request was never dispatched and all inference fees are waived';o.settlement='pending';this.save(o);await this.settle(o);
       }else if(state.state==='settled'||state.state==='refunded'){
-        o.reservationUncertain=false;o.outcome=4;o.status='platform_failed';o.charge=state.charge??'0.000000';o.released=decimal(units(o.budget)-units(o.charge));o.settlement='confirmed';o.settlementTx=state.txHash;delete o.settlementError;this.save(o);
+        o.reservationUncertain=false;o.outcome=4;o.status='platform_failed';o.charge=state.charge??decimal(0n);o.released=decimal(units(o.budget)-units(o.charge));o.settlement='confirmed';o.settlementTx=state.txHash;delete o.settlementError;this.save(o);
       }else if(o.deadline<=Date.now()/1000){
         // Once the reservation deadline has passed, reserve() can no longer create a late lock.
         o.reservationUncertain=false;o.status='lock_failed';o.settlement='unsubmitted';delete o.settlementError;this.save(o);
       }
     }catch(error:any){o.settlementError=String(error.message??error).slice(0,500);this.save(o);}
   }
-  async retrySettlements(): Promise<void> { await Promise.all(Object.values(this.store.state.orders).filter((o:Order) => o.reservationUncertain||o.settlement==='failed'||o.settlement==='pending').map((o:Order) => this.serial(o.id,() => o.reservationUncertain?this.reconcileReservation(o):this.settle(o)))); }
+  async retrySettlements(): Promise<void> { await Promise.all(Object.values(this.store.state.orders).filter((o:Order) => this.current(o)&&(o.reservationUncertain||o.settlement==='failed'||o.settlement==='pending')).map((o:Order) => this.serial(o.id,() => o.reservationUncertain?this.reconcileReservation(o):this.settle(o)))); }
   async recover(): Promise<void> {
     for (const o of Object.values(this.store.state.orders) as Order[]) {
-      if (terminal(o)) continue;
+      if (!this.current(o) || terminal(o)) continue;
       let state;try{state=await this.chain.getOrder(o.id);}catch{}
       if(!state||(state.state==='unknown'&&o.deadline>Date.now()/1000)){
         o.status='reservation_unknown';o.reservationUncertain=true;o.settlement='failed';o.reason='Router restarted while reservation status was uncertain. This request will never be replayed.';o.settlementError='Waiting to reconcile possible late reservation confirmation';this.save(o);
       }else if (state.state==='locked') {o.status='running';await this.finish(o,4,'Router restarted; request will not be replayed');}
-      else {o.status='platform_failed';o.reason='Router restarted; reservation is no longer active';o.charge=state.charge??'0.000000';o.released=decimal(units(o.budget)-units(o.charge));o.settlement=state.state==='unknown'?'unsubmitted':'confirmed';o.settlementTx=state.txHash;this.save(o);}
+      else {o.status='platform_failed';o.reason='Router restarted; reservation is no longer active';o.charge=state.charge??decimal(0n);o.released=decimal(units(o.budget)-units(o.charge));o.settlement=state.state==='unknown'?'unsubmitted':'confirmed';o.settlementTx=state.txHash;this.save(o);}
     }
     await this.retrySettlements();
   }

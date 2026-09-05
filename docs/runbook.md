@@ -37,11 +37,47 @@ npm run demo:request -- --cache
 
 `.local/deployment.json` 保存本次本地地址；`.local/demo-credentials.json` 保存本地演示凭证，脚本自动读取，不需要打印。`Ctrl+C` 停止本脚本启动的进程，复用的已有 Anvil 保留。重新运行会部署新地址，不要沿用旧环境文件。演示使用公开的 Anvil 测试身份，仅用于本地链。
 
-## 既有 Monad 测试网
+## 原生 MON 测试网（当前源码）
+
+原生市场已部署并完成源码验证：`0x142a4904307244Bed0cECD72dE8329A253333182`，Monad Testnet chain ID 10143。资产为 MON/18 位，无 token()、ERC-20 approve 或 dUSD 自动兑换。证据见 [native 部署 JSON](../contracts/deployments/inferpool-mon-native-testnet.json)。当前公网仍为旧 dUSD release，新版静态产物已构建但未切换；按 /config 的实际 market/asset 判断，不能只看域名。
+
+```bash
+node scripts/deploy-mon-native.mjs
+node scripts/deploy-mon-native.mjs --verify-only
+node --import tsx scripts/native-monad.ts
+```
+
+部署脚本默认只读预检；`--verify-only` 复核已部署代码并重试源码验证，显式 `--deploy` 才部署/恢复原生合约。native-monad 默认只读新市场、报价、授权与余额，不创建测试单。
+
+已获本轮授权的受限实链验收使用：
+
+```bash
+node --import tsx scripts/native-monad.ts --execute --smoke
+```
+
+该命令通过既有 Router session，在新合约发布 A 报价（.3/.03/.375/.8，最低 .000001 MON），初始存入 .01 MON、授权 .005 MON / 24 小时，两单各预算 .001 MON（正常/卖家失败），最后提回 .001 MON。它不等于网页默认 .1/.05 的用户存款操作，也不是独立买卖钱包、HTTP/SSE 或浏览器验收；根已实际执行，8 笔交易全部成功；正常费 .000110 MON、卖家失败 0，提回 .001 后托管 .009、授权剩 .004890、锁款 0。报告见 [native smoke JSON](../contracts/deployments/inferpool-native-monad-smoke.json)。脚本保存提交意图/哈希，已知哈希复核回执；提交不明先停下对账，不盲目重新执行。
+
+当前 npm 快捷命令已改为原生版本，执行含义如下，不能按旧文档同名命令推断资产：
+
+| 命令 | 当前实际脚本 / 行为 |
+| --- | --- |
+| `npm run setup:monad` | native-monad.ts --execute；会发受限初始化交易 |
+| `npm run test:monad` | native-monad.ts --execute --smoke；上述同钱包两场景与提款，已通过 |
+| `npm run test:api:monad` | smoke-native-api.ts --execute；会发新原生 HTTP/API 验收请求，**当前尚未执行** |
+| `npm run test:market:monad` | 仍是旧 dUSD 两卖家历史脚本，不用于新 MON |
+
+Router 使用新 `MARKET_ADDRESS`，并保持原固定 `ROUTER_ADDRESS`；迁移旧记录时同时设置 `LEGACY_MARKET_ADDRESS=0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568` 和 `LEGACY_TOKEN_ADDRESS=0x62701D69bD213e8F63c28465528931de208cE06E`。不要把原 TOKEN_ADDRESS 当作原生资产配置。新版账本路径须独立，先备份旧账本并保留原订单/幂等 Key/createdAt，再由明确市场绑定补齐旧 dUSD/6 身份；不得用空账本重置配额。旧未结或不明订单未处理完时拒绝迁移。
+
+上线前将前端 /config 与部署记录核对为 MON/18、新 market，以及旧 market/token；卖家必须在新合约重新发布报价并认证。旧 Key 的 POST 返回 409 和原请求 ID，不会自动变成 MON 新单。旧订单只能查询或通过其原合约回收/提款，不由新 MON Router 结算重试。完整部署切换按 [deploy/README](../deploy/README.md) 执行。
+
+## 旧 dUSD 测试网脚本与验收记录（历史）
+
+**以下至买家网页章节之前的 setup/smoke/双卖家验证均为旧 dUSD 记录，不用于新 MON 市场。** 需要复核旧记录时使用匹配的旧版本与旧 ABI；当前 forge 构建生成原生 ABI，不能据此重跑旧资金脚本。以下命令保留用于理解历史，不是新版启动步骤。
+
 
 手动运行的全部变量见根 [.env.example](../.env.example) 和 [Router README](../server/README.md)。程序不自动读取这个模板；使用本机环境文件显式导出配置，实际 `.env`、`.local/` 和含凭证的 RPC 地址不提交。
 
-当前业务合约已经部署，复用时不要重新部署 Counter 或把 Counter 地址当市场。公开 RPC 为 `https://testnet-rpc.monad.xyz`，chain ID 必须是 `10143`；地址与回执以 [inferpool-monad-testnet.json](../contracts/deployments/inferpool-monad-testnet.json) 为准。
+旧 dUSD 业务合约已部署，历史复核不重新部署 Counter 或把 Counter 地址当市场。公开 RPC 为 `https://testnet-rpc.monad.xyz`，chain ID 必须是 `10143`；地址与回执以 [inferpool-monad-testnet.json](../contracts/deployments/inferpool-monad-testnet.json) 为准。
 
 Router 使用现有 Alchemy session 签名，session 地址必须与市场 `router()` 一致。本次已完成授权；仅首次或过期时由用户完成：
 
@@ -55,8 +91,9 @@ alchemy wallet connect --mode session
 已存在的部署配套脚本：
 
 ```bash
-npm run setup:monad
-npm run test:monad
+# 仅旧 dUSD 版本的历史脚本，勿在当前原生版本执行
+node --import tsx scripts/setup-monad.ts
+node --import tsx scripts/smoke-monad.ts
 ```
 
 这两个脚本可能发送真实测试网交易并消耗测试 MON，作用范围不是通用账户部署器。`setup-monad.ts` 固定核对已授权 Router 地址、已部署 token/market：一次水龙头、最高补足首次 `10 dUSD` 存款、`10 dUSD`/一天消费授权和 `mock-reasoner` 报价。已经做过首次存款后不会默默补充后续消耗。`smoke-monad.ts` 用固定订单 ID 检查正常收费与卖家失败，重复执行优先读取已有状态；到期未结算订单需要回收，不会绕过截止时间。
@@ -152,7 +189,8 @@ node --import tsx scripts/verify-market-web-monad.ts --request-id 69a28714-618a-
 既有设置完成、Alchemy 0.24 EVM session 有效、测试网 Router 正常、`seller-monad` 独立进程处于 `normal` 在线状态时运行：
 
 ```bash
-npm run test:api:monad
+# 旧 dUSD 历史版本；当前同名 npm 命令已指向原生脚本
+node --import tsx scripts/smoke-api-monad.ts
 ```
 
 默认 `SMOKE_ROUTER_URL=http://127.0.0.1:8788`、`SMOKE_PROVIDER_URL=http://127.0.0.1:8793`；仅接受回环 HTTP 地址。脚本以受限买家挑战签名登录，创建临时 API Key，发起 `0.10 dUSD` 预算的正常请求，再核对独立 Provider 历史、账单、链上订单与回执，验证幂等重试，最后撤销 Key 并检查 `401`。
@@ -201,16 +239,16 @@ npm run dev:web
 
 本次用户已完成 Para CLI 登录，且授权 agent 代建 InferPool FREE 组织与项目；不需要重复开户。未来首次配置可以从 `para whoami`、`para keys list` 检查上下文，只有需要用户登录时才交由用户操作。Key 的“公开/私密”依据 SDK 与 CLI 字段定义，不能从名字猜测；不要输出私密 Key。
 
-### 新买家邮箱钱包的第一次请求
+### 新买家邮箱钱包的第一次原生 MON 请求
 
-Para CLI 的开发者登录、浏览器邮箱钱包、Router 平台会话和链上消费授权是不同状态。新的邮箱钱包不会继承既有 Alchemy session 的测试 MON、dUSD、存款或授权。`setup:monad` 与 `test:api:monad` 仅针对已有 session 钱包，不会替新邮箱钱包开户或充值；普通买家不需要安装 Alchemy/Para CLI。
+Para CLI 的开发者登录、浏览器邮箱钱包、Router 平台会话和链上消费授权是不同状态。新的邮箱钱包不会继承既有 Alchemy session 的 MON、旧 dUSD、托管或授权。旧 setup/smoke 脚本不用于新版；native-monad 只操作既有 session 钱包，不替新邮箱钱包开户或充值。普通买家不需要安装 Alchemy/Para CLI。
 
-1. **确认环境。** 页面显示 `Monad Testnet`，Router 使用 `8788` 且有可接单节点。点击“连接钱包”，按 Para 弹窗完成邮箱验证并等待钱包地址出现；重新使用时选择原来的钱包身份。
+1. **确认环境。** 先确认新版已经切换，/config 为新 market、MON/18，页面为 `Monad Testnet` 且有可接单节点。点击“连接钱包”，按 Para 弹窗完成邮箱验证并等待钱包地址出现；重新使用时选择原来的钱包身份。
 2. **准备 Gas。** “钱包与授权”提供完整 EVM 地址和复制反馈（`0x` 加 40 个十六进制字符）；顶部含 `…` 的缩写不能填入水龙头。在 Monad 测试网下，该页面显示 [官方测试 MON 水龙头](https://faucet.monad.xyz/) 入口，向水龙头提供这个新买家地址。官网在 2026-09-05 已核对，输入的是收款地址，不是私钥。也可由已有测试 MON 的钱包在同一测试网向该地址转入 Gas，本步骤不要求购买主网资产。
 3. **平台登录。** 钱包就绪后点击“签名登录”。这是链外身份签名，不是代币转账，也不消耗链上 Gas。只连接邮箱钱包不会自动获得 Router 的 API 权限；刷新网页或切换钱包后可能需重新签名。
-4. **领取 dUSD。** 到“钱包与授权”点“刷新余额”，确认“测试 MON”足以支付预计 Gas，再点“领取 1,000 测试 dUSD”。每钱包仅可领取一次；此领取本身也是链上交易，零 MON 时不能靠 dUSD 支付 Gas。
-5. **存款与授权。** “批准并存款”先执行精确金额的 `approve`，再执行 `deposit`，等待两笔交易各自确认。默认存款 `10 dUSD`；随后设置独立消费授权，界面默认 `5 dUSD`、`24` 小时（可填 1–24 小时）。存款不会自动授予消费权，授权也不会把钱包代币自动存入合约。
-6. **发起请求。** “推理市场”选择节点或自动匹配，设置 `0.10 dUSD` 等单次预算并运行。买家的可用托管余额和剩余消费授权都至少要覆盖整笔预算；卖家最低预留及输入预算检查也要通过。请求锁款和结算的 Gas 由 Router 钱包支付。
+4. **检查可用 MON。** 刷新余额，预留存款之外的 Gas。新版服务费直接使用测试 MON，不需要领取 dUSD；领取水龙头也不自动增加托管余额或请求额度。
+5. **存款与授权。** 新版默认存款 `0.1 MON`，通过 payable deposit 一笔确认，无 ERC-20 approve。随后独立授权默认 `0.05 MON / 24 小时`，需要新市场重新签名；旧 5 dUSD 授权不适用。前端检查存款加预计 Gas（估算留 10% 余量），不能将钱包全部 MON 存入。
+6. **发起请求。** “推理市场”选择节点或自动匹配，设置 `0.001 MON` 等单次预算并运行。买家的可用托管余额和剩余消费授权都至少要覆盖整笔预算；卖家最低预留及输入预算检查也要通过。请求锁款和结算的 Gas 由 Router 钱包支付。
 7. **核对并保留账单。** 等待“链上已确认”及结算交易，保存完整请求 UUID。预计账单、SSE 结束或文字生成完成都不等于结算已确认。剩余预算返回可用托管余额；需要回钱包时再执行提款。
 
 若存款只有 `approve` 成功、`deposit` 失败，代币仍在买家钱包，界面会说明批准完成而存款未完成；检查 Gas、余额和钱包身份后再处理，不把批准回执当作存款回执。Gas 不足时先补测试 MON，不反复点击领取或存款。
@@ -228,7 +266,7 @@ curl -N http://127.0.0.1:8788/v1/chat/completions \
   -H "Authorization: Bearer ${INFERPOOL_API_KEY}" \
   -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: first-monad-request-001' \
-  --data '{"model":"mock-reasoner","messages":[{"role":"user","content":"解释本次预算如何结算"}],"max_spend":"0.10","max_tokens":512,"stream":true,"cache":false}'
+  --data '{"model":"mock-reasoner","messages":[{"role":"user","content":"解释本次预算如何结算"}],"max_spend":"0.001","max_tokens":512,"stream":true,"cache":false}'
 ```
 
 同一请求因网络故障重试时，保留 Key、幂等 Key 和请求参数；发起新的独立请求时换新的幂等 Key。SSE `request` 事件包含订单 ID，也可从 `X-Request-Id` 获取；用 `GET /v1/requests/{id}` 查账单、`POST /v1/requests/{id}/cancel` 显式取消。关闭终端连接不取消订单。用完可在网页撤销 API Key，撤销不会自动取消既有订单或撤销链上授权。
@@ -325,8 +363,8 @@ INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspa
 | 现象 | 检查与处理 |
 | --- | --- |
 | 卖家显示未发布报价 | 钱包、链、市场和 `model` 必须匹配；本地保存报价不会上链 |
-| 有 dUSD 但请求提示余额不足 | 检查是否已存入市场及设置未过期消费授权；钱包余额不等于托管余额 |
-| 新邮箱钱包无法领取 dUSD | 它不继承 Alchemy 演示钱包的 Gas；先为这个完整地址准备 Monad 测试网 MON，再刷新余额 |
+| 有钱包 MON 但请求余额不足 | 检查是否已存入当前 MON 市场并设置未过期授权；旧 dUSD/旧市场授权不适用 |
+| 新邮箱钱包无法存入 MON | 它不继承演示钱包资金；先为完整地址准备测试 MON，并保留存款之外的 Gas |
 | 钱包已连接但 API 页面仍要求登录 | 点击“签名登录”取得 Router 会话；钱包登录不等于平台会话，平台会话也不等于消费授权 |
 | 浏览器请求 Origin 被拒绝 | 把实际 `127.0.0.1` 或 `localhost` 前端 origin 精确加入配置并重启 Router |
 | 锁款结果不明或结算失败 | 查询同一订单，不换 Key 重发推理；等待 Router 重试或到期直接回收 |

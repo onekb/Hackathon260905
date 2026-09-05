@@ -7,7 +7,7 @@ import { units } from './money.js';
 import type { StoredCredential } from './store.js';
 import type { TrustProxy } from './runtime-config.js';
 import { staticWeb } from './static-web.js';
-const requestSchema=z.object({model:z.string().min(1).max(100),messages:z.array(z.object({role:z.enum(['system','user','assistant']),content:z.string().max(32000)})).min(1).max(64),max_tokens:z.number().int().min(1).max(8192).default(256),max_spend:z.string().refine(v=>{try{return units(v)>0n;}catch{return false;}},'Expected a positive decimal amount with at most 6 decimal places'),provider_id:z.string().max(64).optional(),stream:z.boolean().default(false),cache:z.boolean().optional()}).strict();
+const requestSchema=z.object({model:z.string().min(1).max(100),messages:z.array(z.object({role:z.enum(['system','user','assistant']),content:z.string().max(32000)})).min(1).max(64),max_tokens:z.number().int().min(1).max(8192).default(256),max_spend:z.string().refine(v=>{try{return units(v)>0n;}catch{return false;}},'Expected a positive decimal amount with at most 18 decimal places'),provider_id:z.string().max(64).optional(),stream:z.boolean().default(false),cache:z.boolean().optional()}).strict();
 const ready=(o:Order)=>!['locking','running'].includes(o.status)&&o.settlement!=='pending';
 export function publicOrder(o:Order) {const {cacheKey,plannedUsage,lastSeq,...rest}=o;return {...rest,billConfirmed:o.settlement==='confirmed'};}
 export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string[];publicConfig?:Record<string,unknown>;trustProxy?:TrustProxy;webStaticDir?:string}) {
@@ -31,7 +31,7 @@ export function createApp(engine:Engine,auth:Auth,options:{allowedOrigins:string
   app.get('/config',(_req,res)=>res.json({chain_mode:engine.chain.mode,mock_inference:true,metering:'One Unicode code point equals one simulated token',...options.publicConfig}));
   app.post('/auth/challenge',(req,res,next)=>{try{res.json(auth.createChallenge(z.string().parse(req.body.wallet)));}catch(e){next(e);}});
   app.post('/auth/verify',asyncRoute(async(req,res)=>{const b=z.object({wallet:z.string(),nonce:z.string().max(128),signature:z.string().max(1024)}).parse(req.body);res.json(await auth.verify(b.wallet,b.nonce,b.signature));}));
-  app.get('/account',asyncRoute(async(req,res)=>{const c=identity(req);res.json({wallet:c.wallet,credential_type:c.type,...await engine.chain.getAccount(c.wallet),chain_mode:engine.chain.mode});}));
+  app.get('/account',asyncRoute(async(req,res)=>{const c=identity(req);res.json({wallet:c.wallet,credential_type:c.type,...await engine.chain.getAccount(c.wallet),chain_mode:engine.chain.mode,...engine.marketIdentity});}));
   app.post('/api-keys',asyncRoute(async(req,res)=>{
     const c=session(req);const b=z.object({name:z.string().min(1).max(80).default('API key'),expires_in_days:z.number().int().min(1).max(30).default(7)}).parse(req.body??{});
     const account=await engine.chain.getAccount(c.wallet);

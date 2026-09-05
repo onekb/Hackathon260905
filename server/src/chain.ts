@@ -7,6 +7,7 @@ export interface LockInput { id: string; buyer: string; seller: string; model: s
 export interface SettleInput { id: string; usage: Usage; outcome: Outcome; charge: string }
 export interface ChainAdapter {
   mode: 'memory' | 'anvil' | 'monad-testnet';
+  readonly market?: string;
   getAccount(wallet: string): Promise<ChainAccount>;
   getQuote(wallet: string, model: string): Promise<Quote | null>;
   lock(input: LockInput): Promise<{ txHash: string }>;
@@ -37,7 +38,7 @@ export class MemoryChain implements ChainAdapter {
     if (!a || a.balance < budget || a.allowance < budget || a.expiresAt <= Date.now()/1000) throw new Error('Insufficient available balance or active authorization');
     a.balance -= budget; a.allowance -= budget;
     const txHash = `memory:lock:${input.id}`;
-    this.orders.set(input.id, {...input, state: 'locked', charge: '0.000000', txHash});
+    this.orders.set(input.id, {...input, state: 'locked', charge: decimal(0n), txHash});
     return {txHash};
   }
   async settle(input: SettleInput): Promise<{ txHash: string }> {

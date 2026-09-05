@@ -2,16 +2,48 @@
 pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DemoUSD} from "../src/DemoUSD.sol";
 import {InferenceMarket} from "../src/InferenceMarket.sol";
 
-contract WrongDecimalsToken is ERC20 {
-    constructor() ERC20("Wrong", "WRONG") {}
+/// @dev Created and destroyed in one transaction to model unsolicited native balance.
+contract ForceNative {
+    constructor(address payable target) payable {
+        selfdestruct(target);
+    }
+}
+
+contract NativeReceiver {
+    InferenceMarket public immutable market;
+    bool public rejects;
+    bool public attemptsReentry;
+    bool public withdrawReentryBlocked;
+    bool public depositReentryBlocked;
+    uint256 public creditDuringCallback;
+
+    constructor(InferenceMarket market_, bool rejects_, bool attemptsReentry_) {
+        market = market_;
+        rejects = rejects_;
+        attemptsReentry = attemptsReentry_;
+    }
+
+    receive() external payable {
+        require(!rejects, "receiver rejected MON");
+        // Storage writes also verify withdrawals work with receivers needing >2300 gas.
+        creditDuringCallback = market.balances(address(this));
+        if (attemptsReentry) {
+            try market.withdraw(1) {}
+            catch (bytes memory reason) {
+                withdrawReentryBlocked = bytes4(reason) == bytes4(keccak256("ReentrancyGuardReentrantCall()"));
+            }
+            try market.deposit{value: 1}() {}
+            catch (bytes memory reason) {
+                depositReentryBlocked = bytes4(reason) == bytes4(keccak256("ReentrancyGuardReentrantCall()"));
+            }
+        }
+    }
 }
 
 contract InferenceMarketTest is Test {
-    DemoUSD internal usd;
     InferenceMarket internal market;
     address internal buyer = address(0xB001);
     address internal provider = address(0xA001);
@@ -19,16 +51,15 @@ contract InferenceMarketTest is Test {
     address internal stranger = address(0xD001);
     bytes32 internal constant MODEL = keccak256("demo-model");
     bytes32 internal constant REQUEST = keccak256("opaque-request-1");
-    uint256 internal constant UNIT = 1e6;
+    uint256 internal constant UNIT = 1 ether;
+    uint256 internal constant MILLION = 1_000_000;
 
     function setUp() public {
         vm.warp(1_000_000);
-        usd = new DemoUSD();
-        market = new InferenceMarket(address(usd), router);
+        market = new InferenceMarket(router);
+        vm.deal(buyer, 1_000 ether);
         vm.startPrank(buyer);
-        usd.faucet();
-        usd.approve(address(market), type(uint256).max);
-        market.deposit(100 * UNIT);
+        market.deposit{value: 100 * UNIT}();
         market.authorizeRouter(10 * UNIT, uint64(block.timestamp + 1 days));
         vm.stopPrank();
         _quote(_prices(), UNIT / 10, true);
@@ -60,24 +91,14 @@ contract InferenceMarketTest is Test {
 
     function _assertAccounting() internal view {
         assertEq(market.balances(buyer) + market.balances(provider) + market.totalLocked(), market.totalEscrowed());
-        assertEq(usd.balanceOf(address(market)), market.totalEscrowed());
+        assertGe(address(market).balance, market.totalEscrowed());
     }
 
-    function testDemoTokenIsClearlyLabeledAndCapped() public view {
-        assertEq(usd.decimals(), 6);
-        assertEq(usd.name(), "Demo USD - Test Asset Only");
-        assertEq(usd.symbol(), "dUSD");
-        assertTrue(usd.IS_DEMO_ASSET());
-        assertEq(usd.cap(), usd.MAX_SUPPLY());
-        assertEq(usd.totalSupply(), 1_000 * UNIT);
-    }
-
-    function testFaucetCannotRepeatEvenAfterTransferringTokens() public {
-        vm.startPrank(buyer);
-        usd.transfer(stranger, usd.balanceOf(buyer));
-        vm.expectRevert(DemoUSD.AlreadyClaimed.selector);
-        usd.faucet();
-        vm.stopPrank();
+    function testNativeAssetMetadata() public view {
+        assertTrue(market.IS_NATIVE_ASSET());
+        assertEq(market.ASSET_SYMBOL(), "MON");
+        assertEq(market.ASSET_DECIMALS(), 18);
+        assertEq(market.TOKENS_PER_MILLION(), 1_000_000);
     }
 
     function testDepositWithdrawOnlyOwnedAvailableBalance() public {
@@ -92,20 +113,85 @@ contract InferenceMarketTest is Test {
         vm.stopPrank();
         assertEq(market.balances(buyer), 0);
         assertEq(market.totalLocked(), UNIT);
-        assertEq(usd.balanceOf(buyer), 999 * UNIT);
+        assertEq(buyer.balance, 999 * UNIT);
         _assertAccounting();
     }
 
-    function testDepositRequiresApprovalAndNonzeroAmount() public {
+    function testNativeDepositCreditsExactValueWithoutApprovalAndRejectsZero() public {
+        vm.deal(stranger, 1 ether);
         vm.startPrank(stranger);
-        usd.faucet();
-        vm.expectRevert();
-        market.deposit(UNIT);
         vm.expectRevert(InferenceMarket.InvalidAmount.selector);
-        market.deposit(0);
+        market.deposit();
         vm.expectRevert(InferenceMarket.InvalidAmount.selector);
         market.withdraw(0);
+        market.deposit{value: 123456789012345678}();
         vm.stopPrank();
+        assertEq(market.balances(stranger), 123456789012345678);
+        assertEq(stranger.balance, 1 ether - 123456789012345678);
+        assertEq(market.totalEscrowed(), 100 ether + 123456789012345678);
+        assertEq(address(market).balance, market.totalEscrowed());
+    }
+
+    function testPlainNativeTransferAndLegacyDepositSelectorCannotCreateCredit() public {
+        vm.deal(stranger, 1 ether);
+        vm.startPrank(stranger);
+        (bool plain,) = address(market).call{value: 1 ether}("");
+        (bool legacy,) = address(market).call{value: 1 ether}(abi.encodeWithSignature("deposit(uint256)", 1 ether));
+        vm.stopPrank();
+        assertFalse(plain);
+        assertFalse(legacy);
+        assertEq(stranger.balance, 1 ether);
+        assertEq(market.balances(stranger), 0);
+        _assertAccounting();
+    }
+
+    function testRejectedNativeWithdrawalRollsBackCreditAndLiabilities() public {
+        NativeReceiver receiver = new NativeReceiver(market, true, false);
+        vm.deal(address(receiver), 1 ether);
+        vm.startPrank(address(receiver));
+        market.deposit{value: 1 ether}();
+        uint256 escrowBefore = market.totalEscrowed();
+        vm.expectRevert("receiver rejected MON");
+        market.withdraw(1 ether);
+        vm.stopPrank();
+        assertEq(market.balances(address(receiver)), 1 ether);
+        assertEq(market.totalEscrowed(), escrowBefore);
+        assertEq(address(market).balance, escrowBefore);
+        assertEq(address(receiver).balance, 0);
+    }
+
+    function testNativeWithdrawalUsesEffectsBeforeInteractionAndBlocksReentry() public {
+        NativeReceiver receiver = new NativeReceiver(market, false, true);
+        vm.deal(address(receiver), 1 ether);
+        vm.startPrank(address(receiver));
+        market.deposit{value: 1 ether}();
+        market.withdraw(1 ether);
+        vm.stopPrank();
+        assertTrue(receiver.withdrawReentryBlocked());
+        assertTrue(receiver.depositReentryBlocked());
+        assertEq(receiver.creditDuringCallback(), 0);
+        assertEq(market.balances(address(receiver)), 0);
+        assertEq(address(receiver).balance, 1 ether);
+        _assertAccounting();
+    }
+
+    function testSellerRejectingNativePaymentsCannotBlockSettlement() public {
+        NativeReceiver receiver = new NativeReceiver(market, true, false);
+        vm.prank(address(receiver));
+        market.upsertQuote(MODEL, _prices(), UNIT / 10, true);
+        vm.prank(router);
+        market.reserve(REQUEST, buyer, address(receiver), MODEL, UNIT, uint64(block.timestamp + 300), 1);
+        _settle(REQUEST, _usage(), InferenceMarket.Outcome.Success);
+        uint256 charge = 4_800 * 1e12;
+        assertEq(market.balances(address(receiver)), charge);
+        assertEq(address(receiver).balance, 0);
+        assertEq(market.totalLocked(), 0);
+        assertEq(market.balances(buyer) + charge, market.totalEscrowed());
+        vm.prank(address(receiver));
+        vm.expectRevert("receiver rejected MON");
+        market.withdraw(charge);
+        assertEq(market.balances(address(receiver)), charge);
+        assertEq(uint256(market.getOrder(REQUEST).state), uint256(InferenceMarket.OrderState.Settled));
     }
 
     function testQuotesAreWalletOwnedVersionedAndEnumerable() public {
@@ -146,8 +232,8 @@ contract InferenceMarketTest is Test {
     function testSuccessfulSettlementUsesAllFourCategoriesAndReleasesRemainder() public {
         _reserve(REQUEST, UNIT);
         _settle(REQUEST, _usage(), InferenceMarket.Outcome.Success);
-        // 2,000 + 200 + 600 + 2,000 micro dUSD.
-        uint256 charge = 4_800;
+        // 0.002 + 0.0002 + 0.0006 + 0.002 MON, expressed in wei.
+        uint256 charge = 4_800 * 1e12;
         assertEq(market.balances(provider), charge);
         assertEq(market.balances(buyer), 100 * UNIT - charge);
         InferenceMarket.Order memory order = market.getOrder(REQUEST);
@@ -179,12 +265,12 @@ contract InferenceMarketTest is Test {
         _assertAccounting();
     }
 
-    function testBuyerCancellationChargesActualTwentyCentsFromOneDollarReserve() public {
+    function testBuyerCancellationChargesActualPointTwoMonFromOneMonReserve() public {
         _reserve(REQUEST, UNIT);
         _settle(REQUEST, InferenceMarket.Usage(0, 0, 0, 25_000), InferenceMarket.Outcome.BuyerCancelled);
-        assertEq(market.balances(provider), 200_000);
-        assertEq(market.balances(buyer), 99_800_000);
-        assertEq(market.getOrder(REQUEST).charged, 200_000);
+        assertEq(market.balances(provider), UNIT / 5);
+        assertEq(market.balances(buyer), 100 * UNIT - UNIT / 5);
+        assertEq(market.getOrder(REQUEST).charged, UNIT / 5);
         _assertAccounting();
     }
 
@@ -211,11 +297,11 @@ contract InferenceMarketTest is Test {
     function testMinimumReserveIsNotMinimumCharge() public {
         vm.prank(router);
         vm.expectRevert(InferenceMarket.BelowMinimumReserve.selector);
-        market.reserve(REQUEST, buyer, provider, MODEL, 99_999, uint64(block.timestamp + 300), 1);
-        _reserve(REQUEST, 100_000);
+        market.reserve(REQUEST, buyer, provider, MODEL, UNIT / 10 - 1, uint64(block.timestamp + 300), 1);
+        _reserve(REQUEST, UNIT / 10);
         _settle(REQUEST, InferenceMarket.Usage(1, 0, 0, 0), InferenceMarket.Outcome.Success);
-        assertEq(market.balances(provider), 2);
-        assertEq(market.balances(buyer), 100 * UNIT - 2);
+        assertEq(market.balances(provider), 2 * 1e12);
+        assertEq(market.balances(buyer), 100 * UNIT - 2 * 1e12);
     }
 
     function testPricesRemainSnapshotAfterSellerChangesOrDisablesQuote() public {
@@ -225,7 +311,7 @@ contract InferenceMarketTest is Test {
         InferenceMarket.Order memory order = market.getOrder(REQUEST);
         assertEq(order.quoteVersion, 1);
         assertEq(order.prices.output, 8 * UNIT);
-        assertEq(order.charged, 4_800);
+        assertEq(order.charged, 4_800 * 1e12);
         assertEq(market.getQuote(provider, MODEL).version, 2);
     }
 
@@ -240,7 +326,7 @@ contract InferenceMarketTest is Test {
     function testCalculateChargeSupportsProductsLargerThanUint256() public view {
         assertEq(
             market.calculateCharge(
-                InferenceMarket.Prices(type(uint256).max, 0, 0, 0), InferenceMarket.Usage(UNIT, 0, 0, 0)
+                InferenceMarket.Prices(type(uint256).max, 0, 0, 0), InferenceMarket.Usage(MILLION, 0, 0, 0)
             ),
             type(uint256).max
         );
@@ -253,7 +339,7 @@ contract InferenceMarketTest is Test {
         market.reserve(bytes32(uint256(2)), buyer, provider, MODEL, 5 * UNIT, uint64(block.timestamp + 300), 1);
         _reserve(bytes32(uint256(2)), 4 * UNIT);
         _settle(REQUEST, _usage(), InferenceMarket.Outcome.Success);
-        _reserve(bytes32(uint256(3)), 6 * UNIT - 4_800);
+        _reserve(bytes32(uint256(3)), 6 * UNIT - 4_800 * 1e12);
         InferenceMarket.Grant memory grant = market.getGrant(buyer, 1);
         assertEq(grant.spent + grant.locked, 10 * UNIT);
         _assertAccounting();
@@ -278,7 +364,7 @@ contract InferenceMarketTest is Test {
         market.reserve(bytes32(uint256(2)), buyer, provider, MODEL, UNIT, uint64(block.timestamp + 300), 1);
         _settle(REQUEST, _usage(), InferenceMarket.Outcome.Success);
         assertTrue(market.getGrant(buyer, 1).revoked);
-        assertEq(market.getGrant(buyer, 1).spent, 4_800);
+        assertEq(market.getGrant(buyer, 1).spent, 4_800 * 1e12);
         _assertAccounting();
     }
 
@@ -292,7 +378,7 @@ contract InferenceMarketTest is Test {
         InferenceMarket.Grant memory newGrant = market.getGrant(buyer, 2);
         assertTrue(oldGrant.revoked);
         assertEq(oldGrant.locked, 0);
-        assertEq(oldGrant.spent, 4_800);
+        assertEq(oldGrant.spent, 4_800 * 1e12);
         assertEq(newGrant.locked, 2 * UNIT);
         assertEq(newGrant.spent, 0);
         vm.prank(router);
@@ -327,7 +413,7 @@ contract InferenceMarketTest is Test {
         market.reclaimExpired(REQUEST);
         market.withdraw(100 * UNIT);
         vm.stopPrank();
-        assertEq(usd.balanceOf(buyer), 1_000 * UNIT);
+        assertEq(buyer.balance, 1_000 * UNIT);
         assertEq(market.totalEscrowed(), 0);
         assertEq(uint256(market.getOrder(REQUEST).state), uint256(InferenceMarket.OrderState.Reclaimed));
         _assertAccounting();
@@ -425,25 +511,18 @@ contract InferenceMarketTest is Test {
         _reserve(REQUEST, UNIT);
         _settle(REQUEST, _usage(), InferenceMarket.Outcome.Success);
         vm.prank(provider);
-        market.withdraw(4_800);
-        assertEq(usd.balanceOf(provider), 4_800);
+        market.withdraw(4_800 * 1e12);
+        assertEq(provider.balance, 4_800 * 1e12);
         assertEq(market.balances(provider), 0);
         _assertAccounting();
-        vm.prank(buyer);
-        usd.transfer(address(market), UNIT);
-        assertEq(usd.balanceOf(address(market)), market.totalEscrowed() + UNIT);
+        vm.deal(address(this), UNIT);
+        new ForceNative{value: UNIT}(payable(address(market)));
+        assertEq(address(market).balance, market.totalEscrowed() + UNIT);
     }
 
-    function testInvalidConstructorTokenOrRouterRejected() public {
+    function testZeroRouterRejected() public {
         vm.expectRevert(InferenceMarket.InvalidAddress.selector);
-        new InferenceMarket(address(0), router);
-        vm.expectRevert(InferenceMarket.InvalidAddress.selector);
-        new InferenceMarket(address(usd), address(0));
-        vm.expectRevert(InferenceMarket.InvalidAddress.selector);
-        new InferenceMarket(stranger, router);
-        ERC20 wrongDecimals = new WrongDecimalsToken();
-        vm.expectRevert(InferenceMarket.InvalidTokenDecimals.selector);
-        new InferenceMarket(address(wrongDecimals), router);
+        new InferenceMarket(address(0));
     }
 
     function testFuzzChargeMatchesReferenceAcrossAllFourCategories(
@@ -457,7 +536,7 @@ contract InferenceMarketTest is Test {
         uint64 z
     ) public view {
         uint256 numerator = uint256(a) * w + uint256(b) * x + uint256(c) * y + uint256(d) * z;
-        uint256 expected = numerator / UNIT + (numerator % UNIT == 0 ? 0 : 1);
+        uint256 expected = numerator / MILLION + (numerator % MILLION == 0 ? 0 : 1);
         assertEq(
             market.calculateCharge(InferenceMarket.Prices(a, b, c, d), InferenceMarket.Usage(w, x, y, z)), expected
         );
@@ -468,7 +547,7 @@ contract InferenceMarketTest is Test {
         InferenceMarket.Outcome outcome = InferenceMarket.Outcome(bound(rawOutcome, 0, 4));
         _reserve(REQUEST, UNIT);
         _settle(REQUEST, InferenceMarket.Usage(0, 0, 0, output), outcome);
-        uint256 expected = uint256(outcome) >= 3 ? 0 : output * 8;
+        uint256 expected = uint256(outcome) >= 3 ? 0 : output * 8 * 1e12;
         assertEq(market.getOrder(REQUEST).charged, expected);
         assertLe(expected, UNIT);
         assertEq(market.balances(provider), expected);
@@ -494,16 +573,14 @@ contract InferenceMarketTest is Test {
 /// @dev Randomized real lifecycle transitions, including grants replaced with orders still in flight.
 contract MarketHandler is Test {
     InferenceMarket public market;
-    DemoUSD public usd;
     address public buyer;
     address public provider;
     address public router;
     bytes32 public constant MODEL = keccak256("invariant-model");
     bytes32[] public ids;
 
-    constructor(InferenceMarket market_, DemoUSD usd_, address buyer_, address provider_, address router_) {
+    constructor(InferenceMarket market_, address buyer_, address provider_, address router_) {
         market = market_;
-        usd = usd_;
         buyer = buyer_;
         provider = provider_;
         router = router_;
@@ -547,7 +624,7 @@ contract MarketHandler is Test {
     function replaceGrant(uint256 rawLimit) external {
         if (market.activeGrantId(buyer) >= 64) return;
         vm.prank(buyer);
-        market.authorizeRouter(bound(rawLimit, 1, 1_000 * 1e6), uint64(block.timestamp + 600));
+        market.authorizeRouter(bound(rawLimit, 1, 1_000 ether), uint64(block.timestamp + 600));
     }
 
     function revoke() external {
@@ -564,10 +641,10 @@ contract MarketHandler is Test {
     }
 
     function deposit(uint256 rawAmount) external {
-        uint256 available = usd.balanceOf(buyer);
+        uint256 available = buyer.balance;
         if (available == 0) return;
         vm.prank(buyer);
-        market.deposit(bound(rawAmount, 1, available));
+        market.deposit{value: bound(rawAmount, 1, available)}();
     }
 
     function idsLength() external view returns (uint256) {
@@ -576,7 +653,6 @@ contract MarketHandler is Test {
 }
 
 contract InferenceMarketInvariantTest is Test {
-    DemoUSD internal usd;
     InferenceMarket internal market;
     MarketHandler internal handler;
     address internal buyer = address(0xB001);
@@ -585,17 +661,15 @@ contract InferenceMarketInvariantTest is Test {
 
     function setUp() public {
         vm.warp(1_000_000);
-        usd = new DemoUSD();
-        market = new InferenceMarket(address(usd), router);
+        market = new InferenceMarket(router);
+        vm.deal(buyer, 1_000 ether);
         vm.startPrank(buyer);
-        usd.faucet();
-        usd.approve(address(market), type(uint256).max);
-        market.deposit(100 * 1e6);
-        market.authorizeRouter(10 * 1e6, uint64(block.timestamp + 600));
+        market.deposit{value: 100 ether}();
+        market.authorizeRouter(10 ether, uint64(block.timestamp + 600));
         vm.stopPrank();
         vm.prank(provider);
         market.upsertQuote(keccak256("invariant-model"), InferenceMarket.Prices(0, 0, 0, 1e6), 0, true);
-        handler = new MarketHandler(market, usd, buyer, provider, router);
+        handler = new MarketHandler(market, buyer, provider, router);
         bytes4[] memory selectors = new bytes4[](7);
         selectors[0] = handler.reserve.selector;
         selectors[1] = handler.settle.selector;
@@ -610,7 +684,7 @@ contract InferenceMarketInvariantTest is Test {
 
     function invariantAllLiabilitiesAreFullyBacked() public view {
         assertEq(market.balances(buyer) + market.balances(provider) + market.totalLocked(), market.totalEscrowed());
-        assertEq(usd.balanceOf(address(market)), market.totalEscrowed());
+        assertGe(address(market).balance, market.totalEscrowed());
     }
 
     function invariantEveryGrantStaysWithinItsOwnLimit() public view {
@@ -634,6 +708,28 @@ contract InferenceMarketInvariantTest is Test {
             fees += order.charged;
         }
         assertEq(locks, market.totalLocked());
-        assertEq(fees, market.balances(provider) + usd.balanceOf(provider));
+        assertEq(fees, market.balances(provider) + provider.balance);
+    }
+}
+
+/// @dev Keep coverage of the old demonstration token without using it in the native market.
+contract LegacyDemoUSDTest is Test {
+    function testLegacyDemoTokenRemainsClearlyLabeledAndCapped() public {
+        DemoUSD usd = new DemoUSD();
+        usd.faucet();
+        assertEq(usd.decimals(), 6);
+        assertEq(usd.name(), "Demo USD - Test Asset Only");
+        assertEq(usd.symbol(), "dUSD");
+        assertTrue(usd.IS_DEMO_ASSET());
+        assertEq(usd.cap(), usd.MAX_SUPPLY());
+        assertEq(usd.totalSupply(), 1_000 * 1e6);
+    }
+
+    function testLegacyFaucetCannotRepeatAfterTransferringTokens() public {
+        DemoUSD usd = new DemoUSD();
+        usd.faucet();
+        usd.transfer(address(0xD001), usd.balanceOf(address(this)));
+        vm.expectRevert(DemoUSD.AlreadyClaimed.selector);
+        usd.faucet();
     }
 }

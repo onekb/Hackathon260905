@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { getAddress, type Abi, type Address, type Hex } from 'viem';
 import { AlchemySessionSender, EvmChain, opaqueId } from '../server/src/evm-chain.js';
-import { decimal, units } from '../server/src/money.js';
+import { decimal, units } from './legacy-money.js';
 
 const root=new URL('../',import.meta.url);
 const encode=(value:unknown)=>JSON.stringify(value,(_k,v)=>typeof v==='bigint'?v.toString():v,2)+'\n';
@@ -14,6 +14,8 @@ export const model='mock-reasoner';
 export const prices={input:units('30'),cacheRead:units('3'),cacheWrite:units('37.5'),output:units('80')};
 export const minReserve=units('0.0001');
 export async function monadContext() {
+  throw new Error('This is a historical dUSD helper. Use scripts/native-monad.ts for native MON; old deployment records will not be overwritten.');
+  /* Legacy implementation retained for historical context; intentionally disabled after native migration. */
   const deployment=readJson(new URL('contracts/deployments/inferpool-monad-testnet.json',root));
   if(deployment.chainId!==10143||getAddress(deployment.router)!==expectedSigner)throw new Error('Deployment must be Monad testnet with the explicitly authorized session router');
   const market=getAddress(deployment.market);const token=getAddress(deployment.token);

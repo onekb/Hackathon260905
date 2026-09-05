@@ -40,13 +40,13 @@ async function fixture(options: { invalidDomain?: boolean; invalidExpiry?: boole
             socket.close(4004, 'No on-chain quote');
             return;
           }
-          socket.send(JSON.stringify({ type: 'authenticated', providerId: 'seller-test', quote: { input: '30.000000', cacheRead: '3.000000', cacheWrite: '37.500000', output: '80.000000', minReserve: '0.010000', version: '2' } }));
+          socket.send(JSON.stringify({ type: 'authenticated', asset_symbol: 'MON', asset_decimals: 18, market_address: 'memory:mon', providerId: 'seller-test', quote: { input: '30.000000', cacheRead: '3.000000', cacheWrite: '37.500000', output: '80.000000', minReserve: '0.010000', version: '2' } }));
         });
       }
     });
     socket.send(JSON.stringify({ type: 'challenge', nonce, message, expiresAt }));
   });
-  const config = parseConfig(['--router', `ws://${host}/provider`, '--id', 'seller-test', '--interval-ms', '5', '--chunk-size', '3'], {});
+  const config = parseConfig(['--router', `ws://${host}/provider`, '--id', 'seller-test', '--interval-ms', '5', '--chunk-size', '3', '--input-price', '30', '--cache-read-price', '3', '--cache-write-price', '37.5', '--output-price', '80', '--min-reserve', '0.01'], {});
   const client = new ProviderClient(config, privateKeyToAccount(generatePrivateKey()));
   client.online();
   const request = (id: string, maxTokens = 21) => ({
