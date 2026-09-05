@@ -39,7 +39,7 @@ npm run demo:request -- --cache
 
 ## 原生 MON 测试网（当前源码）
 
-原生市场已部署并完成源码验证：`0x142a4904307244Bed0cECD72dE8329A253333182`，Monad Testnet chain ID 10143。资产为 MON/18 位，无 token()、ERC-20 approve 或 dUSD 自动兑换。证据见 [native 部署 JSON](../contracts/deployments/inferpool-mon-native-testnet.json)。当前公网运行 MON-only fc646d8（本轮网页单笔完成与结算已验，公网逐帧展示未采证），/config 和模型报价回读通过，API/SSE 一单与浏览器签名登录/账户读取通过，独立买家 MON 网页存款/授权及正常、故障两单已验，逐帧 SSE 未采证；按 /config 的实际 market/asset 判断，不能只看域名。
+原生市场已部署并完成源码验证：`0x142a4904307244Bed0cECD72dE8329A253333182`，Monad Testnet chain ID 10143。资产为 MON/18 位，无 token()、ERC-20 approve 或 dUSD 自动兑换。证据见 [native 部署 JSON](../contracts/deployments/inferpool-mon-native-testnet.json)。当前公网运行 MON-only 0a82030（已取消 Demo 次数/额外并发限制，前序网页单笔结算已验，公网逐帧展示未采证），/config 和模型报价回读通过，API/SSE 一单与浏览器签名登录/账户读取通过，独立买家 MON 网页存款/授权及正常、故障两单已验，逐帧 SSE 未采证；按 /config 的实际 market/asset 判断，不能只看域名。
 
 ```bash
 node scripts/deploy-mon-native.mjs
@@ -218,9 +218,9 @@ node --import tsx scripts/verify-native-browser.ts --case seller_failed --id c98
 
 [deploy/README.md](../deploy/README.md) 提供常驻单进程 Router 与持久账本的部署准备；[nginx 模板](../deploy/nginx.conf.example) 仅作参考，[Router 环境模板](../deploy/router.env.example) 仍需按实际运行配置。用户负责 HTTPS 反向代理，agent 准备应用与 HTTP 端口，见 [D15](requirements-and-decisions.md#d15--应用准备单个-http-端口用户负责-https-反向代理)。用户现已配置全站反代，agent 只读检查了站点配置与公开证书，未修改 nginx/证书/1Panel；迁移仍须处理在途订单、停旧实例，再带原账本启动唯一新实例，不能以空账本或双进程写同一路径。
 
-目标域名为 `demo.example.com`，远端 DNS 已解析到目标服务器；本机代理 DNS 结果不作为公网解析证明。Ubuntu 22.04 x86_64 保留既有 OpenResty/工作负载，官方 Node v22.23.2 与独立 `inferpool` 用户、0700 私有目录已准备。当前 `/srv/inferpool/current` 指向 `/srv/inferpool/releases/fc646d8`，服务用户只读 release；新活跃账本为 router-mon-state.json，仅带 15 条最小配额历史，旧整账本在私有 backups/native-20260905T073750Z。首次 dUSD 部署的前端归档和 53 项 ABI 哈希属历史，见 [进度](progress.md#远端部署准备检查点)。Linux npm ci 775 packages、Alchemy CLI 0.24.0 安装 178 packages 均 exit 0；新设备 `auth login` 已 exit 0，令牌仅保留远端私有配置。首次钱包申请超时并确认无会话后，不加 `--force` 重新申请；用户已批准，connect exit 0，独立 status --verify 为 valid=true、原 Router 地址，签交易/签消息权限有效。Linux 会话到期 `2026-09-12T06:33:39.043Z`，config mode 600；设备登录没有重做。不得复制 Mac 凭证或记录 device code/带凭证 URL。
+目标域名为 `demo.example.com`，远端 DNS 已解析到目标服务器；本机代理 DNS 结果不作为公网解析证明。Ubuntu 22.04 x86_64 保留既有 OpenResty/工作负载，官方 Node v22.23.2 与独立 `inferpool` 用户、0700 私有目录已准备。当前 `/srv/inferpool/current` 指向 `/srv/inferpool/releases/0a82030`，服务用户只读 release；活跃账本 router-mon-state.json 保留 5 条原生订单和 15 条历史记录，历史不再计次；旧整账本在私有 backups/native-20260905T073750Z。首次 dUSD 部署的前端归档和 53 项 ABI 哈希属历史，见 [进度](progress.md#远端部署准备检查点)。Linux npm ci 775 packages、Alchemy CLI 0.24.0 安装 178 packages 均 exit 0；新设备 `auth login` 已 exit 0，令牌仅保留远端私有配置。首次钱包申请超时并确认无会话后，不加 `--force` 重新申请；用户已批准，connect exit 0，独立 status --verify 为 valid=true、原 Router 地址，签交易/签消息权限有效。Linux 会话到期 `2026-09-12T06:33:39.043Z`，config mode 600；设备登录没有重做。不得复制 Mac 凭证或记录 device code/带凭证 URL。
 
-两份 unit 和私有 env 已安装，Linux `systemd-analyze verify` exit 0、`daemon-reload` 完成；仅宿主旧 unit 兼容警告，无新增 unit 错误，旧服务未改。旧 Router 已停止、原账本已备份并迁移，远端 Router `enable --now` 完成；systemd active/running、NRestarts 0，监听回环 8788。固定 `DEMO_ADMISSION_START_UTC=2026-09-05T06:22:02Z` 不变。远端 A 也已 enable/start，两个服务均 active/running、NRestarts 0、ExecMainStatus 0；具体会话和维护步骤见 [部署手册](../deploy/README.md)。
+**首次部署归档（旧 Demo 配置随后已由 D19 移除）：** 两份 unit 和私有 env 已安装，Linux `systemd-analyze verify` exit 0、`daemon-reload` 完成；仅宿主旧 unit 兼容警告，无新增 unit 错误，旧服务未改。旧 Router 已停止、原账本已备份并迁移，远端 Router `enable --now` 完成；systemd active/running、NRestarts 0，监听回环 8788。固定 `DEMO_ADMISSION_START_UTC=2026-09-05T06:22:02Z` 不变。远端 A 也已 enable/start，两个服务均 active/running、NRestarts 0、ExecMainStatus 0；具体会话和维护步骤见 [部署手册](../deploy/README.md)。
 
 实际 Linux 服务账户已完成非签名只读检查：导出绝对路径、固定 epoch、loopback 代理解析均有效，链 ID 为 10143，合约 router 等于原固定身份，router.env 权限 600。区块 `59833890` 的 Router Gas 为 `0.992516012 MON`；检查并未签名或广播，设备登录与链/RPC 可读都不替代新的 wallet session 批准。
 
@@ -248,9 +248,9 @@ INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspa
 
 ### 可选公网请求限额
 
-**D19 取消限制的代码与本地回归已完成，待部署。** 每日/累计请求次数和额外 Demo 并发门槛不再是产品要求；前序“剩 1 次/全场 10 次”只作旧策略快照，线上是否已移除以[进度](progress.md)的部署证据为准。
+**D19 已随 0a82030 上线，线上源码与配置已回读确认取消限制。** 每日/累计请求次数和额外 Demo 并发门槛不再是产品要求；前序“剩 1 次/全场 10 次”只作旧策略快照，部署及验证边界见[进度](progress.md)。
 
-新接口不再提供 DemoAdmission、DEMO_LIMITS 或 Engine 第四构造参数；不读取 `DEMO_ADMISSION_ENABLED`、`DEMO_ADMISSION_START_UTC`、`DEMO_NEW_ORDERS_ENABLED`，也不新增替代暂停开关。部署模板已移除三项，根将在实际服务器同步清除；不要通过这些旧变量安排新版本维护。
+新接口不再提供 DemoAdmission、DEMO_LIMITS 或 Engine 第四构造参数；不读取 `DEMO_ADMISSION_ENABLED`、`DEMO_ADMISSION_START_UTC`、`DEMO_NEW_ORDERS_ENABLED`，也不新增替代暂停开关。部署模板已移除三项，实际服务器也已同步清除；不要通过这些旧变量安排新版本维护。
 
 保留已有原生账本、订单、凭证、幂等记录和 history，history 不再用于次数计算。旧 `deploy/switch-native.py` 已退役并在入口拒绝运行，不用于常规更新。维护须核对在途/不明订单、受控停止两服务、私有备份、切换完整 release，再回读账本与服务；不能恢复过期账本覆盖新记录。单笔预算、钱包授权与余额、卖家真实容量仍是接单条件。
 
