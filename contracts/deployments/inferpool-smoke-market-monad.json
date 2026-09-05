@@ -1,0 +1,1722 @@
+{
+  "schemaVersion": 1,
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "market": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+  "token": "0x62701D69bD213e8F63c28465528931de208cE06E",
+  "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "routerWallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "sellers": {
+    "a": {
+      "id": "seller-monad",
+      "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "walletMode": "alchemy-session",
+      "quote": {
+        "input": "30",
+        "cacheRead": "3",
+        "cacheWrite": "37.5",
+        "output": "80",
+        "minReserve": "0.0001"
+      }
+    },
+    "b": {
+      "id": "seller-para",
+      "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "walletMode": "browser-wallet",
+      "quote": {
+        "input": "60",
+        "cacheRead": "6",
+        "cacheWrite": "75",
+        "output": "40",
+        "minReserve": "0.0001"
+      }
+    }
+  },
+  "plan": [
+    {
+      "name": "explicit_b",
+      "idempotencyKey": "inferpool-monad-market-v1-explicit_b",
+      "body": {
+        "model": "mock-reasoner",
+        "provider_id": "seller-para",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Market smoke: explicitly choose seller B."
+          }
+        ],
+        "max_tokens": 512,
+        "max_spend": "0.1",
+        "stream": true,
+        "cache": false
+      },
+      "inputUnits": 71,
+      "expectedProviderId": "seller-para",
+      "expectedSeller": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "expectedOutcome": 0,
+      "expectedStatus": "completed",
+      "expectedSelection": "Buyer explicitly names seller B",
+      "estimates": [
+        {
+          "seller": "b",
+          "providerId": "seller-para",
+          "quote": {
+            "input": "60",
+            "cacheRead": "6",
+            "cacheWrite": "75",
+            "output": "40",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.005325",
+          "estimatedDemoUSD": "0.024740"
+        },
+        {
+          "seller": "a",
+          "providerId": "seller-monad",
+          "quote": {
+            "input": "30",
+            "cacheRead": "3",
+            "cacheWrite": "37.5",
+            "output": "80",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.002663",
+          "estimatedDemoUSD": "0.043090"
+        }
+      ],
+      "sameBuyerAndSellerWallet": false
+    },
+    {
+      "name": "auto_short_b",
+      "idempotencyKey": "inferpool-monad-market-v1-auto_short_b",
+      "body": {
+        "model": "mock-reasoner",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Market smoke: short input."
+          }
+        ],
+        "max_tokens": 512,
+        "max_spend": "0.1",
+        "stream": true,
+        "cache": false
+      },
+      "inputUnits": 56,
+      "expectedProviderId": "seller-para",
+      "expectedSeller": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "expectedOutcome": 0,
+      "expectedStatus": "completed",
+      "expectedSelection": "Lowest estimated input plus maximum-output fee among both eligible sellers",
+      "estimates": [
+        {
+          "seller": "b",
+          "providerId": "seller-para",
+          "quote": {
+            "input": "60",
+            "cacheRead": "6",
+            "cacheWrite": "75",
+            "output": "40",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.004200",
+          "estimatedDemoUSD": "0.023840"
+        },
+        {
+          "seller": "a",
+          "providerId": "seller-monad",
+          "quote": {
+            "input": "30",
+            "cacheRead": "3",
+            "cacheWrite": "37.5",
+            "output": "80",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.002100",
+          "estimatedDemoUSD": "0.042640"
+        }
+      ],
+      "sameBuyerAndSellerWallet": false
+    },
+    {
+      "name": "auto_long_a",
+      "idempotencyKey": "inferpool-monad-market-v1-auto_long_a",
+      "body": {
+        "model": "mock-reasoner",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. "
+          }
+        ],
+        "max_tokens": 16,
+        "max_spend": "0.1",
+        "stream": true,
+        "cache": false
+      },
+      "inputUnits": 550,
+      "expectedProviderId": "seller-monad",
+      "expectedSeller": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "expectedOutcome": 2,
+      "expectedStatus": "budget_capped",
+      "expectedSelection": "Lowest estimated input plus maximum-output fee among both eligible sellers",
+      "estimates": [
+        {
+          "seller": "a",
+          "providerId": "seller-monad",
+          "quote": {
+            "input": "30",
+            "cacheRead": "3",
+            "cacheWrite": "37.5",
+            "output": "80",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.020625",
+          "estimatedDemoUSD": "0.017780"
+        },
+        {
+          "seller": "b",
+          "providerId": "seller-para",
+          "quote": {
+            "input": "60",
+            "cacheRead": "6",
+            "cacheWrite": "75",
+            "output": "40",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.041250",
+          "estimatedDemoUSD": "0.033640"
+        }
+      ],
+      "sameBuyerAndSellerWallet": true,
+      "limitExplanation": "This case reaches max_tokens=16. The Router uses BudgetCapped for either the output-token cap or spending cap; this case does not exhaust the 0.1 dUSD budget."
+    }
+  ],
+  "cases": {
+    "explicit_b": {
+      "name": "explicit_b",
+      "idempotencyKey": "inferpool-monad-market-v1-explicit_b",
+      "requestBody": {
+        "model": "mock-reasoner",
+        "provider_id": "seller-para",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Market smoke: explicitly choose seller B."
+          }
+        ],
+        "max_tokens": 512,
+        "max_spend": "0.1",
+        "stream": true,
+        "cache": false
+      },
+      "readinessBeforeSubmission": {
+        "observedAt": "2026-09-05T05:14:49.853Z",
+        "blockNumber": "59820546",
+        "processes": {
+          "a": {
+            "stateEndpoint": "http://127.0.0.1:8793/api/state",
+            "providerId": "seller-monad",
+            "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletMode": "alchemy-session",
+            "modelId": "mock-reasoner",
+            "status": "online",
+            "mode": "normal",
+            "availableSlots": 2,
+            "mock": true
+          },
+          "b": {
+            "stateEndpoint": "http://127.0.0.1:8794/api/state",
+            "providerId": "seller-para",
+            "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletMode": "browser-wallet",
+            "modelId": "mock-reasoner",
+            "status": "online",
+            "mode": "normal",
+            "availableSlots": 2,
+            "mock": true
+          }
+        },
+        "chainQuotes": {
+          "a": {
+            "prices": {
+              "input": "30000000",
+              "cacheRead": "3000000",
+              "cacheWrite": "37500000",
+              "output": "80000000"
+            },
+            "minReserve": "100",
+            "version": "1",
+            "active": true
+          },
+          "b": {
+            "prices": {
+              "input": "60000000",
+              "cacheRead": "6000000",
+              "cacheWrite": "75000000",
+              "output": "40000000"
+            },
+            "minReserve": "100",
+            "version": "1",
+            "active": true
+          }
+        }
+      },
+      "submissionStartedAt": "2026-09-05T05:14:50.315Z",
+      "submissionState": "verified",
+      "requestId": "154422b9-59e6-40ef-9b5f-42164293876d",
+      "providerExecution": {
+        "observedAt": "2026-09-05T05:25:05.380Z",
+        "providerId": "seller-para",
+        "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "walletMode": "browser-wallet",
+        "run": {
+          "requestId": "154422b9-59e6-40ef-9b5f-42164293876d",
+          "mode": "normal",
+          "status": "completed",
+          "startedAt": "2026-09-05T05:15:12.010Z",
+          "outputTokens": 204,
+          "cache": "none",
+          "usage": {
+            "input": 71,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 204
+          },
+          "endedAt": "2026-09-05T05:15:16.168Z"
+        }
+      },
+      "onchainRequestId": "0xdeaf0e2fdcb6ca81f291bbf9e5bd0b1dce44e53ee96d3c2269f349e9ca20338c",
+      "bill": {
+        "id": "154422b9-59e6-40ef-9b5f-42164293876d",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "providerId": "seller-para",
+        "seller": "0xbc81a46f5eee3924aa0b7fd8849ea08351194a75",
+        "model": "mock-reasoner",
+        "budget": "0.100000",
+        "quote": {
+          "input": "60.000000",
+          "cacheRead": "6.000000",
+          "cacheWrite": "75.000000",
+          "output": "40.000000",
+          "minReserve": "0.000100",
+          "version": "1"
+        },
+        "usage": {
+          "input": 71,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 204
+        },
+        "maxTokens": 512,
+        "output": "【模拟推理 / Mock】\n已收到：Market smoke: explicitly choose seller B.\n\n这是独立卖家节点生成的固定演示响应，没有调用真实 AI 模型。\n本次未使用模拟缓存。\n\n平台将按 Unicode 字符单位模拟用量、执行预算控制，并记录本次账单。卖家故障整单推理费为零；买家主动取消按已计量用量结算。\n\n你可以在卖家本地控制台切换故障模式，再发起新请求观察不同结算结果。",
+        "status": "completed",
+        "settlement": "confirmed",
+        "charge": "0.012420",
+        "released": "0.087580",
+        "deadline": 1788585591,
+        "createdAt": 1788585291990,
+        "updatedAt": 1788585323565,
+        "cacheMode": "none",
+        "mock": true,
+        "lockTx": "0x2b633a5805a9d89aebc940f50382d442ee56f796f35922112b86c2ab4d141fcd",
+        "outcome": 0,
+        "reason": "Completed",
+        "settlementTx": "0xbfc98e6b54f87d1505376b79c9cc9bf34aade1c8fedde211159e31793e2152cc",
+        "billConfirmed": true
+      },
+      "receipts": {
+        "reserve": {
+          "transactionHash": "0x2b633a5805a9d89aebc940f50382d442ee56f796f35922112b86c2ab4d141fcd",
+          "blockNumber": "59820582",
+          "receiptStatus": "success",
+          "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+          "gasLimit": "300261",
+          "gasUsed": "300261",
+          "effectiveGasPrice": "102000000000",
+          "monadGasLimitCostWei": "30626622000000000",
+          "explorerUrl": "https://testnet.monadscan.com/tx/0x2b633a5805a9d89aebc940f50382d442ee56f796f35922112b86c2ab4d141fcd",
+          "functionName": "reserve",
+          "args": [
+            "0xdeaf0e2fdcb6ca81f291bbf9e5bd0b1dce44e53ee96d3c2269f349e9ca20338c",
+            "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+            "100000",
+            "1788585591",
+            "1"
+          ]
+        },
+        "settle": {
+          "transactionHash": "0xbfc98e6b54f87d1505376b79c9cc9bf34aade1c8fedde211159e31793e2152cc",
+          "blockNumber": "59820659",
+          "receiptStatus": "success",
+          "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+          "gasLimit": "140439",
+          "gasUsed": "140439",
+          "effectiveGasPrice": "102000000000",
+          "monadGasLimitCostWei": "14324778000000000",
+          "explorerUrl": "https://testnet.monadscan.com/tx/0xbfc98e6b54f87d1505376b79c9cc9bf34aade1c8fedde211159e31793e2152cc",
+          "functionName": "settle",
+          "args": [
+            "0xdeaf0e2fdcb6ca81f291bbf9e5bd0b1dce44e53ee96d3c2269f349e9ca20338c",
+            {
+              "input": "71",
+              "cacheRead": "0",
+              "cacheWrite": "0",
+              "output": "204"
+            },
+            0
+          ]
+        }
+      },
+      "order": {
+        "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "provider": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "12420",
+        "grantId": "1",
+        "deadline": "1788585591",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "60000000",
+          "cacheRead": "6000000",
+          "cacheWrite": "75000000",
+          "output": "40000000"
+        },
+        "usage": {
+          "input": "71",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "204"
+        }
+      },
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59820581",
+          "aEscrowBaseUnits": "10078507",
+          "bEscrowBaseUnits": "9921493",
+          "aEscrowDemoUSD": "10.078507",
+          "bEscrowDemoUSD": "9.921493",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "27690",
+            "locked": "0",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59820582",
+          "aEscrowBaseUnits": "9978507",
+          "bEscrowBaseUnits": "9921493",
+          "aEscrowDemoUSD": "9.978507",
+          "bEscrowDemoUSD": "9.921493",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "27690",
+            "locked": "100000",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59820659",
+          "aEscrowBaseUnits": "10066087",
+          "bEscrowBaseUnits": "9933913",
+          "aEscrowDemoUSD": "10.066087",
+          "bEscrowDemoUSD": "9.933913",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "40110",
+            "locked": "0",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        }
+      },
+      "estimates": [
+        {
+          "seller": "b",
+          "providerId": "seller-para",
+          "quote": {
+            "input": "60",
+            "cacheRead": "6",
+            "cacheWrite": "75",
+            "output": "40",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.005325",
+          "estimatedDemoUSD": "0.024740"
+        },
+        {
+          "seller": "a",
+          "providerId": "seller-monad",
+          "quote": {
+            "input": "30",
+            "cacheRead": "3",
+            "cacheWrite": "37.5",
+            "output": "80",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.002663",
+          "estimatedDemoUSD": "0.043090"
+        }
+      ],
+      "explicitSelection": true,
+      "actualProviderMatchesExpected": true,
+      "sameBuyerAndSellerWallet": false,
+      "crossWalletFeeTransferBaseUnits": "12420",
+      "idempotencyVerified": {
+        "sameRequestId": true,
+        "sameReservationTransaction": true,
+        "sameSettlementTransaction": true,
+        "noSecondInferenceCharge": true
+      },
+      "verifiedAt": "2026-09-05T05:25:05.382Z",
+      "lastObservedBill": {
+        "observedAt": "2026-09-05T05:25:03.942Z",
+        "requestId": "154422b9-59e6-40ef-9b5f-42164293876d",
+        "status": "completed",
+        "settlement": "confirmed",
+        "billConfirmed": true,
+        "providerId": "seller-para",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "seller": "0xbc81a46f5eee3924aa0b7fd8849ea08351194a75",
+        "usage": {
+          "input": 71,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 204
+        },
+        "lockTx": "0x2b633a5805a9d89aebc940f50382d442ee56f796f35922112b86c2ab4d141fcd",
+        "settlementTx": "0xbfc98e6b54f87d1505376b79c9cc9bf34aade1c8fedde211159e31793e2152cc",
+        "deadline": 1788585591
+      }
+    },
+    "auto_short_b": {
+      "name": "auto_short_b",
+      "idempotencyKey": "inferpool-monad-market-v1-auto_short_b",
+      "requestBody": {
+        "model": "mock-reasoner",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Market smoke: short input."
+          }
+        ],
+        "max_tokens": 512,
+        "max_spend": "0.1",
+        "stream": true,
+        "cache": false
+      },
+      "readinessBeforeSubmission": {
+        "observedAt": "2026-09-05T05:15:32.412Z",
+        "blockNumber": "59820688",
+        "processes": {
+          "a": {
+            "stateEndpoint": "http://127.0.0.1:8793/api/state",
+            "providerId": "seller-monad",
+            "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletMode": "alchemy-session",
+            "modelId": "mock-reasoner",
+            "status": "online",
+            "mode": "normal",
+            "availableSlots": 2,
+            "mock": true
+          },
+          "b": {
+            "stateEndpoint": "http://127.0.0.1:8794/api/state",
+            "providerId": "seller-para",
+            "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletMode": "browser-wallet",
+            "modelId": "mock-reasoner",
+            "status": "online",
+            "mode": "normal",
+            "availableSlots": 2,
+            "mock": true
+          }
+        },
+        "chainQuotes": {
+          "a": {
+            "prices": {
+              "input": "30000000",
+              "cacheRead": "3000000",
+              "cacheWrite": "37500000",
+              "output": "80000000"
+            },
+            "minReserve": "100",
+            "version": "1",
+            "active": true
+          },
+          "b": {
+            "prices": {
+              "input": "60000000",
+              "cacheRead": "6000000",
+              "cacheWrite": "75000000",
+              "output": "40000000"
+            },
+            "minReserve": "100",
+            "version": "1",
+            "active": true
+          }
+        }
+      },
+      "submissionStartedAt": "2026-09-05T05:15:33.575Z",
+      "submissionState": "verified",
+      "requestId": "90e4ddb0-bc95-48f5-bb5e-63a31e313b1b",
+      "providerExecution": {
+        "observedAt": "2026-09-05T05:25:06.221Z",
+        "providerId": "seller-para",
+        "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "walletMode": "browser-wallet",
+        "run": {
+          "requestId": "90e4ddb0-bc95-48f5-bb5e-63a31e313b1b",
+          "mode": "normal",
+          "status": "completed",
+          "startedAt": "2026-09-05T05:15:42.953Z",
+          "outputTokens": 189,
+          "cache": "none",
+          "usage": {
+            "input": 56,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 189
+          },
+          "endedAt": "2026-09-05T05:15:46.871Z"
+        }
+      },
+      "onchainRequestId": "0xf2dd6d6f9dc8186d6c0970faa01eaf4bf43065dc8d799e4e9bdf04413615c265",
+      "bill": {
+        "id": "90e4ddb0-bc95-48f5-bb5e-63a31e313b1b",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "providerId": "seller-para",
+        "seller": "0xbc81a46f5eee3924aa0b7fd8849ea08351194a75",
+        "model": "mock-reasoner",
+        "budget": "0.100000",
+        "quote": {
+          "input": "60.000000",
+          "cacheRead": "6.000000",
+          "cacheWrite": "75.000000",
+          "output": "40.000000",
+          "minReserve": "0.000100",
+          "version": "1"
+        },
+        "usage": {
+          "input": 56,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 189
+        },
+        "maxTokens": 512,
+        "output": "【模拟推理 / Mock】\n已收到：Market smoke: short input.\n\n这是独立卖家节点生成的固定演示响应，没有调用真实 AI 模型。\n本次未使用模拟缓存。\n\n平台将按 Unicode 字符单位模拟用量、执行预算控制，并记录本次账单。卖家故障整单推理费为零；买家主动取消按已计量用量结算。\n\n你可以在卖家本地控制台切换故障模式，再发起新请求观察不同结算结果。",
+        "status": "completed",
+        "settlement": "confirmed",
+        "charge": "0.010920",
+        "released": "0.089080",
+        "deadline": 1788585634,
+        "createdAt": 1788585334782,
+        "updatedAt": 1788585366734,
+        "cacheMode": "none",
+        "mock": true,
+        "lockTx": "0x959ad1056cf66dbd84931eee7bc10f3fdb2ce233e644c6b8d1f414e10ad7b6f5",
+        "outcome": 0,
+        "reason": "Completed",
+        "settlementTx": "0xfb983a228dd53680f24a1a94bb743ae94c9798aa2179a495c20f9c0904dadd67",
+        "billConfirmed": true
+      },
+      "receipts": {
+        "reserve": {
+          "transactionHash": "0x959ad1056cf66dbd84931eee7bc10f3fdb2ce233e644c6b8d1f414e10ad7b6f5",
+          "blockNumber": "59820716",
+          "receiptStatus": "success",
+          "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+          "gasLimit": "300261",
+          "gasUsed": "300261",
+          "effectiveGasPrice": "102000000000",
+          "monadGasLimitCostWei": "30626622000000000",
+          "explorerUrl": "https://testnet.monadscan.com/tx/0x959ad1056cf66dbd84931eee7bc10f3fdb2ce233e644c6b8d1f414e10ad7b6f5",
+          "functionName": "reserve",
+          "args": [
+            "0xf2dd6d6f9dc8186d6c0970faa01eaf4bf43065dc8d799e4e9bdf04413615c265",
+            "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+            "100000",
+            "1788585634",
+            "1"
+          ]
+        },
+        "settle": {
+          "transactionHash": "0xfb983a228dd53680f24a1a94bb743ae94c9798aa2179a495c20f9c0904dadd67",
+          "blockNumber": "59820779",
+          "receiptStatus": "success",
+          "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+          "gasLimit": "140439",
+          "gasUsed": "140439",
+          "effectiveGasPrice": "102000000000",
+          "monadGasLimitCostWei": "14324778000000000",
+          "explorerUrl": "https://testnet.monadscan.com/tx/0xfb983a228dd53680f24a1a94bb743ae94c9798aa2179a495c20f9c0904dadd67",
+          "functionName": "settle",
+          "args": [
+            "0xf2dd6d6f9dc8186d6c0970faa01eaf4bf43065dc8d799e4e9bdf04413615c265",
+            {
+              "input": "56",
+              "cacheRead": "0",
+              "cacheWrite": "0",
+              "output": "189"
+            },
+            0
+          ]
+        }
+      },
+      "order": {
+        "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "provider": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "10920",
+        "grantId": "1",
+        "deadline": "1788585634",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "60000000",
+          "cacheRead": "6000000",
+          "cacheWrite": "75000000",
+          "output": "40000000"
+        },
+        "usage": {
+          "input": "56",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "189"
+        }
+      },
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59820715",
+          "aEscrowBaseUnits": "10066087",
+          "bEscrowBaseUnits": "9933913",
+          "aEscrowDemoUSD": "10.066087",
+          "bEscrowDemoUSD": "9.933913",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "40110",
+            "locked": "0",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59820716",
+          "aEscrowBaseUnits": "9966087",
+          "bEscrowBaseUnits": "9933913",
+          "aEscrowDemoUSD": "9.966087",
+          "bEscrowDemoUSD": "9.933913",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "40110",
+            "locked": "100000",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59820779",
+          "aEscrowBaseUnits": "10055167",
+          "bEscrowBaseUnits": "9944833",
+          "aEscrowDemoUSD": "10.055167",
+          "bEscrowDemoUSD": "9.944833",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "51030",
+            "locked": "0",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        }
+      },
+      "estimates": [
+        {
+          "seller": "b",
+          "providerId": "seller-para",
+          "quote": {
+            "input": "60",
+            "cacheRead": "6",
+            "cacheWrite": "75",
+            "output": "40",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.004200",
+          "estimatedDemoUSD": "0.023840"
+        },
+        {
+          "seller": "a",
+          "providerId": "seller-monad",
+          "quote": {
+            "input": "30",
+            "cacheRead": "3",
+            "cacheWrite": "37.5",
+            "output": "80",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.002100",
+          "estimatedDemoUSD": "0.042640"
+        }
+      ],
+      "explicitSelection": false,
+      "actualProviderMatchesExpected": true,
+      "sameBuyerAndSellerWallet": false,
+      "crossWalletFeeTransferBaseUnits": "10920",
+      "idempotencyVerified": {
+        "sameRequestId": true,
+        "sameReservationTransaction": true,
+        "sameSettlementTransaction": true,
+        "noSecondInferenceCharge": true
+      },
+      "verifiedAt": "2026-09-05T05:25:06.225Z",
+      "lastObservedBill": {
+        "observedAt": "2026-09-05T05:25:05.385Z",
+        "requestId": "90e4ddb0-bc95-48f5-bb5e-63a31e313b1b",
+        "status": "completed",
+        "settlement": "confirmed",
+        "billConfirmed": true,
+        "providerId": "seller-para",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "seller": "0xbc81a46f5eee3924aa0b7fd8849ea08351194a75",
+        "usage": {
+          "input": 56,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 189
+        },
+        "lockTx": "0x959ad1056cf66dbd84931eee7bc10f3fdb2ce233e644c6b8d1f414e10ad7b6f5",
+        "settlementTx": "0xfb983a228dd53680f24a1a94bb743ae94c9798aa2179a495c20f9c0904dadd67",
+        "deadline": 1788585634
+      }
+    },
+    "auto_long_a": {
+      "name": "auto_long_a",
+      "idempotencyKey": "inferpool-monad-market-v1-auto_long_a-retry-1",
+      "requestBody": {
+        "model": "mock-reasoner",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. "
+          }
+        ],
+        "max_tokens": 16,
+        "max_spend": "0.1",
+        "stream": true,
+        "cache": false
+      },
+      "originalPlanIdempotencyKey": "inferpool-monad-market-v1-auto_long_a",
+      "retryOfRequestId": "d845d6d1-3d55-44f7-899b-4b631f2c81ed",
+      "retryNumber": 1,
+      "retryEnabledByExplicitFlag": "--retry-lock-failed auto_long_a",
+      "readinessBeforeSubmission": {
+        "observedAt": "2026-09-05T05:25:08.337Z",
+        "blockNumber": "59822558",
+        "processes": {
+          "a": {
+            "stateEndpoint": "http://127.0.0.1:8793/api/state",
+            "providerId": "seller-monad",
+            "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletMode": "alchemy-session",
+            "modelId": "mock-reasoner",
+            "status": "online",
+            "mode": "normal",
+            "availableSlots": 2,
+            "mock": true
+          },
+          "b": {
+            "stateEndpoint": "http://127.0.0.1:8794/api/state",
+            "providerId": "seller-para",
+            "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletMode": "browser-wallet",
+            "modelId": "mock-reasoner",
+            "status": "online",
+            "mode": "normal",
+            "availableSlots": 2,
+            "mock": true
+          }
+        },
+        "chainQuotes": {
+          "a": {
+            "prices": {
+              "input": "30000000",
+              "cacheRead": "3000000",
+              "cacheWrite": "37500000",
+              "output": "80000000"
+            },
+            "minReserve": "100",
+            "version": "1",
+            "active": true
+          },
+          "b": {
+            "prices": {
+              "input": "60000000",
+              "cacheRead": "6000000",
+              "cacheWrite": "75000000",
+              "output": "40000000"
+            },
+            "minReserve": "100",
+            "version": "1",
+            "active": true
+          }
+        }
+      },
+      "submissionStartedAt": "2026-09-05T05:25:09.216Z",
+      "submissionState": "verified",
+      "requestId": "9086ffc7-c914-49c8-999e-339859abb9d9",
+      "lastObservedBill": {
+        "observedAt": "2026-09-05T05:25:20.941Z",
+        "requestId": "9086ffc7-c914-49c8-999e-339859abb9d9",
+        "status": "budget_capped",
+        "settlement": "confirmed",
+        "billConfirmed": true,
+        "providerId": "seller-monad",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "seller": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "usage": {
+          "input": 550,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 16
+        },
+        "lockTx": "0x3414da9224af45f956a5e524795645c91bc3e240c0110a56e848b3a2a9935355",
+        "settlementTx": "0x9d2df6e0f12402ee0e4e2f538c57e0fccfbc4b821e5742c3f11d3253349514d1",
+        "deadline": 1788586210
+      },
+      "providerExecution": {
+        "observedAt": "2026-09-05T05:25:22.307Z",
+        "providerId": "seller-monad",
+        "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "walletMode": "alchemy-session",
+        "run": {
+          "requestId": "9086ffc7-c914-49c8-999e-339859abb9d9",
+          "mode": "normal",
+          "status": "completed",
+          "startedAt": "2026-09-05T05:25:14.919Z",
+          "outputTokens": 16,
+          "cache": "none",
+          "usage": {
+            "input": 550,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 16
+          },
+          "endedAt": "2026-09-05T05:25:15.246Z"
+        }
+      },
+      "onchainRequestId": "0x23f5acc0be06502915ea68f3126b5b05ea6928fe1d6ac01b6eed9071832155fb",
+      "bill": {
+        "id": "9086ffc7-c914-49c8-999e-339859abb9d9",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "providerId": "seller-monad",
+        "seller": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "model": "mock-reasoner",
+        "budget": "0.100000",
+        "quote": {
+          "input": "30.000000",
+          "cacheRead": "3.000000",
+          "cacheWrite": "37.500000",
+          "output": "80.000000",
+          "minReserve": "0.000100",
+          "version": "1"
+        },
+        "usage": {
+          "input": 550,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 16
+        },
+        "maxTokens": 16,
+        "output": "【模拟推理 / Mock】\n已收",
+        "status": "budget_capped",
+        "settlement": "confirmed",
+        "charge": "0.017780",
+        "released": "0.082220",
+        "deadline": 1788586210,
+        "createdAt": 1788585910530,
+        "updatedAt": 1788585920389,
+        "cacheMode": "none",
+        "mock": true,
+        "lockTx": "0x3414da9224af45f956a5e524795645c91bc3e240c0110a56e848b3a2a9935355",
+        "outcome": 2,
+        "reason": "Output token or spending limit reached",
+        "settlementTx": "0x9d2df6e0f12402ee0e4e2f538c57e0fccfbc4b821e5742c3f11d3253349514d1",
+        "billConfirmed": true
+      },
+      "receipts": {
+        "reserve": {
+          "transactionHash": "0x3414da9224af45f956a5e524795645c91bc3e240c0110a56e848b3a2a9935355",
+          "blockNumber": "59822584",
+          "receiptStatus": "success",
+          "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+          "gasLimit": "300261",
+          "gasUsed": "300261",
+          "effectiveGasPrice": "102000000000",
+          "monadGasLimitCostWei": "30626622000000000",
+          "explorerUrl": "https://testnet.monadscan.com/tx/0x3414da9224af45f956a5e524795645c91bc3e240c0110a56e848b3a2a9935355",
+          "functionName": "reserve",
+          "args": [
+            "0x23f5acc0be06502915ea68f3126b5b05ea6928fe1d6ac01b6eed9071832155fb",
+            "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+            "100000",
+            "1788586210",
+            "1"
+          ]
+        },
+        "settle": {
+          "transactionHash": "0x9d2df6e0f12402ee0e4e2f538c57e0fccfbc4b821e5742c3f11d3253349514d1",
+          "blockNumber": "59822600",
+          "receiptStatus": "success",
+          "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+          "gasLimit": "129620",
+          "gasUsed": "129620",
+          "effectiveGasPrice": "102000000000",
+          "monadGasLimitCostWei": "13221240000000000",
+          "explorerUrl": "https://testnet.monadscan.com/tx/0x9d2df6e0f12402ee0e4e2f538c57e0fccfbc4b821e5742c3f11d3253349514d1",
+          "functionName": "settle",
+          "args": [
+            "0x23f5acc0be06502915ea68f3126b5b05ea6928fe1d6ac01b6eed9071832155fb",
+            {
+              "input": "550",
+              "cacheRead": "0",
+              "cacheWrite": "0",
+              "output": "16"
+            },
+            2
+          ]
+        }
+      },
+      "order": {
+        "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "100000",
+        "charged": "17780",
+        "grantId": "1",
+        "deadline": "1788586210",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 2,
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "usage": {
+          "input": "550",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "16"
+        }
+      },
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59822583",
+          "aEscrowBaseUnits": "10055167",
+          "bEscrowBaseUnits": "9944833",
+          "aEscrowDemoUSD": "10.055167",
+          "bEscrowDemoUSD": "9.944833",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "51030",
+            "locked": "0",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59822584",
+          "aEscrowBaseUnits": "9955167",
+          "bEscrowBaseUnits": "9944833",
+          "aEscrowDemoUSD": "9.955167",
+          "bEscrowDemoUSD": "9.944833",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "51030",
+            "locked": "100000",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59822600",
+          "aEscrowBaseUnits": "10055167",
+          "bEscrowBaseUnits": "9944833",
+          "aEscrowDemoUSD": "10.055167",
+          "bEscrowDemoUSD": "9.944833",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "10000000",
+            "spent": "68810",
+            "locked": "0",
+            "expiresAt": "1788666281",
+            "revoked": false
+          }
+        }
+      },
+      "estimates": [
+        {
+          "seller": "a",
+          "providerId": "seller-monad",
+          "quote": {
+            "input": "30",
+            "cacheRead": "3",
+            "cacheWrite": "37.5",
+            "output": "80",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.020625",
+          "estimatedDemoUSD": "0.017780"
+        },
+        {
+          "seller": "b",
+          "providerId": "seller-para",
+          "quote": {
+            "input": "60",
+            "cacheRead": "6",
+            "cacheWrite": "75",
+            "output": "40",
+            "minReserve": "0.0001"
+          },
+          "inputAdmissionDemoUSD": "0.041250",
+          "estimatedDemoUSD": "0.033640"
+        }
+      ],
+      "explicitSelection": false,
+      "actualProviderMatchesExpected": true,
+      "sameBuyerAndSellerWallet": true,
+      "crossWalletFeeTransferBaseUnits": "0",
+      "idempotencyVerified": {
+        "sameRequestId": true,
+        "sameReservationTransaction": true,
+        "sameSettlementTransaction": true,
+        "noSecondInferenceCharge": true
+      },
+      "verifiedAt": "2026-09-05T05:25:22.309Z"
+    }
+  },
+  "scope": "Three real authenticated HTTP API requests routed through two independently running mock Providers, using two different seller wallets and live Monad testnet quotes. Explicit-B and auto-short-B transfer fees from A to B. Auto-long-A is a SAME-wallet buyer/seller case; it proves selection and accounting, not independent buyer/seller ownership.",
+  "metering": "Unicode code points in serialized messages and output are simulated token units; no real model or real tokenizer is attested.",
+  "matchingFormula": "ceil((inputPriceMicroUSD * mockInputUnits + outputPriceMicroUSD * max_tokens) / 1000000), using chain quotes; cache is disabled and both providers must be in normal mode.",
+  "quoteBPublication": {
+    "transactionHash": "0x8519952dd0ca072e121e76969e85207f67fbc2a4814127bc555fc4862689d612",
+    "receiptStatus": "success",
+    "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+    "to": "0x6F1b725DD3588cb5c8C3f72F614E80ebB2d82568",
+    "blockNumber": "59819274",
+    "functionName": "upsertQuote",
+    "args": [
+      "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+      {
+        "input": "60000000",
+        "cacheRead": "6000000",
+        "cacheWrite": "75000000",
+        "output": "40000000"
+      },
+      "100",
+      true
+    ],
+    "valueWei": "0",
+    "gasLimit": "220113",
+    "gasUsed": "220113",
+    "effectiveGasPrice": "102000000000",
+    "monadGasLimitCostWei": "22451526000000000",
+    "quoteBefore": {
+      "prices": {
+        "input": "0",
+        "cacheRead": "0",
+        "cacheWrite": "0",
+        "output": "0"
+      },
+      "minReserve": "0",
+      "version": "0",
+      "active": false
+    },
+    "quoteAtPublication": {
+      "prices": {
+        "input": "60000000",
+        "cacheRead": "6000000",
+        "cacheWrite": "75000000",
+        "output": "40000000"
+      },
+      "minReserve": "100",
+      "version": "1",
+      "active": true
+    },
+    "currentQuote": {
+      "prices": {
+        "input": "60000000",
+        "cacheRead": "6000000",
+        "cacheWrite": "75000000",
+        "output": "40000000"
+      },
+      "minReserve": "100",
+      "version": "1",
+      "active": true
+    },
+    "explorerUrl": "https://testnet.monadscan.com/tx/0x8519952dd0ca072e121e76969e85207f67fbc2a4814127bc555fc4862689d612",
+    "checkedThroughReadOnlyRpc": true,
+    "verifiedAt": "2026-09-05T05:11:18.813Z"
+  },
+  "status": "market_requests_verified",
+  "updatedAt": "2026-09-05T05:27:58.299Z",
+  "latestReadiness": {
+    "observedAt": "2026-09-05T05:25:00.575Z",
+    "blockNumber": "59822537",
+    "processes": {
+      "a": {
+        "stateEndpoint": "http://127.0.0.1:8793/api/state",
+        "providerId": "seller-monad",
+        "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "walletMode": "alchemy-session",
+        "modelId": "mock-reasoner",
+        "status": "online",
+        "mode": "normal",
+        "availableSlots": 2,
+        "mock": true
+      },
+      "b": {
+        "stateEndpoint": "http://127.0.0.1:8794/api/state",
+        "providerId": "seller-para",
+        "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "walletMode": "browser-wallet",
+        "modelId": "mock-reasoner",
+        "status": "online",
+        "mode": "normal",
+        "availableSlots": 2,
+        "mock": true
+      }
+    },
+    "chainQuotes": {
+      "a": {
+        "prices": {
+          "input": "30000000",
+          "cacheRead": "3000000",
+          "cacheWrite": "37500000",
+          "output": "80000000"
+        },
+        "minReserve": "100",
+        "version": "1",
+        "active": true
+      },
+      "b": {
+        "prices": {
+          "input": "60000000",
+          "cacheRead": "6000000",
+          "cacheWrite": "75000000",
+          "output": "40000000"
+        },
+        "minReserve": "100",
+        "version": "1",
+        "active": true
+      }
+    }
+  },
+  "authentication": {
+    "buyer": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "challengeEndpoint": "/auth/challenge",
+    "verificationEndpoint": "/auth/verify",
+    "signatureVerifiedByRouter": true,
+    "verifiedAt": "2026-09-05T05:25:02.474Z"
+  },
+  "temporaryApiKey": {
+    "created": true,
+    "revoked": true,
+    "expiresAt": 1788666281000,
+    "rejectedAfterRevocation": true,
+    "revokedAt": "2026-09-05T05:25:22.316Z"
+  },
+  "lastRunStoppedAt": "2026-09-05T05:19:45.266Z",
+  "failedAttempts": [
+    {
+      "caseName": "auto_long_a",
+      "originalPlanIdempotencyKey": "inferpool-monad-market-v1-auto_long_a",
+      "attempt": {
+        "name": "auto_long_a",
+        "idempotencyKey": "inferpool-monad-market-v1-auto_long_a",
+        "requestBody": {
+          "model": "mock-reasoner",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. Long input routing probe. "
+            }
+          ],
+          "max_tokens": 16,
+          "max_spend": "0.1",
+          "stream": true,
+          "cache": false
+        },
+        "readinessBeforeSubmission": {
+          "observedAt": "2026-09-05T05:16:20.389Z",
+          "blockNumber": "59820845",
+          "processes": {
+            "a": {
+              "stateEndpoint": "http://127.0.0.1:8793/api/state",
+              "providerId": "seller-monad",
+              "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+              "walletMode": "alchemy-session",
+              "modelId": "mock-reasoner",
+              "status": "online",
+              "mode": "normal",
+              "availableSlots": 2,
+              "mock": true
+            },
+            "b": {
+              "stateEndpoint": "http://127.0.0.1:8794/api/state",
+              "providerId": "seller-para",
+              "wallet": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+              "walletMode": "browser-wallet",
+              "modelId": "mock-reasoner",
+              "status": "online",
+              "mode": "normal",
+              "availableSlots": 2,
+              "mock": true
+            }
+          },
+          "chainQuotes": {
+            "a": {
+              "prices": {
+                "input": "30000000",
+                "cacheRead": "3000000",
+                "cacheWrite": "37500000",
+                "output": "80000000"
+              },
+              "minReserve": "100",
+              "version": "1",
+              "active": true
+            },
+            "b": {
+              "prices": {
+                "input": "60000000",
+                "cacheRead": "6000000",
+                "cacheWrite": "75000000",
+                "output": "40000000"
+              },
+              "minReserve": "100",
+              "version": "1",
+              "active": true
+            }
+          }
+        },
+        "submissionStartedAt": "2026-09-05T05:16:27.994Z",
+        "submissionState": "known_request",
+        "requestId": "d845d6d1-3d55-44f7-899b-4b631f2c81ed",
+        "lastObservedBill": {
+          "observedAt": "2026-09-05T05:20:27.882Z",
+          "source": "read-only local Router ledger after authenticated polling timed out",
+          "requestId": "d845d6d1-3d55-44f7-899b-4b631f2c81ed",
+          "status": "reservation_unknown",
+          "settlement": "failed",
+          "billConfirmed": false,
+          "providerId": "seller-monad",
+          "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "seller": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "usage": {
+            "input": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0
+          },
+          "deadline": 1788585689
+        },
+        "interruption": {
+          "reason": "Alchemy invocation returned no transaction reference; Router retained reservation_unknown and did not dispatch inference",
+          "replacementSubmitted": false,
+          "chainRead": {
+            "blockNumber": "59821540",
+            "blockTimestamp": "1788585594",
+            "orderState": 0,
+            "pendingNonce": 34,
+            "latestNonce": 34
+          },
+          "limitation": "An absent order at this read does not rule out a late transaction before the original deadline. This case has not passed."
+        },
+        "expiredFailureProof": {
+          "requestId": "d845d6d1-3d55-44f7-899b-4b631f2c81ed",
+          "status": "lock_failed",
+          "settlement": "unsubmitted",
+          "deadline": 1788585689,
+          "usage": {
+            "input": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0
+          },
+          "charge": "0.000000",
+          "blockNumber": "59822378",
+          "blockTimestamp": "1788585850",
+          "onchainOrderState": 0,
+          "pendingNonce": 34,
+          "latestNonce": 34,
+          "originalRequestCannotReserveAfterDeadline": true,
+          "verifiedAt": "2026-09-05T05:24:11.989Z"
+        }
+      },
+      "finalRouterBill": {
+        "id": "d845d6d1-3d55-44f7-899b-4b631f2c81ed",
+        "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "providerId": "seller-monad",
+        "seller": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "model": "mock-reasoner",
+        "budget": "0.100000",
+        "quote": {
+          "input": "30.000000",
+          "cacheRead": "3.000000",
+          "cacheWrite": "37.500000",
+          "output": "80.000000",
+          "minReserve": "0.000100",
+          "version": "1"
+        },
+        "usage": {
+          "input": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0
+        },
+        "maxTokens": 16,
+        "output": "",
+        "status": "lock_failed",
+        "settlement": "unsubmitted",
+        "charge": "0.000000",
+        "released": "0.100000",
+        "deadline": 1788585689,
+        "createdAt": 1788585389342,
+        "updatedAt": 1788585695936,
+        "cacheMode": "none",
+        "mock": true,
+        "reservationUncertain": false,
+        "reason": "Reservation was not confirmed and no request was sent: Alchemy invocation ended without a transaction reference. Reservation status is uncertain; reconcile the chain before retrying.",
+        "billConfirmed": false
+      },
+      "proof": {
+        "blockNumber": "59822557",
+        "bill": {
+          "id": "d845d6d1-3d55-44f7-899b-4b631f2c81ed",
+          "buyer": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "providerId": "seller-monad",
+          "seller": "0xac801eec099c65a605b809b98a09a62674614a08",
+          "model": "mock-reasoner",
+          "budget": "0.100000",
+          "quote": {
+            "input": "30.000000",
+            "cacheRead": "3.000000",
+            "cacheWrite": "37.500000",
+            "output": "80.000000",
+            "minReserve": "0.000100",
+            "version": "1"
+          },
+          "usage": {
+            "input": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0
+          },
+          "maxTokens": 16,
+          "output": "",
+          "status": "lock_failed",
+          "settlement": "unsubmitted",
+          "charge": "0.000000",
+          "released": "0.100000",
+          "deadline": 1788585689,
+          "createdAt": 1788585389342,
+          "updatedAt": 1788585695936,
+          "cacheMode": "none",
+          "mock": true,
+          "reservationUncertain": false,
+          "reason": "Reservation was not confirmed and no request was sent: Alchemy invocation ended without a transaction reference. Reservation status is uncertain; reconcile the chain before retrying.",
+          "billConfirmed": false
+        },
+        "order": {
+          "buyer": "0x0000000000000000000000000000000000000000",
+          "provider": "0x0000000000000000000000000000000000000000",
+          "modelId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "reserved": "0",
+          "charged": "0",
+          "grantId": "0",
+          "deadline": "0",
+          "quoteVersion": "0",
+          "state": 0,
+          "outcome": 0,
+          "prices": {
+            "input": "0",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "0"
+          },
+          "usage": {
+            "input": "0",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "0"
+          }
+        },
+        "blockTimestamp": "1788585905",
+        "pendingNonce": 34,
+        "latestNonce": 34,
+        "nowSeconds": 1788585906
+      },
+      "retryIdempotencyKey": "inferpool-monad-market-v1-auto_long_a-retry-1",
+      "chargedDemoUSD": "0.000000",
+      "noInferenceDispatched": true,
+      "originalDeadlineExpired": true,
+      "recordedAt": "2026-09-05T05:25:06.753Z"
+    }
+  ],
+  "aggregate": {
+    "count": 3,
+    "totalBuyerAuthorizationSpentDemoUSD": "0.041120",
+    "crossWalletAtoBDemoUSD": "0.023340",
+    "selfTradeFeeCreditedBackToADemoUSD": "0.017780",
+    "aEscrowBeforeDemoUSD": "10.078507",
+    "aEscrowAfterDemoUSD": "10.055167",
+    "bEscrowBeforeDemoUSD": "9.921493",
+    "bEscrowAfterDemoUSD": "9.944833",
+    "buyerGrantSpentBeforeBaseUnits": "27690",
+    "buyerGrantSpentAfterBaseUnits": "68810",
+    "buyerGrantLockedBaseUnits": "0"
+  },
+  "acceptance": {
+    "twoIndependentSellerWallets": true,
+    "twoDistinctProviderProcessesObservedOnline": true,
+    "twoDifferentChainQuotes": true,
+    "explicitSellerBSettled": true,
+    "autoShortSelectedB": true,
+    "autoLongSelectedA": true,
+    "crossWalletSettlementVerified": true,
+    "allThreeReceiptOrderAndBalanceChecksPassed": true,
+    "allInferenceAndMeteringRemainMock": true
+  },
+  "verifiedAt": "2026-09-05T05:25:22.310Z",
+  "webManualOverride": {
+    "requestId": "69a28714-618a-4d8b-99c5-620cba33e728",
+    "onchainRequestId": "0xf011b35113d49579ec5be3236e42327c6e57c6a265d3ba75344fe05e3571e98c",
+    "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+    "seller": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+    "providerId": "seller-monad",
+    "operatorObserved": {
+      "source": "Chrome browser DOM and Para signing flow observed by the operator; this verification script does not control or read browser credentials",
+      "selectedProviderId": "seller-monad",
+      "bothSellersOnline": true,
+      "maxTokens": 512,
+      "cacheEnabled": false,
+      "serializedMockInputUnits": 54
+    },
+    "selectionProof": {
+      "automaticEstimateADemoUSD": "0.042580",
+      "automaticEstimateBDemoUSD": "0.023720",
+      "expectedAutomaticProviderId": "seller-para",
+      "actualProviderId": "seller-monad",
+      "explicitSelectionOverridesCheaperAutomaticCandidate": true,
+      "chainQuotesBeforeReservation": {
+        "a": {
+          "prices": {
+            "input": "30000000",
+            "cacheRead": "3000000",
+            "cacheWrite": "37500000",
+            "output": "80000000"
+          },
+          "minReserve": "100",
+          "version": "1",
+          "active": true
+        },
+        "b": {
+          "prices": {
+            "input": "60000000",
+            "cacheRead": "6000000",
+            "cacheWrite": "75000000",
+            "output": "40000000"
+          },
+          "minReserve": "100",
+          "version": "1",
+          "active": true
+        }
+      },
+      "limitation": "The browser operator observed explicit selection and both online sellers. RPC independently verifies prices and the chosen seller; the contract itself does not record whether selection was manual or automatic."
+    },
+    "bill": {
+      "requestId": "69a28714-618a-4d8b-99c5-620cba33e728",
+      "status": "completed",
+      "settlement": "confirmed",
+      "outcome": 0,
+      "budget": "0.100000",
+      "charge": "0.016580",
+      "released": "0.083420",
+      "usage": {
+        "input": 54,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 187
+      },
+      "mock": true,
+      "cacheMode": "none"
+    },
+    "order": {
+      "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+      "reserved": "100000",
+      "charged": "16580",
+      "grantId": "1",
+      "deadline": "1788586262",
+      "quoteVersion": "1",
+      "state": 2,
+      "outcome": 0,
+      "prices": {
+        "input": "30000000",
+        "cacheRead": "3000000",
+        "cacheWrite": "37500000",
+        "output": "80000000"
+      },
+      "usage": {
+        "input": "54",
+        "cacheRead": "0",
+        "cacheWrite": "0",
+        "output": "187"
+      }
+    },
+    "receipts": {
+      "reserve": {
+        "transactionHash": "0x9903ae51b9a7a40f590f489942da77c492fb6c8feb11373256dcaf4bdfd90e58",
+        "blockNumber": "59822750",
+        "receiptStatus": "success",
+        "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+        "gasLimit": "300261",
+        "gasUsed": "300261",
+        "effectiveGasPrice": "102000000000",
+        "monadGasLimitCostWei": "30626622000000000",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x9903ae51b9a7a40f590f489942da77c492fb6c8feb11373256dcaf4bdfd90e58",
+        "functionName": "reserve",
+        "args": [
+          "0xf011b35113d49579ec5be3236e42327c6e57c6a265d3ba75344fe05e3571e98c",
+          "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "100000",
+          "1788586262",
+          "1"
+        ]
+      },
+      "settle": {
+        "transactionHash": "0x2bdb839417b6ac90d78d42d910d3e8bbaad915c41e480dffbb7a3cc721fb3754",
+        "blockNumber": "59822780",
+        "receiptStatus": "success",
+        "from": "0xac801eec099c65a605b809b98a09a62674614a08",
+        "to": "0x6f1b725dd3588cb5c8c3f72f614e80ebb2d82568",
+        "gasLimit": "140439",
+        "gasUsed": "140439",
+        "effectiveGasPrice": "102000000000",
+        "monadGasLimitCostWei": "14324778000000000",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x2bdb839417b6ac90d78d42d910d3e8bbaad915c41e480dffbb7a3cc721fb3754",
+        "functionName": "settle",
+        "args": [
+          "0xf011b35113d49579ec5be3236e42327c6e57c6a265d3ba75344fe05e3571e98c",
+          {
+            "input": "54",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "187"
+          },
+          0
+        ]
+      }
+    },
+    "snapshots": {
+      "beforeReserve": {
+        "blockNumber": "59822749",
+        "buyerEscrowBaseUnits": "9944833",
+        "sellerEscrowBaseUnits": "10055167",
+        "buyerEscrowDemoUSD": "9.944833",
+        "sellerEscrowDemoUSD": "10.055167",
+        "grant": {
+          "totalLimit": "5000000",
+          "spent": "78507",
+          "locked": "0",
+          "expiresAt": "1788669610",
+          "revoked": false
+        }
+      },
+      "afterReserve": {
+        "blockNumber": "59822750",
+        "buyerEscrowBaseUnits": "9844833",
+        "sellerEscrowBaseUnits": "10055167",
+        "buyerEscrowDemoUSD": "9.844833",
+        "sellerEscrowDemoUSD": "10.055167",
+        "grant": {
+          "totalLimit": "5000000",
+          "spent": "78507",
+          "locked": "100000",
+          "expiresAt": "1788669610",
+          "revoked": false
+        }
+      },
+      "afterSettle": {
+        "blockNumber": "59822780",
+        "buyerEscrowBaseUnits": "9928253",
+        "sellerEscrowBaseUnits": "10071747",
+        "buyerEscrowDemoUSD": "9.928253",
+        "sellerEscrowDemoUSD": "10.071747",
+        "grant": {
+          "totalLimit": "5000000",
+          "spent": "95087",
+          "locked": "0",
+          "expiresAt": "1788669610",
+          "revoked": false
+        }
+      }
+    },
+    "crossWalletBtoADemoUSD": "0.016580",
+    "providerExecution": {
+      "observedAt": "2026-09-05T05:27:58.299Z",
+      "providerId": "seller-monad",
+      "wallet": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "walletMode": "alchemy-session",
+      "run": {
+        "requestId": "69a28714-618a-4d8b-99c5-620cba33e728",
+        "mode": "normal",
+        "status": "completed",
+        "startedAt": "2026-09-05T05:26:06.948Z",
+        "outputTokens": 187,
+        "cache": "none",
+        "usage": {
+          "input": 54,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 187
+        },
+        "endedAt": "2026-09-05T05:26:10.768Z"
+      }
+    },
+    "separateFromThreeCaseApiAggregate": true,
+    "verifiedAt": "2026-09-05T05:27:58.299Z"
+  }
+}

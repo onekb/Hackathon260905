@@ -2,14 +2,111 @@ import { access, readFile, readdir, realpath } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { delimiter, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { sign as signChallenge } from 'node:crypto';
+import { randomUUID, sign as signChallenge } from 'node:crypto';
 import { getAddress, verifyMessage, type Hex, type PrivateKeyAccount } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import type { ProviderConfig } from './config.js';
 
 /** Only authentication signing is exposed; no transaction or private-key API. */
-export type ProviderAccount = Pick<PrivateKeyAccount, 'address' | 'signMessage'>;
+export type ProviderAccount = Pick<PrivateKeyAccount, 'address' | 'signMessage'> & { cancelPendingSignature?: (reason: string) => void };
 export class ProviderSigningError extends Error {}
+
+export function providerChallenge(message: unknown, routerUrl: string, now = Date.now()): { message: string; nonce: string; expiresAt: number } {
+  if (typeof message !== 'string' || message.length > 1024) throw new ProviderSigningError('网页钱包仅签署精确的 InferPool provider 身份挑战。');
+  const lines = message.split('\n');
+  const nonce = lines[2]?.match(/^Nonce: ([a-f0-9]{48})$/)?.[1];
+  const expiry = lines[3]?.match(/^Expires: ([0-9]{13})$/)?.[1];
+  const expiresAt = Number(expiry);
+  if (lines.length !== 5 || lines[0] !== 'InferPool provider authentication' || lines[1] !== `Domain: ${new URL(routerUrl).host}` || !nonce || !expiry || !Number.isSafeInteger(expiresAt) || expiresAt <= now || expiresAt > now + 300_000 || lines[4] !== 'This signature authenticates this session only. It does not authorize token transfers.') throw new ProviderSigningError('卖家身份挑战的用途、域名、格式或有效期不匹配。');
+  return { message, nonce, expiresAt };
+}
+
+export type BrowserChallenge = { requestId: string; message: string; expiresAt: number };
+type PendingBrowserChallenge = BrowserChallenge & { deadline: number; resolve: (signature: Hex) => void; reject: (reason: Error) => void; timer: ReturnType<typeof setTimeout> };
+
+/** A one-handshake bridge, never a general message-signing endpoint. */
+export class BrowserWalletBridge {
+  readonly account: ProviderAccount;
+  private pending?: PendingBrowserChallenge;
+  private armed = false;
+  private state: 'waiting' | 'ready' | 'signing' | 'signed' = 'waiting';
+  private error: string | null = null;
+  private readonly nonces = new Map<string, number>();
+  private readonly timeoutMs: number;
+
+  constructor(readonly config: Pick<ProviderConfig, 'browserWallet' | 'router'>, options: { timeoutMs?: number } = {}) {
+    if (!config.browserWallet) throw new ProviderSigningError('网页钱包地址未配置。');
+    this.timeoutMs = Math.min(12_000, Math.max(1, options.timeoutMs ?? 12_000));
+    this.account = {
+      address: getAddress(config.browserWallet),
+      signMessage: async ({ message }) => this.request(message),
+      cancelPendingSignature: reason => this.cancel(reason),
+    };
+  }
+
+  snapshot() { return { status: this.state, error: this.error }; }
+
+  prepare(wallet: unknown): void {
+    if (typeof wallet !== 'string' || wallet.toLowerCase() !== this.account.address.toLowerCase()) throw new ProviderSigningError('网页钱包地址与节点配置不匹配，请切换到指定钱包。');
+    this.cancel('前一次网页钱包握手已取消。');
+    this.armed = true; this.state = 'ready'; this.error = null;
+  }
+
+  cancel(reason = '网页钱包连接已结束，请重新点击连接网页钱包。'): void {
+    this.armed = false; this.state = 'waiting'; this.error = reason;
+    const pending = this.pending;
+    this.pending = undefined;
+    if (pending) { clearTimeout(pending.timer); pending.reject(new ProviderSigningError(reason)); }
+  }
+
+  private async request(message: unknown): Promise<Hex> {
+    if (this.pending) this.cancel('收到新的挑战，前一次待签请求已取消；请重新连接网页钱包。');
+    if (!this.armed) throw new ProviderSigningError('请先在网页钱包点击准备好签名；每次连接只允许一次身份握手。');
+    this.armed = false;
+    let parsed: ReturnType<typeof providerChallenge>;
+    try {
+      parsed = providerChallenge(message, this.config.router);
+      for (const [nonce, expires] of this.nonces) if (expires <= Date.now()) this.nonces.delete(nonce);
+      if (this.nonces.has(parsed.nonce)) throw new ProviderSigningError('卖家身份挑战已使用，拒绝重放。');
+      this.nonces.set(parsed.nonce, parsed.expiresAt);
+    } catch (error) {
+      this.state = 'waiting'; this.error = error instanceof Error ? error.message : '身份挑战无效。';
+      throw error;
+    }
+    this.state = 'signing'; this.error = null;
+    return new Promise<Hex>((resolve, reject) => {
+      const deadline = Math.min(parsed.expiresAt, Date.now() + this.timeoutMs);
+      const timer = setTimeout(() => this.cancel('网页钱包签名超时，请重新点击连接并准备好签名。'), Math.max(1, deadline - Date.now()));
+      timer.unref();
+      this.pending = { requestId: randomUUID(), message: parsed.message, expiresAt: parsed.expiresAt, deadline, resolve, reject, timer };
+    });
+  }
+
+  challenge(): BrowserChallenge | null {
+    const pending = this.pending;
+    if (!pending) return null;
+    if (pending.deadline <= Date.now()) { this.cancel('网页钱包签名请求已过期。'); return null; }
+    return { requestId: pending.requestId, message: pending.message, expiresAt: pending.expiresAt };
+  }
+
+  async submit(requestId: unknown, signature: unknown): Promise<void> {
+    const pending = this.pending;
+    if (!pending || requestId !== pending.requestId || pending.deadline <= Date.now()) throw new ProviderSigningError('签名请求不存在、已过期或已使用。');
+    let valid = false;
+    if (typeof signature === 'string' && /^0x[0-9a-fA-F]{130}$/.test(signature)) {
+      try { valid = await verifyMessage({ address: this.account.address, message: pending.message, signature: signature as Hex }); } catch { /* Fail closed on malformed signatures. */ }
+    }
+    if (this.pending !== pending || pending.deadline <= Date.now()) throw new ProviderSigningError('签名请求已过期或被新的连接替换。');
+    if (!valid) { this.cancel('网页签名与指定卖家钱包不匹配，节点没有上线。'); throw new ProviderSigningError('网页签名与指定卖家钱包不匹配。'); }
+    clearTimeout(pending.timer); this.pending = undefined; this.state = 'signed'; this.error = null;
+    pending.resolve(signature as Hex);
+  }
+
+  fail(requestId: unknown): void {
+    if (requestId !== undefined && requestId !== this.pending?.requestId) throw new ProviderSigningError('该签名请求已过期或被替换。');
+    this.cancel('网页钱包未完成签名，请检查钱包页面并重新连接。');
+  }
+}
 
 type Session = {
   sessionId: string;
@@ -170,7 +267,8 @@ export async function createAlchemyBuyerSessionAccount(options: AdapterOptions &
 
 export async function createProviderAccount(config: ProviderConfig, env: NodeJS.ProcessEnv): Promise<ProviderAccount> {
   const privateKey = env.PROVIDER_PRIVATE_KEY;
-  if (Number(Boolean(privateKey)) + Number(config.ephemeral) + Number(config.alchemySession) !== 1) throw new ProviderSigningError('请选择一种钱包身份：--alchemy-session、--ephemeral-wallet 或 PROVIDER_PRIVATE_KEY；不能同时设置。');
+  if (Number(Boolean(privateKey)) + Number(config.ephemeral) + Number(config.alchemySession) + Number(Boolean(config.browserWallet)) !== 1) throw new ProviderSigningError('请选择一种钱包身份：网页钱包、--alchemy-session、--ephemeral-wallet 或 PROVIDER_PRIVATE_KEY；不能同时设置。');
+  if (config.browserWallet) throw new ProviderSigningError('网页钱包身份需要通过本地控制台的签名桥创建，不读取私钥。');
   if (config.alchemySession) return createAlchemySessionAccount({ env });
   if (privateKey && !/^0x[0-9a-fA-F]{64}$/.test(privateKey)) throw new ProviderSigningError('PROVIDER_PRIVATE_KEY 格式无效，应为 0x 开头的 32 字节私钥。');
   try { return privateKeyToAccount((privateKey ?? generatePrivateKey()) as Hex); }

@@ -82,7 +82,7 @@ npm run dev:router
 npm run dev:provider -- --alchemy-session --router ws://127.0.0.1:8788/provider --id seller-monad --name "Monad 卖家" --port 8793 --min-reserve 0.0001
 ```
 
-Alchemy session、`PROVIDER_PRIVATE_KEY`、临时钱包三者互斥。控制台地址为 `http://127.0.0.1:8793`。只连接到平台还不代表有订单成交；需要检查 `/health`、`/v1/models` 和后续链上账单。
+Alchemy session、`PROVIDER_PRIVATE_KEY`、临时钱包和浏览器钱包四种身份互斥；浏览器身份的源码、自动检查及首次实际认证/主动下线已通过，持续状态见进度。A 控制台地址为 `http://127.0.0.1:8793`，B 的配置和启动步骤见 [Provider README](../provider/README.md#使用-para-网页钱包)。只连接到平台还不代表有订单成交；需要检查 `/health`、`/v1/models` 和后续链上账单。
 
 ### 增加第二卖家时保留 Router 会话
 
@@ -90,11 +90,60 @@ Alchemy session、`PROVIDER_PRIVATE_KEY`、临时钱包三者互斥。控制台�
 
 `ALCHEMY_CONFIG` 的值是**配置文件路径**，例如另一个目录中的 `.local/alchemy-seller-b/config.json`，不是目录本身。session 固定存放在该文件父目录的 `wallet-session.json`；因此只在同一目录换配置文件名不能隔离 session。仅让第二个 Provider 进程继承这个独立路径，不要全局 export 影响 Router，也不要复制旧会话作为“新钱包”。
 
-目录隔离仍不保证产生第二个 EOA：当前 CLI 没有钱包 ID 选择参数；钱包创建和会话批准在 [Agent Wallets Dashboard 流程](https://www.alchemy.com/docs/agent-wallets) 完成。需要用户在 Dashboard 创建/选择并批准目标钱包，再读取返回地址确认它不同于现有卖家；当前账户是否能直接选另一个 EOA 尚未实测，不能只凭新实例名称作保证。
+目录隔离仍不保证产生第二个 EOA：当前 CLI 没有钱包 ID 选择参数；钱包创建和会话批准在 [Agent Wallets Dashboard 流程](https://www.alchemy.com/docs/agent-wallets) 完成。若走这一路径，必须实际获得目标钱包批准并读取不同地址。主 agent 后续实测当前 Dashboard 只显示既有一个 EVM 钱包，没有可见新增/切换入口，因此本轮改用下面的 Para 浏览器身份路径；不据此断言所有账户或未来 Dashboard 都不支持多钱包。
 
 本机 `@alchemy/cli@0.24.0` 的证据位于包内 `dist/`：`index.js` 的 `registerWallets`（约 3575 行）列出 connect 参数，`runSessionConnect`（约 3030 行）先撤销旧 session 再清除并创建新请求；`chunk-JWQ557LG.js` 的 `configPath/configDir`（约 114 行）决定文件路径及父目录，`chunk-3KKE4OWO.js` 的 `sessionPath`（约 1714 行）决定 session 文件。升级 CLI 后需重新核对，不能沿用这些内部模块位置。
 
-第二卖家验收需同时满足：不同钱包地址、自己的链上报价、独立进程与认证连接、能被单独指定请求。换 `provider_id`、实例名称或启动另一个进程都不够。本次仅做只读调查，没有切换钱包、重连/撤销 session、发起交易或新增第二卖家。当前先推进 Para 独立买家与已有卖家的流程；买卖双方不同不能称为“双卖家”。
+第二卖家验收需同时满足：不同钱包地址、自己的链上报价、独立进程与认证连接、能被单独指定请求。换 `provider_id`、实例名称或启动另一个进程都不够。上述 Alchemy 调查未切换钱包、重连/撤销 session 或发起交易；此前独立 Para 买家流程已通过，仍不能单凭买家存在宣称“双卖家”。
+
+本轮采用 [D13](requirements-and-decisions.md#d13--浏览器钱包为独立-provider-签署认证挑战) 的浏览器钱包模式，已完成真实首次认证和主动下线检查：`--browser-wallet <address>` 与 `--wallet-ui <origin>` 绑定钱包和前端来源，本地控制台与 `/provider-connect` 以严格 origin/source 的 `postMessage` 传递 Provider 认证挑战，由 Para 签一次受限消息。此过程不导出私钥、不新增 Alchemy 会话或交易权限，本地 HTTP 继续要求 CSRF 与同源，不增加 CORS。节点初始离线，用户在弹窗准备好签名后才连接；每次只允许一次握手，最长 12 秒。控制台/弹窗需保留，断开后重新从控制台准备，不自动重连。
+
+现有 Para 钱包兼任 B，现有 Alchemy A 作为测试买家；B 已在 Chrome 独立发布 `60 / 6 / 75 / 40` 报价，A 保持 `30 / 3 / 37.5 / 80` dUSD / 百万模拟单位。报价发布与节点认证分开；B 报价和主动下线→新弹窗重签→双在线已通过，逐笔交易结果见进度。短输入/大输出上限预期选 B，长输入/小输出上限预期选 A，另指定 B 验证跨钱包结算；A 买 A 时角色重合，不能记成第三个独立钱包。
+
+### 两卖家 smoke 的准备与执行边界
+
+[smoke-market-monad.ts](../scripts/smoke-market-monad.ts) 默认或 `--plan` 只做离线估价；B 报价可单独通过 RPC 复核。当前真实执行状态以进度页为准：
+
+```bash
+npm run test:market:monad -- --plan
+npm run test:market:monad -- --verify-quote-b 0x8519952dd0ca072e121e76969e85207f67fbc2a4814127bc555fc4862689d612
+```
+
+后一个命令只读链上并更新本地 [公开证据](../contracts/deployments/inferpool-smoke-market-monad.json)，不会发布报价。真实执行会逐项追加 `cases` 和聚合结果；仅有报价记录、执行中的条目或文件存在均不表示三单已通过。
+
+只有 `--execute` 会真实使用 Alchemy A 认证、创建临时 API Key 并提交三单，每单预算 `0.1 dUSD`。前提是 `seller-monad`（A，8793）和 `seller-para`（B，8794）分别在线、normal、无在途请求、链价匹配；Router 默认 `8788`。可通过 `SMOKE_ROUTER_URL`、`SMOKE_PROVIDER_A_URL`、`SMOKE_PROVIDER_B_URL` 覆盖本机地址，不接受外部控制台地址。
+
+| 计划场景 | 输入 / 输出上限 | 预期选择与估价 dUSD |
+| --- | --- | --- |
+| `explicit_b` | `71 / 512` | 指定 B，估价 `0.024740` |
+| `auto_short_b` | `56 / 512` | B `0.023840` 低于 A `0.042640` |
+| `auto_long_a` | `550 / 16` | A `0.017780` 低于 B `0.033640` |
+
+两家都必须满足预算准入，不能把排除了另一家的结果当作价格匹配。前两单为 A → B 跨钱包结算；第三单为 A 买 A，输出到 `max_tokens=16` 时记录 `BudgetCapped`，这里是输出上限，不是 `0.1 dUSD` 花完。表中估价按输出上限用于选择，不等于最终实际收费；执行结果见进度。
+
+脚本固定幂等 Key 并保存 SSE 返回的请求 ID，重跑只查询已知订单；提交结果不明时停止，不换 Key 重新扣费。只有核实既有请求后才用 `--recover CASE=KNOWN_REQUEST_ID` 关联。`.local/smoke-market-monad.lock` 排他锁避免并发执行；进程被强杀留下锁时，先确认没有运行中的脚本再清理。临时 Key 值不保存，正常清理流程在 `finally` 撤销。
+
+本轮曾遇到 CLI invocation 没有返回交易引用，Router 保持 `reservation_unknown` 且不派单；截止前 `getOrder=0` 或 nonce 未变化不足以排除延迟交易。不要因轮询超时就更换幂等 Key，或把无交易引用直接归因于 session 失效。
+
+脚本新增显式 `--execute --retry-lock-failed auto_long_a`，仅允许原截止时间已过、链上订单 state 0、Router 已确定 `lock_failed/unsubmitted`、用量/费用零等检查全部通过后使用一次固定 `-retry-1`。原 ID、请求和最终证明先保存到 `failedAttempts`；不能生成 retry-2，也不修改已通过两单。本次已由主 agent 放行并成功完成，详情见进度；此参数是特定验收脚本恢复路径，不是生产 API 自动重试。若链上出现迟到的已锁订单，应核对其结算或过期回收路径，不能按“未锁款”重发。
+
+已经归档的三单结果可只读检查本地证据，不连接钱包或重新提交请求：
+
+```bash
+npm run test:market:monad -- --summary
+```
+
+该命令检查三单状态、费用汇总、Key 撤销及原失败零费用，并输出可序列化的汇总；不重新请求 RPC 或证明服务仍在线。
+
+第四笔浏览器 B 手动选 A 的复核单独执行：
+
+```bash
+node --import tsx scripts/verify-market-web-monad.ts --request-id 69a28714-618a-4d8b-99c5-620cba33e728
+```
+
+[该脚本](../scripts/verify-market-web-monad.ts) 固定本次买卖地址、报价、用量与余额基线，不签名、不发推理或链上交易，但会更新市场 JSON 的 `webManualOverride`。需要项目依赖、合约产物、RPC、现有市场证据、Router 本地账本（默认 `.local/monad-router-state.json`，可用 `ROUTER_STATE_PATH` 指定）和 A 的 `http://127.0.0.1:8793/api/state`。若该进程的执行历史已清除，可复用证据中已有的同单 `providerExecution`，但控制台状态接口仍需可读；不是任意新机器无需运行环境即可全验。
+
+脚本只从账本选择该公开订单，不复制认证或 API Key 记录；保持 API 三单 `cases` / `aggregate` 原样。网页手动选择与双节点在线来自实际浏览器观察，链上仅能独立验证报价、实际成交卖家及资金结果，不保存 manual/auto 标记。
 
 ### 实际 API 到测试网结算验收
 

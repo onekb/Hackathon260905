@@ -1,6 +1,6 @@
 # 独立 Mock 卖家节点
 
-这个进程代表独立卖家：主动连接平台 `/provider`，用本地钱包签署一次性身份挑战，接收请求并流式返回固定 Mock 响应。卖家无需公网 IP；本地控制台只监听 `127.0.0.1`。推理、Token 和缓存效果都是模拟，Token 定义为 Unicode 码点单位，不是任何真实模型的 tokenizer。
+这个进程代表独立卖家：主动连接平台 `/provider`，由选定钱包签署一次性身份挑战，接收请求并流式返回固定 Mock 响应。卖家无需公网 IP；本地控制台只监听 `127.0.0.1`。推理、Token 和缓存效果都是模拟，Token 定义为 Unicode 码点单位，不是任何真实模型的 tokenizer。
 
 接单前，卖家钱包必须已在 Router 配置的链上为该模型发布有效报价。Router 会读取链上报价，忽略节点自报价格作为计费依据；未发布时会拒绝接入，并在控制台显示原因。本版本控制台不提供链上报价发布功能。
 
@@ -26,11 +26,36 @@ npm run dev:provider -- --ephemeral-wallet --id seller-b --name "独立卖家 B"
 npm run dev:provider -- --alchemy-session --router ws://127.0.0.1:8788/provider --id seller-monad --name "Monad 卖家" --port 8793 --min-reserve 0.0001
 ```
 
-这里的 `8788` 是本机运行的测试网 Router，链上网络由 Router 配置决定；远程 Router 使用 `wss://` 地址。`--alchemy-session`（或 `PROVIDER_ALCHEMY_SESSION=true`）、`--ephemeral-wallet`、`PROVIDER_PRIVATE_KEY` **三者互斥**。如果本地 shell 仍有私钥或临时钱包环境变量，先取消对应配置。节点不会静默改用其他钱包。
+这里的 `8788` 是本机运行的测试网 Router，链上网络由 Router 配置决定；远程 Router 使用 `wss://` 地址。`--alchemy-session`（或 `PROVIDER_ALCHEMY_SESSION=true`）、`--ephemeral-wallet`、`PROVIDER_PRIVATE_KEY` 和下面的 `--browser-wallet` **四种身份互斥**。如果本地 shell 仍有其他身份环境变量，先取消对应配置。节点不会静默改用其他钱包。
 
 该版本 CLI 没有公开的 `sign-message` 子命令。适配器通过已安装 CLI 的会话读取模块取得当前有效 EVM 委托信息，复用官方 `/wallet/evm/sign-message/challenge` 和 `/complete` 消息签名流程。会话委托密钥仅在本地生成证明，不发送给平台或签名服务；返回的 EVM 签名经地址校验后才用于 WebSocket 身份认证。此流程不发送链上交易，不调用 `--mode local`，也不会改变 CLI 的活动钱包或授权。
 
 目前适配器固定验证 CLI 0.24.0 的内部模块结构；版本或模块不兼容时会明确失败。无有效 EVM session、消息签名权限被禁用、钱包发生变化或会话过期时也会提示错误，不会输出完整会话、密钥或认证令牌。若需重新建立会话，请在 Alchemy CLI 中完成 session 连接，再重启节点。
+
+## 使用 Para 网页钱包
+
+浏览器签名桥源码、Provider 自动化测试，以及真实 Para 首次认证、主动下线和新弹窗重签重连均已通过。逐笔市场成交及异常见 [开发进度](../docs/progress.md)。该模式不导出私钥或建立新的 Alchemy 会话；节点只取得一次 Provider 身份挑战签名，不取得转账或报价权限。
+
+当前测试网卖家 B 的启动配置如下，身份需与 Web 登录钱包完全一致；`seller-para` 与两卖家 smoke 脚本保持一致：
+
+```bash
+npm run dev:provider -- \
+  --browser-wallet 0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75 \
+  --wallet-ui http://127.0.0.1:3000 \
+  --router ws://127.0.0.1:8788/provider \
+  --id seller-para --name "Para 独立卖家 B" --port 8794 \
+  --input-price 60 --cache-read-price 6 --cache-write-price 75 \
+  --output-price 40 --min-reserve 0.0001
+```
+
+参数对应 `PROVIDER_BROWSER_WALLET` 和 `PROVIDER_WALLET_UI`，必须成对设置。`wallet-ui` 必须是固定 HTTPS origin 或本机 HTTP origin，不允许凭证、额外路径、查询和片段；`localhost` 与 `127.0.0.1` 是不同 origin，须与实际 Web 地址一致。
+
+1. 启动后节点保持离线，打开本地控制台 `http://127.0.0.1:8794`，点击“连接网页钱包”。
+2. 在弹出的 `/provider-connect` 页面完成 Para 登录，确认钱包、节点及 Router 信息，然后主动准备好签名；准备完成后才建立节点 WebSocket。
+3. 签署精确的五行 Provider 认证挑战。每次准备只允许一次握手，桥接签名时限最长 12 秒；用途、域名、nonce、有效期、请求 ID 和钱包都须匹配，节点还会验证返回签名。
+4. 保持本地控制台和钱包弹窗打开。断线、下线或关闭任一窗口后，从控制台重新打开并准备签名；浏览器身份不自动重连或重放请求。
+
+控制台和弹窗双向核对 `postMessage` 的 origin/source；本地挑战、签名等 POST 仍要求既有 CSRF 凭证和同源请求，不开放 CORS。网页钱包签名不是代币授权，链上报价仍需卖家在 Web 显式发布并等待回执。当前 B 报价发布结果见进度页；报价存在不代表节点已经上线或成交。
 
 ## 演示操作
 
@@ -44,7 +69,7 @@ npm run dev:provider -- --alchemy-session --router ws://127.0.0.1:8788/provider 
 | `fail-mid` | 输出部分内容后报告卖家失败 |
 | `cache-hit` | 请求模拟缓存；相同买家、卖家、模型和完整上下文首次写入，成功后第二次才可命中 |
 
-故障模式在接单时固定，不影响已开始订单。本地报价修改需要当前无在途订单；在线保存会重新认证并重新读取链上报价，**不会签署交易、发布或修改链上报价**。新价格必须先通过卖家钱包在链上发布才可用于接单。下线会中止本地在途订单，Router 根据断连判责；节点重连不会重发它们。
+故障模式在接单时固定，不影响已开始订单。本地报价修改需要当前无在途订单；在线保存后需要重新认证并读取链价，浏览器钱包模式须重新从控制台准备签名，其他模式自动重连。该操作**不会签署交易、发布或修改链上报价**。新价格必须先通过卖家钱包在链上发布才可用于接单。下线会中止本地在途订单，Router 根据断连判责；节点重连不会重发它们。
 
 每百万模拟 Token 的默认本地配置分别为普通输入 `30`、缓存读取 `3`、缓存写入 `37.5`、输出 `80` DemoUSD；最低预留为 `0.01` DemoUSD。这些默认数值不是已发布的市场报价。控制台分开展示本地配置和平台连接时确认的链上有效报价，并标注二者是否一致；断线后保留的只是最近一次确认记录，每单仍由平台读取链上有效报价。最低预留不是最低消费，最终收费由 Router 的独立用量计算与订单结算规则决定。控制台仅显示节点执行记录，不能作为链上收款成功的证明。
 
@@ -73,4 +98,4 @@ npm run dev:provider -- --help
 npm run test --workspace @inferpool/provider
 ```
 
-测试覆盖正常/中途失败/首输出前失败、Unicode 用量、序号、取消、并发容量、重复派单、重连、挑战签名与过期/错误域名拒绝、本地配置不覆盖已确认报价、连接拒绝原因展示。WebSocket 契约测试需要允许监听本机端口。
+测试覆盖正常/中途失败/首输出前失败、Unicode 用量、序号、取消、并发容量、重复派单、重连、挑战签名与过期/错误域名拒绝、本地配置不覆盖已确认报价、连接拒绝原因展示，以及浏览器身份互斥、单次握手、错误签名/重放/超时拒绝和控制台消息桥。HTTP/WebSocket 契约测试需要允许监听本机端口；这些临时测试钱包与本机端口检查不代表实际 Para 或链上验收通过。

@@ -33,3 +33,21 @@ test('Alchemy session is explicit and mutually exclusive with both other wallet 
   assert.throws(() => parseConfig(['--ephemeral-wallet'], { PROVIDER_PRIVATE_KEY: 'set-in-local-env' }), /互斥/);
   assert.equal(parseConfig([], {}).alchemySession, false);
 });
+
+test('browser wallet requires an explicit address and strict paired wallet UI origin', () => {
+  const address = '0x1111111111111111111111111111111111111111';
+  const args = ['--browser-wallet', address, '--wallet-ui', 'http://127.0.0.1:3000'];
+  const config = parseConfig(args, {});
+  assert.equal(config.browserWallet, address);
+  assert.equal(config.walletUi, 'http://127.0.0.1:3000');
+  assert.equal(parseConfig(['--browser-wallet', address, '--wallet-ui', 'https://wallet.example/'], {}).walletUi, 'https://wallet.example');
+  for (const url of ['http://wallet.example', 'https://u:p@wallet.example', 'https://wallet.example/path', 'https://wallet.example/?x=1', 'https://wallet.example/#x', 'https://wallet.example?', 'http://127.0.0.1:3000\\']) {
+    assert.throws(() => parseConfig(['--browser-wallet', address, '--wallet-ui', url], {}), /wallet-ui/);
+  }
+  assert.throws(() => parseConfig(['--browser-wallet', address], {}), /同时/);
+  assert.throws(() => parseConfig(['--wallet-ui', 'http://localhost:3000'], {}), /同时/);
+  assert.throws(() => parseConfig(['--browser-wallet', '0x123', '--wallet-ui', 'http://localhost:3000'], {}), /地址/);
+  assert.throws(() => parseConfig([...args, '--alchemy-session'], {}), /互斥/);
+  assert.throws(() => parseConfig([...args, '--ephemeral-wallet'], {}), /互斥/);
+  assert.throws(() => parseConfig(args, { PROVIDER_PRIVATE_KEY: 'present' }), /互斥/);
+});

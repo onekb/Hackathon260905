@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { ProviderSigningError, type ProviderAccount } from './signer.js';
+import { providerChallenge, ProviderSigningError, type ProviderAccount } from './signer.js';
 import { MockEngine, MODES, type MockMode, type MockRequest } from './mock-engine.js';
 import { validatePricing, type Pricing, type ProviderConfig } from './config.js';
 
@@ -63,7 +63,9 @@ export class ProviderClient {
       chunkSize: this.config.chunkSize, lastError: this.lastError,
       rejectedReason: this.rejectedReason,
       mock: true, ephemeralWallet: this.config.ephemeral,
-      walletMode: this.config.alchemySession ? 'alchemy-session' : this.config.ephemeral ? 'ephemeral' : 'private-key',
+      walletMode: this.config.browserWallet ? 'browser-wallet' : this.config.alchemySession ? 'alchemy-session' : this.config.ephemeral ? 'ephemeral' : 'private-key',
+      walletUi: this.config.walletUi,
+      routerOrigin: new URL(this.config.router).origin.replace(/^ws/, 'http'),
       requests: this.engine.snapshots(),
     };
   }
@@ -87,6 +89,7 @@ export class ProviderClient {
     this.rejectedReason = null;
     this.socket?.close(1000, 'Provider offline');
     this.socket = undefined;
+    this.account.cancelPendingSignature?.('节点已下线；再次上线需要重新准备网页钱包签名。');
   }
 
   setMode(value: unknown): void {
@@ -101,7 +104,7 @@ export class ProviderClient {
     const wasEnabled = this.enabled;
     this.offline();
     this.pricing = pricing;
-    if (wasEnabled) this.online();
+    if (wasEnabled && !this.config.browserWallet) this.online();
   }
 
   private send(data: unknown): void {
@@ -126,7 +129,7 @@ export class ProviderClient {
     this.socket = socket;
     this.authDeadline = setTimeout(() => {
       if (this.socket === socket && this.state !== 'online') {
-        this.lastError = '身份认证超时，正在重连';
+        this.lastError = this.config.browserWallet ? '身份认证超时，请重新连接网页钱包并准备好签名。' : '身份认证超时，正在重连';
         socket.terminate();
       }
     }, 15000);
@@ -136,6 +139,7 @@ export class ProviderClient {
       let message: Record<string, unknown>;
       try { message = JSON.parse(raw.toString()); } catch { this.lastError = '平台返回无效 JSON'; socket.close(1003); return; }
       void this.handle(message, socket).catch((error) => {
+        if (this.socket !== socket) return;
         this.lastError = error instanceof ProviderSigningError ? error.message : '平台协议或身份挑战无效';
         if (error instanceof ProviderSigningError) this.rejectedReason = error.message;
         socket.close(1008, 'Invalid provider protocol');
@@ -147,6 +151,12 @@ export class ProviderClient {
       this.clearTimers();
       this.socket = undefined;
       this.engine.disconnect();
+      this.account.cancelPendingSignature?.('节点连接已结束，请重新点击连接网页钱包并准备签名。');
+      if (this.config.browserWallet) {
+        this.enabled = false; this.state = 'offline';
+        this.lastError ??= '网页钱包连接已结束；重新上线需要再次点击连接网页钱包。';
+        return;
+      }
       if (!this.enabled) { this.state = 'offline'; return; }
       this.state = 'reconnecting';
       const backoff = Math.min(15000, 1000 * 2 ** Math.min(this.retries++, 4));
@@ -161,6 +171,10 @@ export class ProviderClient {
       const text = message.message;
       const expires = typeof message.expiresAt === 'number' ? message.expiresAt : Date.parse(String(message.expiresAt));
       const routerHost = new URL(this.config.router).host;
+      if (this.config.browserWallet) {
+        const exact = providerChallenge(text, this.config.router);
+        if (nonce !== exact.nonce || message.expiresAt !== exact.expiresAt) throw new ProviderSigningError('平台身份挑战的 nonce 或到期时间不匹配。');
+      }
       if (typeof nonce !== 'string' || nonce.length < 16 || typeof text !== 'string' || text.length > 4096 || !text.includes(nonce) || !text.includes(routerHost) || !text.toLowerCase().includes('provider') || !Number.isFinite(expires) || expires <= Date.now() || expires > Date.now() + 600000 || this.challenges.has(nonce)) throw new Error('Invalid authentication challenge');
       this.challenges.add(nonce);
       if (this.challenges.size > 128) this.challenges.delete(this.challenges.values().next().value!);

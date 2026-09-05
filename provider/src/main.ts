@@ -1,22 +1,18 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
-import { parseConfig, usage } from './config.js';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { parseConfig, usage, type ProviderConfig } from './config.js';
 import { ProviderClient } from './client.js';
-import { createProviderAccount } from './signer.js';
+import { BrowserWalletBridge, createProviderAccount, type ProviderAccount } from './signer.js';
 
-if (process.argv.includes('--help') || process.argv.includes('-h')) {
-  console.log(usage);
-  process.exit(0);
-}
-
-async function main(): Promise<void> {
-  const config = parseConfig(process.argv.slice(2), process.env);
-  const account = await createProviderAccount(config, process.env);
+export async function startProvider(config: ProviderConfig, account: ProviderAccount, browser?: BrowserWalletBridge) {
+  if (Boolean(config.browserWallet) !== Boolean(browser) || (browser && account !== browser.account)) throw new Error('网页钱包必须使用本地一次性签名桥。');
   const client = new ProviderClient(config, account);
   const controlToken = randomBytes(32).toString('hex');
-  const localHosts = new Set([`127.0.0.1:${config.port}`, `localhost:${config.port}`]);
   const assetRoot = new URL('../public/', import.meta.url);
+  const snapshot = () => ({ ...client.snapshot(), ...(browser ? { browserWallet: browser.snapshot() } : {}) });
 
   function json(response: ServerResponse, status: number, body: unknown): void {
     response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -40,21 +36,38 @@ async function main(): Promise<void> {
     response.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
     void (async () => {
       const host = request.headers.host ?? '';
+      const address = server.address();
+      const port = address && typeof address !== 'string' ? address.port : config.port;
+      const localHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
       if (!localHosts.has(host)) return json(response, 403, { error: '控制台仅允许本机访问' });
       if (request.headers.origin && request.headers.origin !== `http://${host}`) return json(response, 403, { error: '不允许跨来源控制请求' });
       const path = new URL(request.url ?? '/', `http://${host}`).pathname;
-      if (request.method === 'GET' && path === '/api/state') return json(response, 200, client.snapshot());
+      if (request.method === 'GET' && path === '/api/state') return json(response, 200, snapshot());
       if (request.method === 'POST' && path.startsWith('/api/')) {
         const token = request.headers['x-provider-control'];
         if (typeof token !== 'string' || token.length !== controlToken.length || !timingSafeEqual(Buffer.from(token), Buffer.from(controlToken))) return json(response, 403, { error: '控制请求缺少有效本地凭证，请刷新页面' });
         if (!request.headers['content-type']?.startsWith('application/json')) return json(response, 415, { error: '请求必须使用 application/json' });
         const payload = await body(request);
+        if (path.startsWith('/api/browser/')) {
+          if (!browser) return json(response, 400, { error: '当前节点未配置网页钱包模式。' });
+          if (path === '/api/browser/ready') {
+            if (client.snapshot().enabled) throw new Error('节点已在连接或在线，请先下线再准备新的钱包握手。');
+            browser.prepare(payload.wallet); client.online();
+          } else if (path === '/api/browser/challenge') return json(response, 200, { challenge: browser.challenge(), browserWallet: browser.snapshot() });
+          else if (path === '/api/browser/signature') await browser.submit(payload.requestId, payload.signature);
+          else if (path === '/api/browser/error') { browser.fail(payload.requestId); client.offline(); }
+          else return json(response, 404, { error: '接口不存在' });
+          return json(response, 200, snapshot());
+        }
         if (path === '/api/mode') client.setMode(payload.mode);
-        else if (path === '/api/online') client.online();
+        else if (path === '/api/online') {
+          if (browser) throw new Error('请点击连接网页钱包，并在网页中准备好签名后上线。');
+          client.online();
+        }
         else if (path === '/api/offline') client.offline();
         else if (path === '/api/pricing') client.setPricing(payload.pricing);
         else return json(response, 404, { error: '接口不存在' });
-        return json(response, 200, client.snapshot());
+        return json(response, 200, snapshot());
       }
       const asset = path === '/' ? 'index.html' : path === '/app.js' ? 'app.js' : path === '/style.css' ? 'style.css' : null;
       if (request.method !== 'GET' || !asset) return json(response, 404, { error: '未找到页面' });
@@ -68,25 +81,41 @@ async function main(): Promise<void> {
     server.once('error', reject);
     server.listen(config.port, '127.0.0.1', resolve);
   });
-  client.online();
+  if (!browser) client.online();
+  return {
+    server, client,
+    stop: async () => {
+      client.offline();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    },
+  };
+}
+
+async function main(): Promise<void> {
+  const config = parseConfig(process.argv.slice(2), process.env);
+  const browser = config.browserWallet ? new BrowserWalletBridge(config) : undefined;
+  const account = browser?.account ?? await createProviderAccount(config, process.env);
+  const { stop: stopProvider } = await startProvider(config, account, browser);
   console.log(`InferPool Mock 卖家已启动：${config.name} (${config.id})`);
   console.log(`本地控制台：http://127.0.0.1:${config.port}`);
   console.log(`公开收款地址：${account.address}`);
-  console.log(config.alchemySession ? '身份：Alchemy session（仅委托消息签名，不读取钱包原始私钥）' : config.ephemeral ? '身份：本进程临时演示钱包（重启后更换，不可用于保存实际资产）' : '身份：环境变量中的钱包（私钥仅保留在本地进程）');
+  console.log(browser ? '身份：网页钱包（等待本地控制台连接；每次上线签署一次身份挑战，不导出私钥）' : config.alchemySession ? '身份：Alchemy session（仅委托消息签名，不读取钱包原始私钥）' : config.ephemeral ? '身份：本进程临时演示钱包（重启后更换，不可用于保存实际资产）' : '身份：环境变量中的钱包（私钥仅保留在本地进程）');
   console.log('推理、Token 和缓存均为模拟。Router 负责最终账单与链上结算。');
   let stopping = false;
   const stop = () => {
     if (stopping) return;
     stopping = true;
-    client.offline();
-    server.close(() => process.exit(0));
+    void stopProvider().then(() => process.exit(0));
     setTimeout(() => process.exit(0), 1500).unref();
   };
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
 }
 
-void main().catch((error) => {
-  console.error(error instanceof Error ? error.message : '节点启动失败');
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) console.log(usage);
+  else void main().catch((error) => {
+    console.error(error instanceof Error ? error.message : '节点启动失败');
+    process.exitCode = 1;
+  });
+}

@@ -129,6 +129,12 @@ SSE 有标准形状的文本 `data` 增量和 `event: request` 订单快照，�
 
 本地控制台可改正常/超时/首输出前失败/中途失败/缓存模式。保存本地报价仅修改节点配置并重新读取链价；发布价格必须由卖家钱包调用合约。链上有效报价与最近一次连接确认的报价可能不同，每单仍重新读取。
 
+### 浏览器钱包 Provider 认证扩展
+
+[D13](requirements-and-decisions.md#d13--浏览器钱包为独立-provider-签署认证挑战) 新增与现有三种身份互斥的浏览器钱包模式：Provider 绑定 `--browser-wallet <address>` 和 `--wallet-ui <origin>`，本地控制台向 [Web 接入页](../web/app/provider-connect/page.tsx) 请求 Para 签署受限的 Provider 认证挑战，再交给节点完成 Router WebSocket 身份认证。源码与自动检查、真实 Para 首次签名、双节点同时在线和主动下线已验证，完整成交范围见进度。
+
+双向核对 `postMessage` 的 origin/source，保留本地 HTTP 的 CSRF 与同源要求，不为浏览器跨站请求增加 CORS。节点在网页主动准备后才连接，一次准备只接受一次精确的 Provider 认证挑战，最长 12 秒，核对用途、域名、nonce、有效期、请求 ID 和钱包并验证签名；断线后重新准备，不自动重连。签名不导出私钥、不新增 Alchemy 会话，也不授予代币转账、报价或消费权限；B 报价已由独立交易发布，不能把它当作节点认证或成交通过。使用步骤见 [Provider README](../provider/README.md#使用-para-网页钱包)。
+
 ## 买家钱包实现边界
 
 当前采用 Para 邮箱内嵌 EVM 钱包与 viem，暂不接外部钱包或 WalletConnect。`NEXT_PUBLIC_PARA_API_KEY` 是前端公开配置；私密 Key 不需要出现在 Web 项目中。Para 登录、钱包就绪、Router 签名登录和链上消费授权各自有状态，不能把其中一步当作全部完成。
