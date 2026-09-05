@@ -6,6 +6,10 @@
 
 ## 当前结论
 
+**当前执行：仓库域名清理。** 用户已明确仅清理 Git 跟踪文件与提交历史，主 agent 正在执行，尚未确认历史重写、推送或最终扫描完成。服务器、MOJO 实际字段、DNS/HTTPS、Para 和 ignored 本地产物不在范围内，线上服务保持原样；见 [D18](requirements-and-decisions.md#d18--仅清理-git-仓库及历史中的演示域名) 与[清理盘点](domain-reference-audit.md)。
+
+**脱敏与历史标签说明：** 仓库中的 `demo.example.com` 是地址脱敏占位，不是新网址或新验收结果。下文旧 Git SHA、服务器 release 名及当时产物摘要作为历史证据标签保留，不能当作重写后的提交 SHA；回执仅替换域名展示，不改链上地址、交易哈希、金额或验收结论。
+
 **原生 MON 版已上线 [https://demo.example.com](https://demo.example.com)。** 远端 current 指向 `/srv/inferpool/releases/a78470a`，Linux npm ci 成功；公网 `/config`、`/v1/models` 均 200，返回新市场 `0x142a4904307244Bed0cECD72dE8329A253333182`、MON/18。卖家 A 报价 v1 为 .3/.03/.375/.8 MON 每百万模拟单位，最低预留 .000001、normal、在线 2 槽。公网一单已验证 34 批 SSE 增量、链上锁款/结算、幂等重放及 Key 撤销，费用 .0001285 MON。Chrome Para B 已完成 .1 MON 存款、.05/24h 授权及正常/卖家故障两单，六笔交易经独立 RPC 核对；正常收费 .0001658 MON、故障零费，B 与卖家 A 不同钱包。浏览器观察到处理完成和账单，未采集逐帧增长证据；34 批 SSE 属于前序 API 的独立验收。
 
 [D17](requirements-and-decisions.md#d17--正式产品仅-mon旧-dusd-完整剥离并私有归档) 已完成数据切换：旧 15 单与凭证整账本保留私有备份，新 `router-mon-state.json` 初始没有旧 orders/credentials，只有 15 条 buyer + createdAt 最小 admissionHistory；固定 epoch 和限额不变，不兑换、销毁或代提旧链上资金。Para 钱包不变，需新平台签名会话与 MON Key。
@@ -283,6 +287,8 @@ Chrome setFiles 因 Not allowed 失败，根通过系统文件选择器上传成
 用户紧急要求短 PPT 和演示操作流程；[三页 PPT](../artifacts/presentation/InferPool-pitch.pptx) 已实际生成，含每页讲稿备注，结构/版面检查通过；[同目录 PDF](../artifacts/presentation/InferPool-pitch.pdf) 已由 bundled LibreOffice 导出并逐页检查3页，中文清晰、无溢出；末页账单区域裁切正确，原始截图未改。已准备 [五分钟速查](demo-quickstart.md)：2 分钟讲解、3 分钟网页，现场只发一笔正常请求（预算 .001 MON、最多输出512、指定seller-monad、缓存关闭），故障用先前 c985df51 已确认订单，正常历史 d6f9abd0 备用。此文档准备未执行链上请求、未改业务代码，PPT/PDF 均已完成；[文件说明](../artifacts/presentation/README.md)集中记录来源与备用打开方式。
 
 ## 下一步
+
+先完成已授权的 Git 域名清理，核对当前文本、PPT/PDF 内容、全部目标历史 refs 与远端结果后更新本页；旧本地副本须重新克隆或完成受控迁移，不要直接 merge/push 回新历史。此项不包含重新部署或任何链上操作。
 
 独立买家 MON 网页验收与 MOJO 正式提交已完成，项目 [#385](https://mojo.devnads.com/projects/385) 正在等待主办方审核。下一步按 [五分钟正式脚本](demo-guide.md) 排演并准备短录屏后备；当前没有成片，不代主办方审核或投票。
 

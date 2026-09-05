@@ -97,6 +97,8 @@ D17 已要求移除旧资产 UI、ABI、源码/测试和资金脚本，当前产
 
 旧 dUSD API 记录仅为存档。当前原生测试入口为 `npm run test:api:monad`（smoke-native-api.ts --execute），会发真实受限请求，是否已经执行以进度为准。
 
+执行前须通过私有环境变量 `INFERPOOL_API_ORIGIN` 设置实际 Router 的 HTTP(S) origin；不配置时脚本在任何网络或签名操作前退出。地址不能包含凭证、路径、查询参数或片段。仓库中的 `demo.example.com` 只是脱敏占位，不能直接拿它运行验收。
+
 ### 只读复核浏览器测试网证据
 
 旧浏览器八单与市场记录仍可阅读公开 JSON；依赖旧 ABI/源码的复核工具只留 Git 历史，不在当前 MON 产品中继续提供。新增测试应生成自己的 MON 证据，不能重标旧账单。
