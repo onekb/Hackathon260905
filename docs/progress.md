@@ -19,7 +19,7 @@
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库版本 | MON-only 本地提交 a78470a，远端 release 已切换该版本 | 后续两服务重启脚本修复待归档；本轮尚未记录 SSH 推送成功，具体提交见 Git；历史推送保留于日志 |
+| 仓库版本 | MON-only a78470a 与验收归档 abefc2d 已通过 SSH 推送到 origin/main | GitHub 从 68e1e5f 更新至 abefc2d；远端运行 a78470a，后续归档包含维护脚本、回执、截图与文档，未改当前业务运行代码 |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
 | Router | 远端 systemd 已启用并运行，健康检查通过 | 原本机 Router 已停止；单个 Linux Router 监听回环 8788，公网 /health、/config、/v1/models 200；A 的 WSS 认证通过；原生公网 API/SSE 一单已核对，浏览器仅登录和账户读取通过 |
 | 独立卖家 | 四种身份已实现，浏览器认证/下线/重连通过 | Provider 全量 34/34 与根类型检查通过；B 已实际接收两笔 API 订单并结算 |
@@ -54,7 +54,7 @@
 
 Chrome 公网 Para B 已实际重新签名平台登录；新市场/报价、账户可用 0、授权 0 与钱包原生 **.937143418 MON** 回读通过。未操作 B 的 MON 存款、授权或请求；旧 5 dUSD 授权没有迁入。[MON 市场截图](../artifacts/submission/native-public-market.jpg) 1713×1452 与 [MON 钱包截图](../artifacts/submission/native-public-wallet.jpg) 1713×1796 为原始 CUA JPEG，主 agent 保存并用 view_image 检查，无像素改动；它们不是浏览器成交证明。
 
-[部署只读摘要](../contracts/deployments/inferpool-native-public-deployment.json) 在 2026-09-05 15:42:49（Asia/Shanghai）确认：当前原生单 1 confirmed、0 pending，admissionHistory 15；本场累计尝试 2、剩余 8，epoch 不变；两服务 active、新 env 无旧资产字段、活跃账本 0600。旧整账本 SHA256 `7e954f589bdccee01d8fdae01becd0e857396aac59f9b8dbdbcfa4bc4876b412` 未变。运行版本仍 a78470a，后续维护脚本/证据/文档待最终提交与 SSH 推送。应用内浏览器另刷新为纯 MON 报价/.001 预算，处于访客未登录；它与 Chrome B 签名登录是两个独立检查。API 脚本默认只读重跑显示 alreadyVerified=true，未发新单。
+[部署只读摘要](../contracts/deployments/inferpool-native-public-deployment.json) 在 2026-09-05 15:42:49（Asia/Shanghai）确认：当前原生单 1 confirmed、0 pending，admissionHistory 15；本场累计尝试 2、剩余 8，epoch 不变；两服务 active、新 env 无旧资产字段、活跃账本 0600。旧整账本 SHA256 `7e954f589bdccee01d8fdae01becd0e857396aac59f9b8dbdbcfa4bc4876b412` 未变。运行版本仍 a78470a，后续维护脚本、证据、截图与文档已归档为 abefc2d 并通过 SSH 推送。应用内浏览器另刷新为纯 MON 报价/.001 预算，处于访客未登录；它与 Chrome B 签名登录是两个独立检查。API 脚本默认只读重跑显示 alreadyVerified=true，未发新单。
 
 ### 远端部署准备检查点
 

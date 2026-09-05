@@ -497,6 +497,11 @@
 - **真实浏览器：** Chrome 公网 Para B 重新签名登录成功，市场/报价/新账户可用 0、授权 0、钱包 .937143418 MON 读取通过。未存款、授权或请求，旧 dUSD 授权不沿用。原始 native-public-market.jpg 与 native-public-wallet.jpg 已保存和目视检查，作为当前提交截图优先项；旧三张图片仅历史。
 - **部署复核：** [公开只读摘要](../contracts/deployments/inferpool-native-public-deployment.json) 确认 native 1 confirmed/0 pending、history 15、epoch 2 attempts/剩 8；旧账本 SHA 不变、两服务 active、无旧 env 字段、账本 0600。运行 a78470a；后续维护脚本、验收证据与文档待最终提交/SSH 推送，没有宣称比赛已提交。另应用内浏览器仅以访客刷新核对纯 MON 报价与 .001 预算；API 默认只读重跑 alreadyVerified=true，未发新单。
 
+## 2026-09-05 · MON-only 代码与公网验收已通过 SSH 推送
+
+- **归档完成：** 原生合约迁移 2b4de54、MON-only 剥离 a78470a、公网验收归档 abefc2d 已通过 SSH 推送；GitHub origin/main 从 68e1e5f 更新至 abefc2d。后者包含两服务重启维护修复、严格挑战时窗等待、真实交易回执、原始截图与文档。
+- **交付状态：** 公网运行 a78470a；默认只读验收脚本确认已验证，不重复下单。Chrome 已重新登录并读取新账户，应用内浏览器已刷新 MON 访客界面。买家 MON 存款/授权仍须在新合约上操作，旧授权不会沿用；比赛项目尚未提交。
+
 ## 后续追加格式
 
 每个新条目写日期/时区、用户输入或工程背景、决定与变更、验证/证据、未决事项及关联文档。已解决的问题保留解决过程并标注结果；出现新决定时引用被替代的决策编号，不重写历史成“从一开始就这样”。
