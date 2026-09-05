@@ -19,7 +19,7 @@
 | 项目 | 状态 | 依据及限制 |
 | --- | --- | --- |
 | 需求与接入方案 | 已形成可执行范围 | [MVP 规格](../MVP_SPEC.md)、[决策记录](requirements-and-decisions.md)；没有新增产品前置问题 |
-| 仓库版本 | MON-only a78470a 与验收归档 abefc2d 已通过 SSH 推送到 origin/main | GitHub 从 68e1e5f 更新至 abefc2d；远端运行 a78470a，后续归档包含维护脚本、回执、截图与文档，未改当前业务运行代码 |
+| 仓库版本 | 独立买家 MON 网页验收 fc9170f 已通过 SSH 推送到 origin/main | GitHub 从 4194bc3 更新至 fc9170f；含只读验证脚本、六笔交易证据、三张截图及 MOJO 文案。远端仍运行 a78470a，本轮无需重新部署 |
 | 合约实现 | 已实现、测试和部署 | [市场源码](../contracts/src/InferenceMarket.sol)、[测试](../contracts/test/InferenceMarket.t.sol)、部署回执 |
 | Router | 远端 systemd 已启用并运行，健康检查通过 | 原本机 Router 已停止；单个 Linux Router 监听回环 8788，公网 /health、/config、/v1/models 200；A 的 WSS 认证通过；原生公网 API/SSE 一单已核对，浏览器 B 正常/故障付款与独立对账通过，逐帧 SSE 未采证 |
 | 独立卖家 | 四种身份已实现，浏览器认证/下线/重连通过 | Provider 全量 34/34 与根类型检查通过；B 已实际接收两笔 API 订单并结算 |
@@ -59,7 +59,7 @@
 
 浏览器实际点击、观察处理中到完成并查看账单，**没有采集浏览器逐帧响应增长证据**；前序公共 API 34 批 SSE 另列，不借用作本次浏览器证明。故障由 fail-mid 实际注入，捕获首个目标订单后即恢复 normal；根于 15:58:23（Asia/Shanghai）只读确认卖家 online/normal、active 0、slots 2、lastError null。当前原生账本 3 单、admissionHistory 15；本场剩 **6** 次、B 当日剩 **3** 次，固定 epoch 不变。
 
-[正常账单](../artifacts/submission/native-normal-bill.jpg)、[失败账单](../artifacts/submission/native-failure-bill.jpg) 均为 1713×1591 原始 JPEG，[两单对照](../artifacts/submission/native-bills-comparison.jpg) 为 1713×1140；根已保存并目视审阅。当前提交材料优先正常与对照，前序零余额截图转为历史。只读 [verify-native-browser.ts](../scripts/verify-native-browser.ts) 默认/`--refresh` 仅刷新 current 和已有汇总，保留固定区块验收，**不重新完整核验六笔交易**。完整复核需要 --deposit/--grant 与两次 --case 的已知参数（见 JSON）；不会签名或发交易，不能把刷新理解为重跑浏览器。类型与差异检查通过，首次 grant 读取限流经重读解决，不是链上失败。本轮证据/文档待提交与 SSH 推送，未提交 MOJO。
+[正常账单](../artifacts/submission/native-normal-bill.jpg)、[失败账单](../artifacts/submission/native-failure-bill.jpg) 均为 1713×1591 原始 JPEG，[两单对照](../artifacts/submission/native-bills-comparison.jpg) 为 1713×1140；根已保存并目视审阅。当前提交材料优先正常与对照，前序零余额截图转为历史。只读 [verify-native-browser.ts](../scripts/verify-native-browser.ts) 默认/`--refresh` 仅刷新 current 和已有汇总，保留固定区块验收，**不重新完整核验六笔交易**。完整复核需要 --deposit/--grant 与两次 --case 的已知参数（见 JSON）；不会签名或发交易，不能把刷新理解为重跑浏览器。类型与差异检查通过，首次 grant 读取限流经重读解决，不是链上失败。本轮证据、截图、脚本与文档已在 fc9170f 通过 SSH 推送至 origin/main，未提交 MOJO。
 
 ### 前序原生 MON 公网 API 与浏览器登录分项验收
 

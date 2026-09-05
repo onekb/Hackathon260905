@@ -72,7 +72,7 @@
 
 当前 MON 切换后 15:42:49（Asia/Shanghai）[只读摘要](../contracts/deployments/inferpool-native-public-deployment.json) 为本场已用 2/10、还剩 8，未结 0、两服务 active；这是最新额度快照，不自动增加预算或延长会话。
 
-最新浏览器两单后，根 15:58:23（Asia/Shanghai）只读确认卖家 normal/online/active0、原生订单 3、history15、全局剩 **6** 次、B 当日剩 **3** 次，epoch 不变；前段剩 8 为此前快照。B 可用 .0998342、授权剩 .0498342 MON，授权至 2026-09-06 15:52:32 +08。本轮证据与文档待提交推送，比赛项目尚未提交。
+最新浏览器两单后，根 15:58:23（Asia/Shanghai）只读确认卖家 normal/online/active0、原生订单 3、history15、全局剩 **6** 次、B 当日剩 **3** 次，epoch 不变；前段剩 8 为此前快照。B 可用 .0998342、授权剩 .0498342 MON，授权至 2026-09-06 15:52:32 +08。本轮证据与文档已在 fc9170f 通过 SSH 推送，比赛项目尚未提交。
 
 ## 可直接填写的精简介绍
 
