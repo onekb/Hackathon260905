@@ -6,25 +6,35 @@ Original artwork and separate unedited interface captures prepared on 2026-09-05
 
 | File | Use | Format |
 | --- | --- | --- |
+| [mojo-form.md](mojo-form.md) | Ready-to-copy MOJO fields; project not yet submitted | Markdown |
 | `inferpool-logo.svg` | Original geometric **IP** monogram for submission forms, slide covers, or project branding | Scalable vector, transparent background |
 | `inferpool-logo.png` | Ready-to-upload logo, intended for a dark background | 512 × 512 RGBA; transparent background |
 | `inferpool-project-overview.svg` | Editable-by-generator project explanation artwork | 1600 × 900 vector; lettering converted to paths |
 | `inferpool-project-overview.png` | Ready-to-upload project preview or presentation cover | 1600 × 900 PNG; opaque dark background |
-| `native-public-market.jpg` | Current MON-only public market after Para B signature login; preferred submission cover | 1713 × 1452 unedited browser capture |
-| `native-public-wallet.jpg` | Current MON wallet/escrow/grant view; preferred second screenshot | 1713 × 1796 unedited browser capture |
+| `native-normal-bill.jpg` | Current independent-buyer MON normal bill, .0001658 charge; preferred primary screenshot | 1713 × 1591 unedited browser capture |
+| `native-failure-bill.jpg` | Current fail-mid bill, zero inference charge and full .001 release | 1713 × 1591 unedited browser capture |
+| `native-bills-comparison.jpg` | Current two confirmed bills together; preferred comparison screenshot | 1713 × 1140 unedited browser capture |
+| `native-public-market.jpg` | Earlier MON market after login, before buyer funding; historical baseline | 1713 × 1452 unedited browser capture |
+| `native-public-wallet.jpg` | Earlier zero-escrow/zero-grant MON wallet view; historical baseline | 1713 × 1796 unedited browser capture |
 | `inferpool-public-market.jpg` | Historical pre-MON public guest market with one seller A | 1713 × 1452 unedited browser capture |
 | `inferpool-market-live.jpg` | Actual local Web connected to the Monad-testnet Router, two online sellers and four-part prices | 1713 × 1452 unedited browser capture |
 | `inferpool-bill-live.jpg` | Actual confirmed historical bill, usage, release amount and chain links | 1713 × 1108 unedited browser capture |
 | `build_assets.py` | Reproducible vector source: geometry, layout, labels, and text outlines | Python |
 | `render_assets.cjs` | SVG-to-PNG renderer, without browser automation | Node.js |
 
-The overview is **an original explanatory diagram, not a running product screenshot**. It explicitly says “Project overview · Not a product screenshot.” The five JPEG files are separate real interface screenshots, with current MON and historical dUSD captures kept distinct. No demo recording has been produced. The overview makes no claim about a public deployment, benchmark, throughput, or seller count.
+The overview is **an original explanatory diagram, not a running product screenshot**. It explicitly says “Project overview · Not a product screenshot.” The eight JPEG files are separate real interface screenshots, with current MON and historical dUSD captures kept distinct. No demo recording has been produced. The overview makes no claim about a public deployment, benchmark, throughput, or seller count.
 
-## Current MON public captures
+## Current MON transaction captures
+
+Root operated the public Chrome Para B wallet, deposited .1 test MON, granted .05 MON/24h, and ran normal plus injected fail-mid requests with .001 MON budgets. The three new original JPEGs were saved and visually reviewed: `native-normal-bill.jpg`, `native-failure-bill.jpg` and `native-bills-comparison.jpg`. No pixels or displayed amounts were edited. Prefer the normal bill and two-bill comparison in current submission materials; the failure-detail image is useful supporting evidence.
+
+[Independent RPC evidence](../../contracts/deployments/inferpool-native-browser.json) verifies six transactions and fixed-block accounting. The normal request d6f9abd0-b3c2-4169-93b1-92509e304426 charges .0001658 MON and releases .0008342; the failure c985df51-7600-43dc-8ac2-5a9fcf2b150f charges zero and releases .001. Buyer B and seller A are different wallets; A also operates the Router. Final B escrow is .0998342 and remaining grant .0498342 MON. Browser completion/bill observations are supported by the captures, but no frame-by-frame growth was recorded; API SSE evidence remains separate. No video has been produced or MOJO project submitted.
+
+## Earlier MON login and zero-balance captures
 
 `native-public-market.jpg` and `native-public-wallet.jpg` were saved from `https://demo.example.com` after the MON-only a78470a cutover on 2026-09-05 (Asia/Shanghai). Root saved the original CUA JPEGs and opened each with `view_image`; pixels were not edited. Chrome Para B signed in again and the interface read the new market, current A quote, zero available MON escrow, zero spending grant, and .937143418 native MON in the wallet. This is login/page/account-read evidence. No B MON deposit, grant or inference request was made to create these captures; they do not prove browser payment or cross-wallet settlement.
 
-Use `native-public-market.jpg` first and `native-public-wallet.jpg` second in the current submission. The separate [native API smoke](../../contracts/deployments/inferpool-native-api-smoke.json) proves one public SSE/settlement request by A acting as buyer/seller/Router; it is not the browser's transaction history. Old dUSD images below are historical only and should not serve as current MON product evidence. No image has been uploaded to MOJO by this documentation task.
+These earlier zero-balance captures are retained as the pre-funding baseline, not the current first and second submission images. The separate [native API smoke](../../contracts/deployments/inferpool-native-api-smoke.json) proves one public SSE/settlement request by A acting as buyer/seller/Router; it is not the browser's transaction history. Old dUSD images below are historical only and should not serve as current MON product evidence. No image has been uploaded to MOJO by this documentation task.
 
 ## Historical dUSD interface captures
 
@@ -65,6 +75,6 @@ The PNG renderer resolves `sharp` from the installed project dependencies. If ne
 - Logo dimensions: **512 × 512**; alpha range **0–255**, confirming transparent and opaque pixels.
 - Preview dimensions: **1600 × 900**; alpha is **255** throughout, confirming an opaque background.
 - Both SVG files parsed as XML; no external image/font resources are embedded or fetched.
-- Root agent saved and visually checked all five original JPEG captures; the two current MON public images are separate from the three historical dUSD images.
+- Root agent saved and visually checked all eight original JPEG captures: three current MON transaction images, two earlier MON zero-balance images and three historical dUSD images.
 
 These are asset checks, not additional application or blockchain acceptance tests.

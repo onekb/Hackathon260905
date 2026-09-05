@@ -1,0 +1,804 @@
+{
+  "chainId": 10143,
+  "network": "monad-testnet",
+  "market": "0x142a4904307244Bed0cECD72dE8329A253333182",
+  "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+  "seller": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "router": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+  "asset": {
+    "native": true,
+    "symbol": "MON",
+    "decimals": 18
+  },
+  "scope": "Independent-wallet browser validation: Para buyer B deposits 0.1 test MON, authorizes at most 0.05 MON for 24 hours, and submits normal plus seller-failure requests with a 0.001 MON budget each. Seller A also operates the Router. Inference is explicitly mocked; RPC verifies chain state and transactions, not browser interaction.",
+  "approved": {
+    "depositMON": "0.1",
+    "grantLimitMON": "0.05",
+    "grantDurationSeconds": 86400,
+    "requestBudgetMON": "0.001",
+    "cases": [
+      "normal",
+      "seller_failed"
+    ]
+  },
+  "actions": {
+    "deposit": {
+      "verifiedAt": "2026-09-05T07:53:34.088Z",
+      "transaction": {
+        "hash": "0x2e87bd85b637605fd5a609d1bed78eef2785cc5e679cf8106f4e68850d0c1935",
+        "functionName": "deposit",
+        "args": [],
+        "input": "0xd0e30db0",
+        "selector": "0xd0e30db0",
+        "status": "success",
+        "blockNumber": "59851124",
+        "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "to": "0x142a4904307244Bed0cECD72dE8329A253333182",
+        "valueWei": "100000000000000000",
+        "valueMON": "0.100000000000000000",
+        "gasLimit": "71273",
+        "gasUsed": "71273",
+        "effectiveGasPrice": "102000000000",
+        "gasCostWei": "7269846000000000",
+        "gasCostMON": "0.007269846000000000",
+        "gasAccounting": "Monad gas limit multiplied by receipt effectiveGasPrice",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x2e87bd85b637605fd5a609d1bed78eef2785cc5e679cf8106f4e68850d0c1935"
+      },
+      "before": {
+        "blockNumber": "59851123",
+        "blockHash": "0xc0335a730bb2d704e3d2785d41db579c8f12c3bacfd0d1731cf7600db25ff232",
+        "blockTimestamp": "1788594724",
+        "buyer": {
+          "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "walletWei": "937143418000000000",
+          "walletMON": "0.937143418000000000",
+          "escrowWei": "0",
+          "escrowMON": "0.000000000000000000",
+          "grantId": "0",
+          "grant": null,
+          "availableAuthorizationWei": "0",
+          "availableAuthorizationMON": "0.000000000000000000"
+        },
+        "seller": {
+          "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "walletWei": "100564650258000000000",
+          "walletMON": "100.564650258000000000",
+          "escrowWei": "9000000000000000",
+          "escrowMON": "0.009000000000000000"
+        },
+        "marketBalanceWei": "9000000000000000",
+        "totalEscrowedWei": "9000000000000000",
+        "totalLockedWei": "0",
+        "sellerQuote": {
+          "prices": {
+            "input": "300000000000000000",
+            "cacheRead": "30000000000000000",
+            "cacheWrite": "375000000000000000",
+            "output": "800000000000000000"
+          },
+          "minReserve": "1000000000000",
+          "version": "1",
+          "active": true
+        }
+      },
+      "after": {
+        "blockNumber": "59851124",
+        "blockHash": "0x3e7683d0bb70c0ae6988a20c988f626f36e6a190a807d7e335f333de7b923054",
+        "blockTimestamp": "1788594725",
+        "buyer": {
+          "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "walletWei": "829873572000000000",
+          "walletMON": "0.829873572000000000",
+          "escrowWei": "100000000000000000",
+          "escrowMON": "0.100000000000000000",
+          "grantId": "0",
+          "grant": null,
+          "availableAuthorizationWei": "0",
+          "availableAuthorizationMON": "0.000000000000000000"
+        },
+        "seller": {
+          "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "walletWei": "100564650258000000000",
+          "walletMON": "100.564650258000000000",
+          "escrowWei": "9000000000000000",
+          "escrowMON": "0.009000000000000000"
+        },
+        "marketBalanceWei": "109000000000000000",
+        "totalEscrowedWei": "109000000000000000",
+        "totalLockedWei": "0",
+        "sellerQuote": {
+          "prices": {
+            "input": "300000000000000000",
+            "cacheRead": "30000000000000000",
+            "cacheWrite": "375000000000000000",
+            "output": "800000000000000000"
+          },
+          "minReserve": "1000000000000",
+          "version": "1",
+          "active": true
+        }
+      }
+    },
+    "grant": {
+      "verifiedAt": "2026-09-05T07:54:23.149Z",
+      "transaction": {
+        "hash": "0x32d5ff10b479502178b7a51284a51d31ba61fbc601ddb8bf13260b57bd171d81",
+        "functionName": "authorizeRouter",
+        "args": [
+          "50000000000000000",
+          "1788681152"
+        ],
+        "input": "0xbebdfca700000000000000000000000000000000000000000000000000b1a2bc2ec50000000000000000000000000000000000000000000000000000000000006a9d1bc0",
+        "selector": "0xbebdfca7",
+        "status": "success",
+        "blockNumber": "59851227",
+        "from": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "to": "0x142a4904307244Bed0cECD72dE8329A253333182",
+        "valueWei": "0",
+        "valueMON": "0.000000000000000000",
+        "gasLimit": "108980",
+        "gasUsed": "108980",
+        "effectiveGasPrice": "102000000000",
+        "gasCostWei": "11115960000000000",
+        "gasCostMON": "0.011115960000000000",
+        "gasAccounting": "Monad gas limit multiplied by receipt effectiveGasPrice",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x32d5ff10b479502178b7a51284a51d31ba61fbc601ddb8bf13260b57bd171d81"
+      },
+      "before": {
+        "blockNumber": "59851226",
+        "blockHash": "0xab6ffd04038ffc36cdd54f4e61ec263095758396c2859a030add857dd5252c4f",
+        "blockTimestamp": "1788594755",
+        "buyer": {
+          "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "walletWei": "829873572000000000",
+          "walletMON": "0.829873572000000000",
+          "escrowWei": "100000000000000000",
+          "escrowMON": "0.100000000000000000",
+          "grantId": "0",
+          "grant": null,
+          "availableAuthorizationWei": "0",
+          "availableAuthorizationMON": "0.000000000000000000"
+        },
+        "seller": {
+          "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "walletWei": "100564650258000000000",
+          "walletMON": "100.564650258000000000",
+          "escrowWei": "9000000000000000",
+          "escrowMON": "0.009000000000000000"
+        },
+        "marketBalanceWei": "109000000000000000",
+        "totalEscrowedWei": "109000000000000000",
+        "totalLockedWei": "0",
+        "sellerQuote": {
+          "prices": {
+            "input": "300000000000000000",
+            "cacheRead": "30000000000000000",
+            "cacheWrite": "375000000000000000",
+            "output": "800000000000000000"
+          },
+          "minReserve": "1000000000000",
+          "version": "1",
+          "active": true
+        }
+      },
+      "after": {
+        "blockNumber": "59851227",
+        "blockHash": "0xf240a3999a879ed179ace77e8b4b00fd6f4c5a215087fb9dadeaba6198c97f29",
+        "blockTimestamp": "1788594756",
+        "buyer": {
+          "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "walletWei": "818757612000000000",
+          "walletMON": "0.818757612000000000",
+          "escrowWei": "100000000000000000",
+          "escrowMON": "0.100000000000000000",
+          "grantId": "1",
+          "grant": {
+            "totalLimit": "50000000000000000",
+            "spent": "0",
+            "locked": "0",
+            "expiresAt": "1788681152",
+            "revoked": false
+          },
+          "availableAuthorizationWei": "50000000000000000",
+          "availableAuthorizationMON": "0.050000000000000000"
+        },
+        "seller": {
+          "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "walletWei": "100564650258000000000",
+          "walletMON": "100.564650258000000000",
+          "escrowWei": "9000000000000000",
+          "escrowMON": "0.009000000000000000"
+        },
+        "marketBalanceWei": "109000000000000000",
+        "totalEscrowedWei": "109000000000000000",
+        "totalLockedWei": "0",
+        "sellerQuote": {
+          "prices": {
+            "input": "300000000000000000",
+            "cacheRead": "30000000000000000",
+            "cacheWrite": "375000000000000000",
+            "output": "800000000000000000"
+          },
+          "minReserve": "1000000000000",
+          "version": "1",
+          "active": true
+        }
+      }
+    }
+  },
+  "cases": {
+    "normal": {
+      "id": "d6f9abd0-b3c2-4169-93b1-92509e304426",
+      "requestId": "0x37014e4ed8b1fa8057c479e1019ed39e6dc4dd70c24ccb569ecda364926e7b24",
+      "verifiedAt": "2026-09-05T07:55:15.389Z",
+      "outcome": 0,
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "1000000000000000",
+        "charged": "165800000000000",
+        "grantId": "1",
+        "deadline": "1788595123",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 0,
+        "prices": {
+          "input": "300000000000000000",
+          "cacheRead": "30000000000000000",
+          "cacheWrite": "375000000000000000",
+          "output": "800000000000000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "187"
+        }
+      },
+      "expectedBrowserUsage": {
+        "input": 54,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 187
+      },
+      "inputAndOutputAreMockUnits": true,
+      "calculatedBeforeFaultWei": "165800000000000",
+      "chargedWei": "165800000000000",
+      "chargedMON": "0.000165800000000000",
+      "releasedWei": "834200000000000",
+      "releasedMON": "0.000834200000000000",
+      "quoteAndUsageVerified": true,
+      "independentBuyerSellerAccountingVerified": true,
+      "reserve": {
+        "hash": "0x6a93a0434f1af6a71483d81315b24327f5878a427c8a4188904019396f3bc370",
+        "functionName": "reserve",
+        "args": [
+          "0x37014e4ed8b1fa8057c479e1019ed39e6dc4dd70c24ccb569ecda364926e7b24",
+          "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "1000000000000000",
+          "1788595123",
+          "1"
+        ],
+        "input": "0x72477d4237014e4ed8b1fa8057c479e1019ed39e6dc4dd70c24ccb569ecda364926e7b24000000000000000000000000bc81a46f5eee3924aa0b7fd8849ea08351194a75000000000000000000000000ac801eec099c65a605b809b98a09a62674614a08dc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000006a9bcbb30000000000000000000000000000000000000000000000000000000000000001",
+        "selector": "0x72477d42",
+        "status": "success",
+        "blockNumber": "59851476",
+        "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "to": "0x142a4904307244Bed0cECD72dE8329A253333182",
+        "valueWei": "0",
+        "valueMON": "0.000000000000000000",
+        "gasLimit": "300298",
+        "gasUsed": "300298",
+        "effectiveGasPrice": "102000000000",
+        "gasCostWei": "30630396000000000",
+        "gasCostMON": "0.030630396000000000",
+        "gasAccounting": "Monad gas limit multiplied by receipt effectiveGasPrice",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x6a93a0434f1af6a71483d81315b24327f5878a427c8a4188904019396f3bc370"
+      },
+      "settle": {
+        "hash": "0xb681ac40d014769f4a782ac80abc552e122435eded2cdb40bfb1a19a94c079af",
+        "functionName": "settle",
+        "args": [
+          "0x37014e4ed8b1fa8057c479e1019ed39e6dc4dd70c24ccb569ecda364926e7b24",
+          {
+            "input": "54",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "187"
+          },
+          0
+        ],
+        "input": "0x43d0381c37014e4ed8b1fa8057c479e1019ed39e6dc4dd70c24ccb569ecda364926e7b2400000000000000000000000000000000000000000000000000000000000000360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000bb0000000000000000000000000000000000000000000000000000000000000000",
+        "selector": "0x43d0381c",
+        "status": "success",
+        "blockNumber": "59851518",
+        "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "to": "0x142a4904307244Bed0cECD72dE8329A253333182",
+        "valueWei": "0",
+        "valueMON": "0.000000000000000000",
+        "gasLimit": "140461",
+        "gasUsed": "140461",
+        "effectiveGasPrice": "102000000000",
+        "gasCostWei": "14327022000000000",
+        "gasCostMON": "0.014327022000000000",
+        "gasAccounting": "Monad gas limit multiplied by receipt effectiveGasPrice",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0xb681ac40d014769f4a782ac80abc552e122435eded2cdb40bfb1a19a94c079af"
+      },
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59851475",
+          "blockHash": "0x3387a2f7ff2c7767bb2a8c7a1370c454abddd6ef36036cf33d99b15f7c380bf0",
+          "blockTimestamp": "1788594831",
+          "buyer": {
+            "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletWei": "818757612000000000",
+            "walletMON": "0.818757612000000000",
+            "escrowWei": "100000000000000000",
+            "escrowMON": "0.100000000000000000",
+            "grantId": "1",
+            "grant": {
+              "totalLimit": "50000000000000000",
+              "spent": "0",
+              "locked": "0",
+              "expiresAt": "1788681152",
+              "revoked": false
+            },
+            "availableAuthorizationWei": "50000000000000000",
+            "availableAuthorizationMON": "0.050000000000000000"
+          },
+          "seller": {
+            "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletWei": "100564650258000000000",
+            "walletMON": "100.564650258000000000",
+            "escrowWei": "9000000000000000",
+            "escrowMON": "0.009000000000000000"
+          },
+          "marketBalanceWei": "109000000000000000",
+          "totalEscrowedWei": "109000000000000000",
+          "totalLockedWei": "0",
+          "sellerQuote": {
+            "prices": {
+              "input": "300000000000000000",
+              "cacheRead": "30000000000000000",
+              "cacheWrite": "375000000000000000",
+              "output": "800000000000000000"
+            },
+            "minReserve": "1000000000000",
+            "version": "1",
+            "active": true
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59851476",
+          "blockHash": "0x400c3e2234bf67e55b4f1c664c85466a02c75c0e371922620f22716c05d7237c",
+          "blockTimestamp": "1788594831",
+          "buyer": {
+            "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletWei": "818757612000000000",
+            "walletMON": "0.818757612000000000",
+            "escrowWei": "99000000000000000",
+            "escrowMON": "0.099000000000000000",
+            "grantId": "1",
+            "grant": {
+              "totalLimit": "50000000000000000",
+              "spent": "0",
+              "locked": "1000000000000000",
+              "expiresAt": "1788681152",
+              "revoked": false
+            },
+            "availableAuthorizationWei": "49000000000000000",
+            "availableAuthorizationMON": "0.049000000000000000"
+          },
+          "seller": {
+            "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletWei": "100534019862000000000",
+            "walletMON": "100.534019862000000000",
+            "escrowWei": "9000000000000000",
+            "escrowMON": "0.009000000000000000"
+          },
+          "marketBalanceWei": "109000000000000000",
+          "totalEscrowedWei": "109000000000000000",
+          "totalLockedWei": "1000000000000000",
+          "sellerQuote": {
+            "prices": {
+              "input": "300000000000000000",
+              "cacheRead": "30000000000000000",
+              "cacheWrite": "375000000000000000",
+              "output": "800000000000000000"
+            },
+            "minReserve": "1000000000000",
+            "version": "1",
+            "active": true
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59851518",
+          "blockHash": "0x00dc1047e3ac159f05db7a807a94e173718ef113431ad440e5bcf712a149c741",
+          "blockTimestamp": "1788594846",
+          "buyer": {
+            "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletWei": "818757612000000000",
+            "walletMON": "0.818757612000000000",
+            "escrowWei": "99834200000000000",
+            "escrowMON": "0.099834200000000000",
+            "grantId": "1",
+            "grant": {
+              "totalLimit": "50000000000000000",
+              "spent": "165800000000000",
+              "locked": "0",
+              "expiresAt": "1788681152",
+              "revoked": false
+            },
+            "availableAuthorizationWei": "49834200000000000",
+            "availableAuthorizationMON": "0.049834200000000000"
+          },
+          "seller": {
+            "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletWei": "100519692840000000000",
+            "walletMON": "100.519692840000000000",
+            "escrowWei": "9165800000000000",
+            "escrowMON": "0.009165800000000000"
+          },
+          "marketBalanceWei": "109000000000000000",
+          "totalEscrowedWei": "109000000000000000",
+          "totalLockedWei": "0",
+          "sellerQuote": {
+            "prices": {
+              "input": "300000000000000000",
+              "cacheRead": "30000000000000000",
+              "cacheWrite": "375000000000000000",
+              "output": "800000000000000000"
+            },
+            "minReserve": "1000000000000",
+            "version": "1",
+            "active": true
+          }
+        }
+      }
+    },
+    "seller_failed": {
+      "id": "c985df51-7600-43dc-8ac2-5a9fcf2b150f",
+      "requestId": "0xa494deac73bc5fa303713bf5c6be6902af7698f44f3bdc0230d4e98c997513c7",
+      "verifiedAt": "2026-09-05T07:57:39.180Z",
+      "outcome": 3,
+      "order": {
+        "buyer": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+        "provider": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "modelId": "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+        "reserved": "1000000000000000",
+        "charged": "0",
+        "grantId": "1",
+        "deadline": "1788595271",
+        "quoteVersion": "1",
+        "state": 2,
+        "outcome": 3,
+        "prices": {
+          "input": "300000000000000000",
+          "cacheRead": "30000000000000000",
+          "cacheWrite": "375000000000000000",
+          "output": "800000000000000000"
+        },
+        "usage": {
+          "input": "54",
+          "cacheRead": "0",
+          "cacheWrite": "0",
+          "output": "48"
+        }
+      },
+      "expectedBrowserUsage": {
+        "input": 54,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 48
+      },
+      "inputAndOutputAreMockUnits": true,
+      "calculatedBeforeFaultWei": "54600000000000",
+      "chargedWei": "0",
+      "chargedMON": "0.000000000000000000",
+      "releasedWei": "1000000000000000",
+      "releasedMON": "0.001000000000000000",
+      "quoteAndUsageVerified": true,
+      "independentBuyerSellerAccountingVerified": true,
+      "reserve": {
+        "hash": "0x0c810a058b136f5e13e1b9f43ee993a9f540c9557c17a9faa287921e3371bbaf",
+        "functionName": "reserve",
+        "args": [
+          "0xa494deac73bc5fa303713bf5c6be6902af7698f44f3bdc0230d4e98c997513c7",
+          "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+          "0xAc801eEC099C65A605B809b98A09A62674614A08",
+          "0xdc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc",
+          "1000000000000000",
+          "1788595271",
+          "1"
+        ],
+        "input": "0x72477d42a494deac73bc5fa303713bf5c6be6902af7698f44f3bdc0230d4e98c997513c7000000000000000000000000bc81a46f5eee3924aa0b7fd8849ea08351194a75000000000000000000000000ac801eec099c65a605b809b98a09a62674614a08dc9c37554aa0a097cf93dc016ce72d65650a7668e89343bcda934a24edd703cc00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000006a9bcc470000000000000000000000000000000000000000000000000000000000000001",
+        "selector": "0x72477d42",
+        "status": "success",
+        "blockNumber": "59851946",
+        "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "to": "0x142a4904307244Bed0cECD72dE8329A253333182",
+        "valueWei": "0",
+        "valueMON": "0.000000000000000000",
+        "gasLimit": "300298",
+        "gasUsed": "300298",
+        "effectiveGasPrice": "102000000000",
+        "gasCostWei": "30630396000000000",
+        "gasCostMON": "0.030630396000000000",
+        "gasAccounting": "Monad gas limit multiplied by receipt effectiveGasPrice",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0x0c810a058b136f5e13e1b9f43ee993a9f540c9557c17a9faa287921e3371bbaf"
+      },
+      "settle": {
+        "hash": "0xef41035e4986acdccb1e6d825623dcf845b1a81873a5629f18855153fc49cf22",
+        "functionName": "settle",
+        "args": [
+          "0xa494deac73bc5fa303713bf5c6be6902af7698f44f3bdc0230d4e98c997513c7",
+          {
+            "input": "54",
+            "cacheRead": "0",
+            "cacheWrite": "0",
+            "output": "48"
+          },
+          3
+        ],
+        "input": "0x43d0381ca494deac73bc5fa303713bf5c6be6902af7698f44f3bdc0230d4e98c997513c700000000000000000000000000000000000000000000000000000000000000360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000003",
+        "selector": "0x43d0381c",
+        "status": "success",
+        "blockNumber": "59851974",
+        "from": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+        "to": "0x142a4904307244Bed0cECD72dE8329A253333182",
+        "valueWei": "0",
+        "valueMON": "0.000000000000000000",
+        "gasLimit": "117686",
+        "gasUsed": "117686",
+        "effectiveGasPrice": "102000000000",
+        "gasCostWei": "12003972000000000",
+        "gasCostMON": "0.012003972000000000",
+        "gasAccounting": "Monad gas limit multiplied by receipt effectiveGasPrice",
+        "explorerUrl": "https://testnet.monadscan.com/tx/0xef41035e4986acdccb1e6d825623dcf845b1a81873a5629f18855153fc49cf22"
+      },
+      "snapshots": {
+        "beforeReserve": {
+          "blockNumber": "59851945",
+          "blockHash": "0x94369bf0a8b45c5ece6eeab060af607026ad425dc00a6d4878971426b19932a3",
+          "blockTimestamp": "1788594976",
+          "buyer": {
+            "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletWei": "818757612000000000",
+            "walletMON": "0.818757612000000000",
+            "escrowWei": "99834200000000000",
+            "escrowMON": "0.099834200000000000",
+            "grantId": "1",
+            "grant": {
+              "totalLimit": "50000000000000000",
+              "spent": "165800000000000",
+              "locked": "0",
+              "expiresAt": "1788681152",
+              "revoked": false
+            },
+            "availableAuthorizationWei": "49834200000000000",
+            "availableAuthorizationMON": "0.049834200000000000"
+          },
+          "seller": {
+            "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletWei": "100519692840000000000",
+            "walletMON": "100.519692840000000000",
+            "escrowWei": "9165800000000000",
+            "escrowMON": "0.009165800000000000"
+          },
+          "marketBalanceWei": "109000000000000000",
+          "totalEscrowedWei": "109000000000000000",
+          "totalLockedWei": "0",
+          "sellerQuote": {
+            "prices": {
+              "input": "300000000000000000",
+              "cacheRead": "30000000000000000",
+              "cacheWrite": "375000000000000000",
+              "output": "800000000000000000"
+            },
+            "minReserve": "1000000000000",
+            "version": "1",
+            "active": true
+          }
+        },
+        "afterReserve": {
+          "blockNumber": "59851946",
+          "blockHash": "0xa14cb0eba4d28afaea7e810b8d2be404e375150c67e33fc16f64d39617cdc02b",
+          "blockTimestamp": "1788594976",
+          "buyer": {
+            "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletWei": "818757612000000000",
+            "walletMON": "0.818757612000000000",
+            "escrowWei": "98834200000000000",
+            "escrowMON": "0.098834200000000000",
+            "grantId": "1",
+            "grant": {
+              "totalLimit": "50000000000000000",
+              "spent": "165800000000000",
+              "locked": "1000000000000000",
+              "expiresAt": "1788681152",
+              "revoked": false
+            },
+            "availableAuthorizationWei": "48834200000000000",
+            "availableAuthorizationMON": "0.048834200000000000"
+          },
+          "seller": {
+            "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletWei": "100489062444000000000",
+            "walletMON": "100.489062444000000000",
+            "escrowWei": "9165800000000000",
+            "escrowMON": "0.009165800000000000"
+          },
+          "marketBalanceWei": "109000000000000000",
+          "totalEscrowedWei": "109000000000000000",
+          "totalLockedWei": "1000000000000000",
+          "sellerQuote": {
+            "prices": {
+              "input": "300000000000000000",
+              "cacheRead": "30000000000000000",
+              "cacheWrite": "375000000000000000",
+              "output": "800000000000000000"
+            },
+            "minReserve": "1000000000000",
+            "version": "1",
+            "active": true
+          }
+        },
+        "afterSettle": {
+          "blockNumber": "59851974",
+          "blockHash": "0x5be7866f26859a42ead46e83d7d7a13c99097c7e1abe4d71d44ec74ecf575b33",
+          "blockTimestamp": "1788594985",
+          "buyer": {
+            "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+            "walletWei": "818757612000000000",
+            "walletMON": "0.818757612000000000",
+            "escrowWei": "99834200000000000",
+            "escrowMON": "0.099834200000000000",
+            "grantId": "1",
+            "grant": {
+              "totalLimit": "50000000000000000",
+              "spent": "165800000000000",
+              "locked": "0",
+              "expiresAt": "1788681152",
+              "revoked": false
+            },
+            "availableAuthorizationWei": "49834200000000000",
+            "availableAuthorizationMON": "0.049834200000000000"
+          },
+          "seller": {
+            "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+            "walletWei": "100477058472000000000",
+            "walletMON": "100.477058472000000000",
+            "escrowWei": "9165800000000000",
+            "escrowMON": "0.009165800000000000"
+          },
+          "marketBalanceWei": "109000000000000000",
+          "totalEscrowedWei": "109000000000000000",
+          "totalLockedWei": "0",
+          "sellerQuote": {
+            "prices": {
+              "input": "300000000000000000",
+              "cacheRead": "30000000000000000",
+              "cacheWrite": "375000000000000000",
+              "output": "800000000000000000"
+            },
+            "minReserve": "1000000000000",
+            "version": "1",
+            "active": true
+          }
+        }
+      }
+    }
+  },
+  "before": {
+    "blockNumber": "59850999",
+    "blockHash": "0x148d193e71fadd8330088df9cc70a751e833284accd18892cb17620c65fd7313",
+    "blockTimestamp": "1788594686",
+    "buyer": {
+      "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "walletWei": "937143418000000000",
+      "walletMON": "0.937143418000000000",
+      "escrowWei": "0",
+      "escrowMON": "0.000000000000000000",
+      "grantId": "0",
+      "grant": null,
+      "availableAuthorizationWei": "0",
+      "availableAuthorizationMON": "0.000000000000000000"
+    },
+    "seller": {
+      "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "walletWei": "100564650258000000000",
+      "walletMON": "100.564650258000000000",
+      "escrowWei": "9000000000000000",
+      "escrowMON": "0.009000000000000000"
+    },
+    "marketBalanceWei": "9000000000000000",
+    "totalEscrowedWei": "9000000000000000",
+    "totalLockedWei": "0",
+    "sellerQuote": {
+      "prices": {
+        "input": "300000000000000000",
+        "cacheRead": "30000000000000000",
+        "cacheWrite": "375000000000000000",
+        "output": "800000000000000000"
+      },
+      "minReserve": "1000000000000",
+      "version": "1",
+      "active": true
+    }
+  },
+  "current": {
+    "blockNumber": "59852310",
+    "blockHash": "0x5bc31972b83b6dfae1c51228a8232c70bd929fff29bf3d7e1f6b74e3dc47ac75",
+    "blockTimestamp": "1788595089",
+    "buyer": {
+      "address": "0xbc81A46F5eeE3924aA0B7fD8849eA08351194A75",
+      "walletWei": "818757612000000000",
+      "walletMON": "0.818757612000000000",
+      "escrowWei": "99834200000000000",
+      "escrowMON": "0.099834200000000000",
+      "grantId": "1",
+      "grant": {
+        "totalLimit": "50000000000000000",
+        "spent": "165800000000000",
+        "locked": "0",
+        "expiresAt": "1788681152",
+        "revoked": false
+      },
+      "availableAuthorizationWei": "49834200000000000",
+      "availableAuthorizationMON": "0.049834200000000000"
+    },
+    "seller": {
+      "address": "0xAc801eEC099C65A605B809b98A09A62674614A08",
+      "walletWei": "100477058472000000000",
+      "walletMON": "100.477058472000000000",
+      "escrowWei": "9165800000000000",
+      "escrowMON": "0.009165800000000000"
+    },
+    "marketBalanceWei": "109000000000000000",
+    "totalEscrowedWei": "109000000000000000",
+    "totalLockedWei": "0",
+    "sellerQuote": {
+      "prices": {
+        "input": "300000000000000000",
+        "cacheRead": "30000000000000000",
+        "cacheWrite": "375000000000000000",
+        "output": "800000000000000000"
+      },
+      "minReserve": "1000000000000",
+      "version": "1",
+      "active": true
+    }
+  },
+  "updatedAt": "2026-09-05T07:58:14.119Z",
+  "aggregate": {
+    "count": 2,
+    "finalBlockNumber": "59851974",
+    "totalChargedWei": "165800000000000",
+    "totalChargedMON": "0.000165800000000000",
+    "buyerEscrowBeforeMON": "0.100000000000000000",
+    "buyerEscrowAfterMON": "0.099834200000000000",
+    "sellerEscrowBeforeMON": "0.009000000000000000",
+    "sellerEscrowAfterMON": "0.009165800000000000",
+    "authorizationLimitMON": "0.05",
+    "authorizationSpentMON": "0.000165800000000000",
+    "authorizationRemainingMON": "0.049834200000000000",
+    "finalBuyerGrantLockedWei": "0",
+    "finalMarketLockedWei": "0",
+    "sellerFailureChargedMON": "0.000000000000000000",
+    "independentBuyerAndSellerWallets": true
+  },
+  "verification": {
+    "status": "verified",
+    "verifiedAt": "2026-09-05T07:58:14.119Z",
+    "asOfBlockNumber": "59851974",
+    "method": "Read-only independent RPC verification of receipt identities, native value, calldata, on-chain prices/usage/outcomes, and fixed-block buyer/seller/grant accounting",
+    "limitations": [
+      "Inference and usage are explicitly mocked and trusted to the Router.",
+      "Browser completion and bill observations were supplied by the UI operator; this RPC evidence does not prove frame-by-frame browser streaming.",
+      "Buyer B and seller A are different wallets; seller A and the Router share one wallet."
+    ]
+  }
+}

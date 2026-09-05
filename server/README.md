@@ -4,7 +4,7 @@ The Router authenticates buyers and independent mock providers, reserves each re
 
 ## Asset and migration boundary
 
-Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; public a78470a now uses this native market, with live config/models verified and one native API/SSE/settlement request and browser login/account reads verified; browser MON payment remains untested. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
+Current source uses native test MON: market `0x142a4904307244Bed0cECD72dE8329A253333182`, 18-decimal wei, with a separate `TOKENS_PER_MILLION = 1_000_000` billing divisor. The new contract is deployed and verified; public a78470a now uses this native market, with live config/models verified and one native API/SSE/settlement request and browser login/account reads verified; independent buyer B has subsequently completed MON deposit/grant and normal/failure browser requests with fixed-block RPC verification; browser frame-by-frame streaming was not captured. See [deployment evidence](../contracts/deployments/inferpool-mon-native-testnet.json) and [live progress](../docs/progress.md).
 
 Buyers call payable `deposit()` with MON value, then separately `authorizeRouter(limit, expiresAt)`; no ERC-20 approve is required. Withdrawal is a native transfer; settlement credits the seller's internal withdrawable balance. Existing dUSD and its spending grants do not become MON or authorize the new market.
 

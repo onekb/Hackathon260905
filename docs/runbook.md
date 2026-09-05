@@ -39,7 +39,7 @@ npm run demo:request -- --cache
 
 ## 原生 MON 测试网（当前源码）
 
-原生市场已部署并完成源码验证：`0x142a4904307244Bed0cECD72dE8329A253333182`，Monad Testnet chain ID 10143。资产为 MON/18 位，无 token()、ERC-20 approve 或 dUSD 自动兑换。证据见 [native 部署 JSON](../contracts/deployments/inferpool-mon-native-testnet.json)。当前公网已切换 MON-only a78470a，/config 和模型报价回读通过，API/SSE 一单与浏览器签名登录/账户读取通过，浏览器 MON 付款未验；按 /config 的实际 market/asset 判断，不能只看域名。
+原生市场已部署并完成源码验证：`0x142a4904307244Bed0cECD72dE8329A253333182`，Monad Testnet chain ID 10143。资产为 MON/18 位，无 token()、ERC-20 approve 或 dUSD 自动兑换。证据见 [native 部署 JSON](../contracts/deployments/inferpool-mon-native-testnet.json)。当前公网已切换 MON-only a78470a，/config 和模型报价回读通过，API/SSE 一单与浏览器签名登录/账户读取通过，独立买家 MON 网页存款/授权及正常、故障两单已验，逐帧 SSE 未采证；按 /config 的实际 market/asset 判断，不能只看域名。
 
 ```bash
 node scripts/deploy-mon-native.mjs
@@ -192,11 +192,27 @@ npm run test:evm
 
 测试拒绝非回环 RPC 或非 `31337` 链；测试会改变本地链状态，不与现场演示共享测试过程。Node WebSocket/HTTP 测试需要允许监听本机端口。只修改文档时无需重跑这些测试。
 
+### 只读复核已完成的 MON 浏览器两单
+
+```sh
+node --import tsx scripts/verify-native-browser.ts --refresh
+```
+
+默认/`--refresh` 只回读 current 状态并保留既有固定区块验收，不重新完整复核六笔交易，更不会签名或广播。完整复核需 `--deposit`、`--grant` 及两次 `--case` 的已知交易参数，见 [公开 JSON](../contracts/deployments/inferpool-native-browser.json)；`--capture-before` 仅用于首次基线，不覆盖已有 before。需要匹配编译 ABI、已有证据文件与公开 Monad RPC，无钱包 client、凭证或会话；正常单费 .0001658 MON、故障 0，详情见 [进度](progress.md#独立买家-mon-浏览器正常与卖家故障验收)。
+
+本轮已成功执行的完整只读复核命令如下；重复执行仅更新本地公开证据，不新增订单：
+
+```sh
+node --import tsx scripts/verify-native-browser.ts --deposit 0x2e87bd85b637605fd5a609d1bed78eef2785cc5e679cf8106f4e68850d0c1935 --grant 0x32d5ff10b479502178b7a51284a51d31ba61fbc601ddb8bf13260b57bd171d81
+node --import tsx scripts/verify-native-browser.ts --case normal --id d6f9abd0-b3c2-4169-93b1-92509e304426 --reserve 0x6a93a0434f1af6a71483d81315b24327f5878a427c8a4188904019396f3bc370 --settle 0xb681ac40d014769f4a782ac80abc552e122435eded2cdb40bfb1a19a94c079af --usage 54,0,0,187 --fee 0.0001658
+node --import tsx scripts/verify-native-browser.ts --case seller_failed --id c985df51-7600-43dc-8ac2-5a9fcf2b150f --reserve 0x0c810a058b136f5e13e1b9f43ee993a9f540c9557c17a9faa287921e3371bbaf --settle 0xef41035e4986acdccb1e6d825623dcf845b1a81873a5629f18855153fc49cf22 --usage 54,0,0,48 --fee 0
+```
+
 ## 公网交付前还需要什么
 
-当前验收分开记录：[原生 API smoke](../contracts/deployments/inferpool-native-api-smoke.json) 为 A 同钱包的一笔 HTTPS/SSE 请求，34 批增量、.0001285 MON、回执/重放/Key 撤销通过；默认只读重跑显示 alreadyVerified=true，不发新单。[公开部署摘要](../contracts/deployments/inferpool-native-public-deployment.json) 为 1 confirmed/0 pending、15 条历史配额、本场剩 8 的读取快照。Chrome B 已重新签名登录并读账户，但未作 MON 存款/授权/请求；截图见 [素材说明](../artifacts/submission/README.md)。
+当前验收分开记录：[原生 API smoke](../contracts/deployments/inferpool-native-api-smoke.json) 为 A 同钱包的一笔 HTTPS/SSE 请求，34 批增量、.0001285 MON、回执/重放/Key 撤销通过；默认只读重跑显示 alreadyVerified=true，不发新单。[公开部署摘要](../contracts/deployments/inferpool-native-public-deployment.json) 为 1 confirmed/0 pending、15 条历史配额、本场剩 8 的读取快照。Chrome B 已重新签名登录并读账户，之后已完成 MON 存款/授权与正常、故障两单，独立 RPC 对账通过，逐帧 SSE 未采证；截图见 [素材说明](../artifacts/submission/README.md)。
 
-当前 [https://demo.example.com](https://demo.example.com) 已完成应用部署，公网页面、配置与常驻卖家 A 的 WSS 认证通过；公网 API/SSE 一单与 Chrome B 重新签名登录/账户读取通过，浏览器 MON 付款未验。Router 运行环境要支持持续 HTTP/SSE 与 WebSocket 连接，并提供 HTTPS/WSS；设置真实 `ROUTER_PUBLIC_URL` 与精确 `ALLOWED_ORIGINS`。前端的 localhost Router URL 不能服务远程用户，卖家回环控制台也不应当作远程管理站点。
+当前 [https://demo.example.com](https://demo.example.com) 已完成应用部署，公网页面、配置与常驻卖家 A 的 WSS 认证通过；公网 API/SSE 一单与 Chrome B 重新签名登录/账户读取通过，独立买家 MON 网页存款/授权及正常、故障两单已验，逐帧 SSE 未采证。Router 运行环境要支持持续 HTTP/SSE 与 WebSocket 连接，并提供 HTTPS/WSS；设置真实 `ROUTER_PUBLIC_URL` 与精确 `ALLOWED_ORIGINS`。前端的 localhost Router URL 不能服务远程用户，卖家回环控制台也不应当作远程管理站点。
 
 [deploy/README.md](../deploy/README.md) 提供常驻单进程 Router 与持久账本的部署准备；[nginx 模板](../deploy/nginx.conf.example) 仅作参考，[Router 环境模板](../deploy/router.env.example) 仍需按实际运行配置。用户负责 HTTPS 反向代理，agent 准备应用与 HTTP 端口，见 [D15](requirements-and-decisions.md#d15--应用准备单个-http-端口用户负责-https-反向代理)。用户现已配置全站反代，agent 只读检查了站点配置与公开证书，未修改 nginx/证书/1Panel；迁移仍须处理在途订单、停旧实例，再带原账本启动唯一新实例，不能以空账本或双进程写同一路径。
 
@@ -208,7 +224,7 @@ npm run test:evm
 
 单端口功能已实现：`WEB_STATIC_DIR` 指向绝对 Next 导出目录，缺少有效 `index.html` 等配置错误在链初始化前拒绝启动。Express 5 先处理 API，再处理真实静态页；不把 API 404 或未知页面回退到首页，并阻止隐藏文件、遍历和越界符号链接。默认不开启，无新增静态服务依赖。新增 6 项及根 82/82 通过，真实 WS/SSE 检查使用临时端口，不表示远端版本已启动。
 
-最终应用入口为 `127.0.0.1:8788`，统一 Web、API、SSE 与 `/provider` WebSocket；用户的 OpenResty 已确认使用 host 网络。用户已配置 `https://demo.example.com` 全站转发至该入口；默认 TLS 证书验证通过；早期后端未启动造成的 502 已解决，当前回环与公网 `/health` 均 200，返回 ok:true、monad-testnet、mock_inference:true。启动卖家前 providers 为 0；随后 /v1/models 回读 A 在线，控制台 router 为 wss://demo.example.com/provider、lastError=null、报价匹配，完成真实公网 WSS 认证。主页、/provider-connect/、实际 JS 和 /config 均 200，Chrome 市场显示一在线；原生 API/SSE 一单与 Chrome B 登录/账户读取已通过，浏览器付款未验。站点尚未显式设置 buffering/cache/read_timeout；截图的缓存禁用不能代替 SSE 验证。需由用户核对客户端 IP 覆盖、300 秒读取超时、关闭缓冲/缓存和写请求自动重试，详见 [代理交接](../deploy/README.md#https-proxy-handoff-to-the-owner)。卖家 A 必须用 `wss://demo.example.com/provider` 匹配域名认证，不能以回环 WS 代替远程上线验收。
+最终应用入口为 `127.0.0.1:8788`，统一 Web、API、SSE 与 `/provider` WebSocket；用户的 OpenResty 已确认使用 host 网络。用户已配置 `https://demo.example.com` 全站转发至该入口；默认 TLS 证书验证通过；早期后端未启动造成的 502 已解决，当前回环与公网 `/health` 均 200，返回 ok:true、monad-testnet、mock_inference:true。启动卖家前 providers 为 0；随后 /v1/models 回读 A 在线，控制台 router 为 wss://demo.example.com/provider、lastError=null、报价匹配，完成真实公网 WSS 认证。主页、/provider-connect/、实际 JS 和 /config 均 200，Chrome 市场显示一在线；原生 API/SSE 一单与 Chrome B 登录/账户读取已通过，独立买家网页正常/故障付款已验，逐帧 SSE 未采证。站点尚未显式设置 buffering/cache/read_timeout；截图的缓存禁用不能代替 SSE 验证。需由用户核对客户端 IP 覆盖、300 秒读取超时、关闭缓冲/缓存和写请求自动重试，详见 [代理交接](../deploy/README.md#https-proxy-handoff-to-the-owner)。卖家 A 必须用 `wss://demo.example.com/provider` 匹配域名认证，不能以回环 WS 代替远程上线验收。
 
 本轮已在停止前后核对原账本 14 条：13 confirmed、1 lock_failed/unsubmitted，无运行或待结算。旧本机 Router 经 SIGTERM 停止，8788 不再监听；私有备份通过 SCP 放入远端 state，SHA256 匹配、inferpool 持有、mode 600，然后才启动新 Router。没有复制 Mac 登录/session。后续迁移仍需重复停旧、备份、对账再启动的顺序，禁止双写。
 
@@ -226,7 +242,7 @@ INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspa
 
 最终 public-build 配置正反 **13 项**检查、完整 Web TypeScript 和 Web lint 通过；前序 `INFERPOOL_STATIC_EXPORT=true` 本地导出使用原本机 Router URL，**没有启用 public-build，也没有发布该本机配置产物**。初始 Turbopack 因 CSS helper 端口权限失败；显式 webpack 导出成功，但 Para 未使用的可选 AA 集成模块仍有警告，未因此安装无关依赖。静态 3001 实际打开钱包邮箱弹窗，但没有登录或交易；该 origin 未列入原 Router CORS，未连 API，这是预期拒绝，不是业务验收。另已在原 3000 保存 [真实市场与账单截图](../artifacts/submission/README.md)，这不扩大 3001 或公网的验证范围。
 
-域名确定后，主 agent 已针对 `https://demo.example.com` 重新执行 webpack 静态构建，exit 0，并将产物上传独立 release。用户 HTTPS 代理证书检查通过，远端 Router、主页/连接页、JS、配置和模型接口已 200；未知 API、未知页面与 /.env 均 JSON 404。原生 API/SSE 一单及 Chrome B 登录/账户读取已通过；B 的 MON 付款未验。
+域名确定后，主 agent 已针对 `https://demo.example.com` 重新执行 webpack 静态构建，exit 0，并将产物上传独立 release。用户 HTTPS 代理证书检查通过，远端 Router、主页/连接页、JS、配置和模型接口已 200；未知 API、未知页面与 /.env 均 JSON 404。原生 API/SSE 一单及 Chrome B 登录/账户读取已通过；B 的 MON 正常/故障付款已验，逐帧 SSE 未采证。
 
 ### 可选公网请求限额
 

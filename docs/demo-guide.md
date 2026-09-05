@@ -2,7 +2,7 @@
 
 > 地址脱敏说明：`demo.example.com` 为占位域名，不是实际部署或验收地址；本文历史验证记录指向清理前的真实地址。
 
-准备日期：2026-09-05，Asia/Shanghai。以下是 **5 分钟正式演示 / 3 分钟压缩备用脚本初稿**，不是已录制视频或现场执行记录。当前入口为 [https://demo.example.com](https://demo.example.com)，已切换为 D17 MON-only a78470a，配置/模型、公网 API/SSE 一单通过，Chrome B 已重新签名登录并读账户。下方原生 MON 付款演示仍须先完成钱包资金准备与排练；旧版页面/WSS/钱包入口证据不能替代新版验收。新原生合约同钱包八笔 smoke 已通过，公网流式 MON 已验收，跨钱包/浏览器 MON 付款尚未验收。技术事实以 [进度与证据](progress.md) 为准，提交文案见 [比赛材料](hackathon-submission.md)。
+准备日期：2026-09-05，Asia/Shanghai。以下是 **5 分钟正式演示 / 3 分钟压缩脚本**，不是已录视频或已完成现场排演。当前 [公网 MON 版](https://demo.example.com) 已通过 API 34 批 SSE/结算，以及独立买家 Chrome Para B 的 .1 MON 存款、.05/24h 授权、正常收费 .0001658 MON 与卖家故障零费两单；六笔交易及跨钱包余额独立 RPC 核对。浏览器观察处理完成和账单，未采集逐帧增长证据，不能借用 API SSE 证明浏览器逐帧效果。下一步是 MOJO 实际提交与五分钟排演；最新范围见 [进度](progress.md)。
 
 ## 官方要求与当前交付缺口
 
@@ -10,7 +10,7 @@
 
 [官方演示页](https://monad-foundation.notion.site/b816367594f283ddae4b81b6ebc0baf7) 要求每队 **5 分钟**，以真实 Monad 测试网实机演示为核心，简述构建内容、关键技术挑战与创新；听众是开发者同行。Slides 可选，截图或短视频仅为建议的故障后备。下方五分钟是正式版本，三分钟仅用于压缩排练。
 
-[官方计划表](https://monad-foundation.notion.site/Monad-Blitz-e906367594f28338955f0140f791eb4a) 标提交截止 **18:30**、演示 **19:00–20:00**、投票 **20:00–20:20**，未注明日期和时区，**现场口径为准**。用户独立参赛，MOJO 已建立 InferPool 队伍，实际回读仅邀请、1/3、用户为队长；项目尚未提交。应用已公网运行，长期可用仍需持续维护和按实际期限续批钱包会话。本机、历史证据与 Anvil 备用不能代替长期可用的公网应用。[原创 LOGO、项目说明图及真实市场/账单截图](../artifacts/submission/README.md) 均已准备，实际 MOJO 表单要求横屏截图最多 5 张、第一张封面，建议真实市场图在先；说明图只作辅图，不能代替核心功能截图。
+[官方计划表](https://monad-foundation.notion.site/Monad-Blitz-e906367594f28338955f0140f791eb4a) 标提交截止 **18:30**、演示 **19:00–20:00**、投票 **20:00–20:20**，未注明日期和时区，**现场口径为准**。用户独立参赛，MOJO 已建立 InferPool 队伍，实际回读仅邀请、1/3、用户为队长；项目尚未提交。应用已公网运行，长期可用仍需持续维护和按实际期限续批钱包会话。本机、历史证据与 Anvil 备用不能代替长期可用的公网应用。[原创 LOGO、项目说明图及真实市场/账单截图](../artifacts/submission/README.md) 均已准备，实际 MOJO 表单要求横屏截图最多 5 张、第一张封面，当前优先正常 MON 账单及两单对照；说明图只作辅图，不能代替核心功能截图。
 
 ## 演示目标与开场
 
@@ -25,9 +25,9 @@
 | 检查 | 通过标准 |
 | --- | --- |
 | 环境与入口 | 目标 Web/API 为 `https://demo.example.com`；切换后须重验 /health、/config、/v1/models、MON/18 与新合约 0x142a4904307244Bed0cECD72dE8329A253333182，旧版 HTTP 200 不算新版本通过 |
-| 正式交付检查 | 在非演示者本机实际访问公网前端和完整交易路径，检查持续运行安排；核对 MOJO 队伍/队长、现场截止口径，以及必需 LOGO/预览图/简介/可用链接/GitHub。公网应用已上线，完整交易路径与持续运行检查仍需完成；不能用历史本机排练代替 |
+| 正式交付检查 | 在非演示者本机实际访问公网前端和完整交易路径，检查持续运行安排；核对 MOJO 队伍/队长、现场截止口径，以及必需 LOGO/预览图/简介/可用链接/GitHub。公网应用及独立买家正常/故障付款路径已验证，正式排演和持续运行安排仍须核对；不能用历史本机排练代替 |
 | 两卖家 | `/v1/models` 与市场同时列出 `seller-monad` A、`seller-para` B；两个不同钱包、当前 MON 市场报价和空闲槽位；开始前均为 normal。B 尚未发布/验证 MON 报价，若只准备 A 则按单卖家主线演示，用历史材料解释双卖家 |
-| 钱包与授权 | 买家使用已准备的 Para B，切换后重新签名平台登录；MON 存款提案 .1、授权提案 .05/24h，旧平台凭证不迁移；当前可用托管余额和剩余消费授权至少覆盖接下来每单的预算，授权未过期；重读余额，不照抄历史快照 |
+| 钱包与授权 | 买家使用已准备的 Para B，切换后重新签名平台登录；已完成 MON 存款 .1、授权 .05/24h，最新托管 .0998342、剩余授权 .0498342 MON，授权至 2026-09-06 15:52:32 +08，旧平台凭证不迁移；当前可用托管余额和剩余消费授权至少覆盖接下来每单的预算，授权未过期；重读余额，不照抄历史快照 |
 | Gas | Router 有足够测试 MON 支付锁款与结算；买家要做存款、授权等链上操作时也需要自己的测试 MON；不在场上反复申请水龙头 |
 | B 的签名窗口 | 保留 B 本地控制台 `http://127.0.0.1:8794` 与认证弹窗；如已离线，从控制台新开弹窗重新签名。改为公网 Router 和对应 wallet-ui origin 后重新签名；不要重连原 Alchemy session 来处理 B |
 | 演示标签 | 预先打开公网市场、已有账单与交易证据；A 控制台 8793 仅在服务器回环可达，不作为公网演示入口；不投屏验证码、完整 API Key 或会话配置 |
@@ -90,7 +90,9 @@ A 原生 MON 报价为 `0.3 / 0.03 / 0.375 / 0.8` 每百万模拟单位，最低
 - [旧 dUSD 两卖家市场记录](../contracts/deployments/inferpool-smoke-market-monad.json)：三笔 API 成功单、原零费锁款失败、独立网页手动覆盖单；不要省略失败历史。
 - [原生 MON 部署与源码验证](../contracts/deployments/inferpool-mon-native-testnet.json)：新合约地址和部署证据；源码验证不等于安全审计。
 - [项目说明图](../artifacts/submission/inferpool-project-overview.png)：可辅助解释架构，明确标注非产品截图；不能当作业务实机演示或公网运行证明。
-- [当前 MON 市场截图](../artifacts/submission/native-public-market.jpg) 与 [当前 MON 钱包截图](../artifacts/submission/native-public-wallet.jpg)：原始公网 JPEG，根已目视检查；证明登录/账户读取，未操作 B 的 MON 存款/授权/请求。当前材料优先使用这两张。
+- [正常 MON 账单](../artifacts/submission/native-normal-bill.jpg) 与 [两单对照](../artifacts/submission/native-bills-comparison.jpg)：当前优先材料，原始 JPEG 已目视检查；[失败详情](../artifacts/submission/native-failure-bill.jpg) 可作辅助。
+- [独立浏览器六笔交易](../contracts/deployments/inferpool-native-browser.json)：正常 .0001658 MON、故障 0、全部无锁款；浏览器未采逐帧 SSE。
+- [前序 MON 市场](../artifacts/submission/native-public-market.jpg) 与 [前序 MON 钱包](../artifacts/submission/native-public-wallet.jpg)：存款前零余额历史基线，不再作当前优先图。
 - [原生公网 API 单](../contracts/deployments/inferpool-native-api-smoke.json)：34 批 SSE、.0001285 MON、输出 128 上限终止，A 同钱包买卖；不是 B 浏览器成交。
 - [历史公网访客市场截图](../artifacts/submission/inferpool-public-market.jpg)：切换前旧版公开页面，一在线 A、未登录；不证明 MON 页面、请求或结算。
 - [真实本机市场截图](../artifacts/submission/inferpool-market-live.jpg) 与 [真实账单截图](../artifacts/submission/inferpool-bill-live.jpg)：已保存的原始浏览器 JPEG，来自本机 Web 连接真实 Monad Router，主 agent 目视检查通过；未改像素、未为截图新下单。开发/扩展图标仍可见，录像尚未制作。
@@ -109,6 +111,6 @@ npm run demo:request
 
 输出、Token、缓存都是 Mock；Router 受信计量和判责，平台与接单卖家可见请求内容。合约不验证模型身份、质量或链外用量。没有 TEE、质押罚没或无需信任推理证明，也没有真实收入或性能基准承诺。
 
-当前仅旧版公网页面、A 的 WSS 与 Para 弹窗入口已检查；MON 版现已切换，配置/模型、API/SSE 一单以及浏览器 B 签名登录/账户读取通过；仍须验收 B 的 MON 付款、买家钱包切换、浏览器断连/幂等重试，以及提款、撤销授权、离线回收等浏览器交互。对应实现或底层测试存在，不替代实际浏览器验证；最新范围以进度页为准。Alchemy 无交易引用异常根因尚未明确，演示前需继续关注提交稳定性。
+MON 版配置/模型、API 34 批 SSE，以及 B 的网页存款/授权和正常/故障两单已通过。尚未验证当前 MON 版浏览器取消、提款、撤销授权、离线回收、断连/幂等、钱包切换及逐帧 SSE；这些不因正常/故障付款通过而扩大。对应实现或底层测试存在，不替代实际浏览器验证；最新范围以进度页为准。Alchemy 无交易引用异常根因尚未明确，演示前需继续关注提交稳定性。
 
 结束时把故障模式恢复 normal，确认没有遗留待处理订单，保存本次新请求 ID 与最终回执；若创建了临时 API Key，结束后撤销。录屏或截图仅在实际生成并检查过后再登记链接，当前没有交付视频。
