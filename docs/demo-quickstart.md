@@ -13,7 +13,7 @@
 - 用已登录的 **Chrome Para B**，先打开“推理市场”和“请求账单”。确认 Router 在线、“Monad 演示节点”可接单；不要把应用内浏览器的访客状态当作 Chrome 已登录。
 - “钱包与授权”重读可用余额、剩余额度和到期时间。前次快照为 **0.0998342 MON / 0.0498342 MON**，授权到 **9 月 6 日 15:52:32（+08）**；这不是实时余额保证，不需为了上台重复存款或授权。
 - 先定位正常历史单 **d6f9abd0…** 与故障历史单 **c985df51…**。把[正常账单图](../artifacts/submission/native-normal-bill.jpg)、[两单对照图](../artifacts/submission/native-bills-comparison.jpg)和[失败详情图](../artifacts/submission/native-failure-bill.jpg)打开作备用。
-- 最近全局剩 **6** 次、B 当日剩 **3** 次：现场只用 **1** 次，操作前确认额度。节点保持 normal，不做 SSH 故障注入，不展示验证码、API Key 或终端凭证。
+- D19 已要求取消演示次数与额外并发限制，部署完成情况见[进度](progress.md)。五分钟流程只安排一笔正常请求是节奏选择，不是产品次数上限；确认预算、钱包授权和节点容量，节点保持 normal，不做 SSH 故障注入，不展示验证码、API Key 或终端凭证。
 
 ## 五分钟时间与讲稿
 

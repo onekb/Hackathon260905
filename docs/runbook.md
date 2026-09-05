@@ -65,7 +65,7 @@ node --import tsx scripts/native-monad.ts --execute --smoke
 | `npm run test:monad` | native-monad.ts --execute --smoke；上述同钱包两场景与提款，已通过 |
 | `npm run test:api:monad` | smoke-native-api.ts --execute；会发新原生 HTTP/API 验收请求，**当前尚未执行** |
 
-Router 只配置新 `MARKET_ADDRESS` 和固定 `ROUTER_ADDRESS`，不配置 TOKEN_ADDRESS 或 LEGACY_*。D17 要求先核对并结束旧在途单、停旧进程，将旧订单/凭证整账本私有备份，再准备仅 MON 的活跃账本。旧凭证、订单、缓存、幂等映射不迁入；只导入 buyer + createdAt 配额历史，固定 epoch 和限制保持不变，不能借切换清空次数。旧链上资产不兑换、销毁或代提款。
+Router 只配置新 `MARKET_ADDRESS` 和固定 `ROUTER_ADDRESS`，不配置 TOKEN_ADDRESS 或 LEGACY_*。D17 要求先核对并结束旧在途单、停旧进程，将旧订单/凭证整账本私有备份，再准备仅 MON 的活跃账本。旧凭证、订单、缓存、幂等映射不迁入；当时只导入 buyer + createdAt 配额历史；D19 已要求取消计数，该字段保留历史，不通过删账本取消限制。旧链上资产不兑换、销毁或代提款。
 
 上线后 /config 只展示 MON/18 与新 market；卖家须在该合约发布报价并认证。买家 Para 钱包不变，但旧平台 session/Key 不迁移，需重新签名平台登录，在有效 MON grant 下创建新 Key。产品不再提供旧资产查看、提款或恢复入口；公开历史回执仅为存档。完整切换按 [deploy/README](../deploy/README.md) 执行。
 
@@ -248,16 +248,13 @@ INFERPOOL_STATIC_EXPORT=true INFERPOOL_PUBLIC_BUILD=true npm run build --workspa
 
 ### 可选公网请求限额
 
-[D14](requirements-and-decisions.md#d14--公网演示使用持久新单限额与明确代理信任) 的代码与测试已完成，未配置时默认关闭；远端 Router 现已使用固定 epoch 配置启动，公网实际限额拒单仍需验收。启用需 `DEMO_ADMISSION_ENABLED=true`、固定且不晚于启动时间的 `DEMO_ADMISSION_START_UTC`（ISO UTC、以 `Z` 结尾），以及默认 true 的 `DEMO_NEW_ORDERS_ENABLED`。关闭限额时，其余 `DEMO_*` 配置必须不存在，防止暂停配置无效却静默接单。
+**D19 取消限制的代码与本地回归已完成，待部署。** 每日/累计请求次数和额外 Demo 并发门槛不再是产品要求；前序“剩 1 次/全场 10 次”只作旧策略快照，线上是否已移除以[进度](progress.md)的部署证据为准。
 
-| 启用后限制 | 计算方式 |
-| --- | --- |
-| 每钱包未结并发 1、全局未结并发 2 | 计入原起点之前仍未解决的订单；锁款不明、pending/failed 结算也占位，只有结算终态或确定锁款失败后释放 |
-| 每钱包每 UTC 日 6 次、本场全局 10 次 | 读取账本全部订单，在固定起点之后按 `createdAt` 计数；订单持久化、即将锁款时消耗一次，锁款失败仍计次；参数、余额和策略拒绝不计 |
+新接口不再提供 DemoAdmission、DEMO_LIMITS 或 Engine 第四构造参数；不读取 `DEMO_ADMISSION_ENABLED`、`DEMO_ADMISSION_START_UTC`、`DEMO_NEW_ORDERS_ENABLED`，也不新增替代暂停开关。部署模板已移除三项，根将在实际服务器同步清除；不要通过这些旧变量安排新版本维护。
 
-同幂等 Key/同参数先返回原订单；换 API Key、重启或只读取最近订单不能重置次数。重启保持原起点与绝对 `ROUTER_STATE_PATH`，不得自动换起点补额度。新单暂停返回 `503`，超过限额返回 `429`；查询、准确重放、取消、结算重试与恢复继续工作，锁款未确认时取消仍可能按原规则返回 `409`。`DEMO_NEW_ORDERS_ENABLED=false` 在启动时读取，手动暂停需要受控重启，尽量先等待在途订单结束，不是现成的 HTTP 管理开关。
+保留已有原生账本、订单、凭证、幂等记录和 history，history 不再用于次数计算。旧 `deploy/switch-native.py` 已退役并在入口拒绝运行，不用于常规更新。维护须核对在途/不明订单、受控停止两服务、私有备份、切换完整 release，再回读账本与服务；不能恢复过期账本覆盖新记录。单笔预算、钱包授权与余额、卖家真实容量仍是接单条件。
 
-`ROUTER_TRUST_PROXY` 只允许默认 `none` 或本机反代 `loopback`，认证限流使用解析后的客户端 IP。本机反代必须覆盖 `X-Forwarded-For`，Router 必须保持回环地址、不能旁路直连；任意代理或布尔 true 不被支持。CORS 不能替代消费限额。完整配置和计数规则以 [Router README](../server/README.md) 为准。
+`ROUTER_TRUST_PROXY` 只允许默认 `none` 或本机反代 `loopback`，认证限流使用解析后的客户端 IP。本机反代必须覆盖 `X-Forwarded-For`，Router 必须保持回环地址、不能旁路直连；任意代理或布尔 true 不被支持。CORS 不能替代消费限额。当前配置和权限边界以 [Router README](../server/README.md) 为准。
 
 链上部署不等于服务器部署。官方规则要求应用部署 Monad、前端公网部署，应用和前端长期可用；规则来源及 MOJO/截止时间见 [比赛材料](hackathon-submission.md#已核实的比赛要求)。域名和 HTTPS 分工明确，应用服务、公网页面与 A 的 WSS 已验收；仍需续批会话并保持服务，首次上线不等于长期可用已获保证。本机备用演示不能替代长期公网交付。
 

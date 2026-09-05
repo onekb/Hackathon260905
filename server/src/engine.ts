@@ -3,7 +3,6 @@ import { EventEmitter } from 'node:events';
 import type { ChainAdapter, Outcome } from './chain.js';
 import { decimal, emptyUsage, fee, mockTokens, units, type Quote, type Usage } from './money.js';
 import { Store, sameMarket, type MarketIdentity } from './store.js';
-import { DEMO_LIMITS, type DemoAdmission } from './runtime-config.js';
 export interface Message { role: 'system'|'user'|'assistant'; content: string }
 export interface RequestInput { model: string; messages: Message[]; max_tokens: number; max_spend: string; provider_id?: string; cache?: boolean; stream?: boolean }
 export interface Provider {
@@ -26,7 +25,7 @@ export class Engine extends EventEmitter {
   private queues = new Map<string, Promise<any>>();
   private timers = new Map<string, NodeJS.Timeout>();
   readonly marketIdentity: MarketIdentity;
-  constructor(readonly chain: ChainAdapter, readonly store: Store, readonly requestTimeoutMs = 30000, readonly admission?: DemoAdmission) {
+  constructor(readonly chain: ChainAdapter, readonly store: Store, readonly requestTimeoutMs = 30000) {
     super(); this.setMaxListeners(0);
     this.marketIdentity = {market_address:chain.market ?? 'memory:mon',asset_symbol:'MON',asset_decimals:18};
     store.bindMarket(this.marketIdentity);
@@ -60,21 +59,6 @@ export class Engine extends EventEmitter {
   models(): any[] {
     return Array.from(this.providers.values()).map(p => ({id:p.model,object:'model',provider_id:p.id,provider_name:p.name,seller:p.wallet,quote:p.quote,online:true,available_slots:Math.max(0,p.capacity-p.busy),mock:true,metering:'Unicode code point = one mock token',mode:p.mode,...this.marketIdentity}));
   }
-  private admitNewOrder(buyer:string,now:number):void {
-    if(!this.admission)return;
-    if(!this.admission.newOrdersEnabled)throw new HttpError(503,'Demo is not accepting new requests; existing requests can still be queried or cancelled');
-    if(now<this.admission.startMs)throw new HttpError(503,'Demo start time is later than the current clock; new requests are paused');
-    const orders=Object.values(this.store.state.orders) as Order[];
-    // Count unresolved funding as concurrency, even if its inference has already stopped or it
-    // predates this demo epoch. Changing an epoch must never hide outstanding reservations.
-    const active=orders.filter(o=>['locking','running','reservation_unknown'].includes(o.status)||o.settlement==='pending'||(o.settlement==='failed'&&o.status!=='lock_failed'));
-    if(active.filter(o=>o.buyer.toLowerCase()===buyer).length>=DEMO_LIMITS.walletConcurrent)throw new HttpError(429,'Demo allows one unsettled request per wallet');
-    if(active.length>=DEMO_LIMITS.globalConcurrent)throw new HttpError(429,'Demo allows two unsettled requests at a time');
-    const attempts=[...orders,...(this.store.state.admissionHistory ?? [])].filter(o=>o.createdAt>=this.admission!.startMs);
-    if(attempts.length>=DEMO_LIMITS.globalAttempts)throw new HttpError(429,'Demo has reached its total limit of ten new request attempts');
-    const utcDay=Math.floor(now/86400000);
-    if(attempts.filter(o=>o.buyer.toLowerCase()===buyer&&Math.floor(o.createdAt/86400000)===utcDay).length>=DEMO_LIMITS.walletPerUtcDay)throw new HttpError(429,'Demo allows six new request attempts per wallet per UTC day');
-  }
   create(buyer: string, input: RequestInput, idempotency?: string): Promise<Order> {
     return this.serial('create',async () => {
       buyer = buyer.toLowerCase();
@@ -82,7 +66,6 @@ export class Engine extends EventEmitter {
       const idem = idempotency ? `${this.marketIdentity.market_address.toLowerCase()}:${buyer}:${idempotency}` : undefined;
       const prior = idem && this.store.state.idempotency[idem];
       if (prior) { if (prior.fingerprint !== fingerprint) throw new HttpError(409,'Idempotency-Key was already used with different request parameters'); return this.get(prior.id,buyer); }
-      this.admitNewOrder(buyer,Date.now());
       const budget = units(input.max_spend);
       if (budget <= 0n) throw new HttpError(400,'max_spend must be positive');
       const inputCount = mockTokens(JSON.stringify(input.messages));
@@ -107,9 +90,8 @@ export class Engine extends EventEmitter {
       const {p,quote,planned,cacheMode,cacheKey} = selected;
       const account = await this.chain.getAccount(buyer);
       if (units(account.available) < budget || units(account.authorized) < budget || account.authorizationExpiresAt <= Date.now()/1000) throw new HttpError(402,'Deposit funds and grant a sufficient unexpired spending allowance first');
-      // Recheck with the actual admission timestamp after RPC reads, including across UTC midnight.
-      // This entire path is serialized; persisting the order below consumes its attempt before lock.
-      const createdAt=Date.now();this.admitNewOrder(buyer,createdAt);
+      // Persist the order before locking funds so retries and recovery retain its identity.
+      const createdAt=Date.now();
       p.busy++;
       const o: Order = {...this.marketIdentity,id:randomUUID(),buyer,providerId:p.id,seller:p.wallet,model:p.model,budget:decimal(budget),quote:{...quote},usage:emptyUsage(),plannedUsage:planned,maxTokens:input.max_tokens,output:'',lastSeq:-1,status:'locking',settlement:'unsubmitted',charge:decimal(0n),released:decimal(budget),deadline:Math.floor(createdAt/1000)+300,createdAt,updatedAt:createdAt,cacheMode,cacheKey,mock:true};
       if (idem) this.store.state.idempotency[idem] = {id:o.id,fingerprint};

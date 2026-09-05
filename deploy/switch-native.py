@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Controlled one-time MON release switch on the existing InferPool host.
+"""Historical one-time MON asset migration; retired after D19.
 
-Run as root with a prepared /srv/inferpool/releases/<git-sha> directory.
-Private state remains private; no credentials or order bodies are printed.
+The original migration below depended on the removed demo admission pause.
+Keep it as an implementation record; regular upgrades preserve the native ledger.
 """
+raise SystemExit('This one-time asset migration is retired. Deploy code while retaining the current native ledger; do not rerun asset migration.')
+
 import argparse
 import datetime
 import hashlib

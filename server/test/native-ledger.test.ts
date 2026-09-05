@@ -10,7 +10,6 @@ import { Engine, type Provider, type RequestInput } from '../src/engine.js';
 import { MemoryChain } from '../src/chain.js';
 import { Auth } from '../src/auth.js';
 import { createApp } from '../src/app.js';
-import type { DemoAdmission } from '../src/runtime-config.js';
 
 const market: MarketIdentity = { market_address: '0x2222222222222222222222222222222222222222', asset_symbol: 'MON', asset_decimals: 18 };
 const otherMarket = '0x1111111111111111111111111111111111111111';
@@ -19,7 +18,7 @@ const secondBuyer = '0x4444444444444444444444444444444444444444';
 const thirdBuyer = '0x5555555555555555555555555555555555555555';
 const input: RequestInput = { model: 'mock', messages: [{ role: 'user', content: 'hi' }], max_tokens: 2, max_spend: '0.001' };
 
-async function fixture(store = new Store(), admission?: DemoAdmission) {
+async function fixture(store = new Store()) {
   const chain = Object.assign(new MemoryChain(), { market: market.market_address });
   const calls = { lock: 0, settle: 0 };
   const lock = chain.lock.bind(chain); const settle = chain.settle.bind(chain);
@@ -28,7 +27,7 @@ async function fixture(store = new Store(), admission?: DemoAdmission) {
   for (const wallet of [buyer, secondBuyer, thirdBuyer]) chain.fund(wallet, '1');
   const quote = { input: '0.3', cacheRead: '0.03', cacheWrite: '0.375', output: '0.8', minReserve: '0.000001' };
   chain.quote(buyer, input.model, quote);
-  const engine = new Engine(chain, store, 30_000, admission);
+  const engine = new Engine(chain, store, 30_000);
   const provider: Provider = { id: 'seller', wallet: buyer, name: 'seller', model: input.model, quote, capacity: 2, busy: 0, mode: 'normal', mock: true, send: () => {} };
   await engine.addProvider(provider);
   return { store, chain, engine, provider, calls, auth: new Auth(store, 'localhost') };
@@ -64,7 +63,7 @@ test('wrong market, partial order identity and foreign API keys fail before ledg
   }
 });
 
-test('admission history rejects invalid wallet addresses and counting timestamps', () => {
+test('stored historical attempts retain wallet and timestamp integrity checks', () => {
   const invalid: unknown[] = [{}, [{ buyer: 'not-an-address', createdAt: Date.now() }], [{ buyer, createdAt: 0 }], [{ buyer, createdAt: -1 }], [{ buyer, createdAt: 0.5 }], [{ buyer, createdAt: Number.MAX_SAFE_INTEGER + 1 }]];
   for (const history of invalid) {
     const store = new Store(); store.state.admissionHistory = history as State['admissionHistory'];
@@ -88,45 +87,50 @@ test('new API keys are bound to the current market and wallet sessions keep thei
   store.bindMarket(market); assert.equal(auth.authenticate(`Bearer ${key.token}`).market_address, market.market_address);
 });
 
-test('six historical wallet attempts persist across restart and reject a new key before any lock', async () => {
+test('historical wallet attempts persist across restart without preventing a current-market API key request', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'inferpool-native-ledger-'));
   const path = join(directory, 'ledger.json'); const createdAt = Date.now(); const store = new Store(path);
-  store.state.admissionHistory = Array.from({ length: 6 }, () => ({ buyer, createdAt })); store.bindMarket(market);
-  const s = await fixture(new Store(path), { startMs: createdAt - 1, newOrdersEnabled: true });
+  store.state.admissionHistory = Array.from({ length: 15 }, () => ({ buyer, createdAt })); store.bindMarket(market);
+  const s = await fixture(new Store(path));
   try {
     const key = s.auth.issue(buyer, 'api-key', 'fresh key', Date.now() + 60_000);
     s.auth.requireCurrentMarket(s.auth.authenticate(`Bearer ${key.token}`));
-    await assert.rejects(s.engine.create(buyer, input, 'new-key'), error => (error as any).status === 429 && /six/.test((error as Error).message));
-    assert.deepEqual(s.calls, { lock: 0, settle: 0 }); assert.equal(s.chain.orders.size, 0);
+    const order = await s.engine.create(buyer, input, 'new-key');
+    assert.equal(order.status, 'running'); assert.equal(order.market_address, market.market_address);
+    assert.deepEqual(s.calls, { lock: 1, settle: 0 }); assert.equal(s.chain.orders.size, 1);
     assert.deepEqual(new Store(path).state.admissionHistory, store.state.admissionHistory);
-    assert.deepEqual(s.store.state.orders, {});
+    assert.equal(Object.keys(new Store(path).state.orders).length, 1);
+    assert.equal(Object.keys(new Store(path).state.credentials).length, 1);
   } finally { s.engine.close(); rmSync(directory, { recursive: true, force: true }); }
 });
 
-test('ten historical global attempts reject another wallet before any lock or dispatch', async () => {
+test('historical global attempts do not prevent another funded wallet from reserving and dispatching', async () => {
   const createdAt = Date.now(); const store = new Store();
-  store.state.admissionHistory = Array.from({ length: 10 }, (_, i) => ({ buyer: i < 5 ? buyer : secondBuyer, createdAt }));
-  const s = await fixture(store, { startMs: createdAt - 1, newOrdersEnabled: true });
+  store.state.admissionHistory = Array.from({ length: 15 }, (_, i) => ({ buyer: i < 8 ? buyer : secondBuyer, createdAt }));
+  const s = await fixture(store);
   let dispatched = 0; s.provider.send = () => { dispatched++; };
   try {
-    await assert.rejects(s.engine.create(thirdBuyer, input, 'eleventh'), error => (error as any).status === 429 && /ten/.test((error as Error).message));
-    assert.deepEqual(s.calls, { lock: 0, settle: 0 }); assert.equal(dispatched, 0);
-    assert.equal(s.store.state.admissionHistory!.length, 10); assert.deepEqual(s.store.state.orders, {});
+    const order = await s.engine.create(thirdBuyer, input, 'new-order');
+    assert.equal(order.status, 'running');
+    assert.deepEqual(s.calls, { lock: 1, settle: 0 }); assert.equal(dispatched, 1);
+    assert.equal(s.store.state.admissionHistory!.length, 15); assert.equal(Object.keys(s.store.state.orders).length, 1);
   } finally { s.engine.close(); }
 });
 
-test('historical attempts and new native orders share limits while exact replay consumes no attempt', async () => {
+test('historical attempts remain unchanged while native orders and exact replay retain their identities', async () => {
   const createdAt = Date.now(); const store = new Store();
-  store.state.admissionHistory = Array.from({ length: 5 }, () => ({ buyer, createdAt }));
-  const s = await fixture(store, { startMs: createdAt - 1, newOrdersEnabled: true });
+  store.state.admissionHistory = Array.from({ length: 12 }, () => ({ buyer, createdAt }));
+  const history = structuredClone(store.state.admissionHistory);
+  const s = await fixture(store);
   try {
-    const order = await s.engine.create(buyer, input, 'sixth');
+    const order = await s.engine.create(buyer, input, 'first');
     await s.engine.providerEvent(s.provider, { type: 'completed', requestId: order.id, seq: 0 });
     assert.equal(order.asset_symbol, 'MON'); assert.equal(order.settlement, 'confirmed');
-    assert.equal((await s.engine.create(buyer, input, 'sixth')).id, order.id);
-    await assert.rejects(s.engine.create(buyer, input, 'seventh'), error => (error as any).status === 429);
-    assert.deepEqual(s.calls, { lock: 1, settle: 1 });
-    assert.equal(s.store.state.admissionHistory!.length, 5); assert.equal(Object.keys(s.store.state.orders).length, 1);
+    assert.equal((await s.engine.create(buyer, input, 'first')).id, order.id);
+    const second = await s.engine.create(buyer, input, 'second');
+    assert.notEqual(second.id, order.id); assert.equal(second.status, 'running');
+    assert.deepEqual(s.calls, { lock: 2, settle: 1 });
+    assert.deepEqual(s.store.state.admissionHistory, history); assert.equal(Object.keys(s.store.state.orders).length, 2);
   } finally { s.engine.close(); }
 });
 
